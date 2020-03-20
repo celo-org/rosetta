@@ -15,6 +15,17 @@ To see how to make this your own, look here:
 - API version: 1.2.3
 - Build date: 2020-03-20T20:39:49.560Z[GMT]
 
+### Building
+
+Run
+
+```
+make all
+```
+
+This will compile bls-zexe rust library that is required for celo-blockchain
+
+On subsequent builds, you can just run `go build ./...`
 
 ### Running the server
 To run the server, follow these simple steps:
