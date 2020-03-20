@@ -14,7 +14,7 @@ import (
 )
 
 // ConstructionApiService is a service that implents the logic for the ConstructionApiServicer
-// This service should implement the business logic for every endpoint for the ConstructionApi API. 
+// This service should implement the business logic for every endpoint for the ConstructionApi API.
 // Include any external packages or services that will be required by this service.
 type ConstructionApiService struct {
 }
@@ -27,13 +27,11 @@ func NewConstructionApiService() ConstructionApiServicer {
 // TransactionConstruction - Get Transaction Construction Metadata
 func (s *ConstructionApiService) TransactionConstruction(transactionConstructionRequest TransactionConstructionRequest) (interface{}, error) {
 	// TODO - update TransactionConstruction with the required logic for this service method.
-	// Add api_construction_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 	return nil, errors.New("service method 'TransactionConstruction' not implemented")
 }
 
 // TransactionSubmit - Submit a Signed Transaction
 func (s *ConstructionApiService) TransactionSubmit(transactionSubmitRequest TransactionSubmitRequest) (interface{}, error) {
 	// TODO - update TransactionSubmit with the required logic for this service method.
-	// Add api_construction_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 	return nil, errors.New("service method 'TransactionSubmit' not implemented")
 }

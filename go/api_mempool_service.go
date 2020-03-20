@@ -14,7 +14,7 @@ import (
 )
 
 // MempoolApiService is a service that implents the logic for the MempoolApiServicer
-// This service should implement the business logic for every endpoint for the MempoolApi API. 
+// This service should implement the business logic for every endpoint for the MempoolApi API.
 // Include any external packages or services that will be required by this service.
 type MempoolApiService struct {
 }
@@ -27,13 +27,11 @@ func NewMempoolApiService() MempoolApiServicer {
 // Mempool - Get All Mempool Transactions
 func (s *MempoolApiService) Mempool(mempoolRequest MempoolRequest) (interface{}, error) {
 	// TODO - update Mempool with the required logic for this service method.
-	// Add api_mempool_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 	return nil, errors.New("service method 'Mempool' not implemented")
 }
 
 // MempoolTransaction - Get a Mempool Transaction
 func (s *MempoolApiService) MempoolTransaction(mempoolTransactionRequest MempoolTransactionRequest) (interface{}, error) {
 	// TODO - update MempoolTransaction with the required logic for this service method.
-	// Add api_mempool_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 	return nil, errors.New("service method 'MempoolTransaction' not implemented")
 }

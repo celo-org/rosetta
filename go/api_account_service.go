@@ -27,6 +27,5 @@ func NewAccountApiService() AccountApiServicer {
 // AccountBalance - Get an Account Balance
 func (s *AccountApiService) AccountBalance(accountBalanceRequest AccountBalanceRequest) (interface{}, error) {
 	// TODO - update AccountBalance with the required logic for this service method.
-	// Add api_account_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 	return nil, errors.New("service method 'AccountBalance' not implemented")
 }

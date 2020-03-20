@@ -14,7 +14,7 @@ import (
 )
 
 // BlockApiService is a service that implents the logic for the BlockApiServicer
-// This service should implement the business logic for every endpoint for the BlockApi API. 
+// This service should implement the business logic for every endpoint for the BlockApi API.
 // Include any external packages or services that will be required by this service.
 type BlockApiService struct {
 }
@@ -27,13 +27,11 @@ func NewBlockApiService() BlockApiServicer {
 // Block - Get a Block
 func (s *BlockApiService) Block(blockRequest BlockRequest) (interface{}, error) {
 	// TODO - update Block with the required logic for this service method.
-	// Add api_block_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 	return nil, errors.New("service method 'Block' not implemented")
 }
 
 // BlockTransaction - Get a Block Transaction
 func (s *BlockApiService) BlockTransaction(blockTransactionRequest BlockTransactionRequest) (interface{}, error) {
 	// TODO - update BlockTransaction with the required logic for this service method.
-	// Add api_block_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 	return nil, errors.New("service method 'BlockTransaction' not implemented")
 }

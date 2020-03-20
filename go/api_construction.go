@@ -13,7 +13,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
-	// "github.com/gorilla/mux"
+
+	"github.com/gorilla/mux"
 )
 
 // A ConstructionApiController binds http requests to an api service and writes the service results to the http response
@@ -23,12 +24,12 @@ type ConstructionApiController struct {
 
 // NewConstructionApiController creates a default api controller
 func NewConstructionApiController(s ConstructionApiServicer) Router {
-	return &ConstructionApiController{service: s}
+	return &ConstructionApiController{ service: s }
 }
 
 // Routes returns all of the api route for the ConstructionApiController
 func (c *ConstructionApiController) Routes() Routes {
-	return Routes{
+	return Routes{ 
 		{
 			"TransactionConstruction",
 			strings.ToUpper("Post"),
@@ -45,35 +46,35 @@ func (c *ConstructionApiController) Routes() Routes {
 }
 
 // TransactionConstruction - Get Transaction Construction Metadata
-func (c *ConstructionApiController) TransactionConstruction(w http.ResponseWriter, r *http.Request) {
+func (c *ConstructionApiController) TransactionConstruction(w http.ResponseWriter, r *http.Request) { 
 	transactionConstructionRequest := &TransactionConstructionRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&transactionConstructionRequest); err != nil {
 		w.WriteHeader(500)
 		return
 	}
-
+	
 	result, err := c.service.TransactionConstruction(*transactionConstructionRequest)
 	if err != nil {
 		w.WriteHeader(500)
 		return
 	}
-
+	
 	EncodeJSONResponse(result, nil, w)
 }
 
 // TransactionSubmit - Submit a Signed Transaction
-func (c *ConstructionApiController) TransactionSubmit(w http.ResponseWriter, r *http.Request) {
+func (c *ConstructionApiController) TransactionSubmit(w http.ResponseWriter, r *http.Request) { 
 	transactionSubmitRequest := &TransactionSubmitRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&transactionSubmitRequest); err != nil {
 		w.WriteHeader(500)
 		return
 	}
-
+	
 	result, err := c.service.TransactionSubmit(*transactionSubmitRequest)
 	if err != nil {
 		w.WriteHeader(500)
 		return
 	}
-
+	
 	EncodeJSONResponse(result, nil, w)
 }
