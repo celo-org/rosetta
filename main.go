@@ -13,28 +13,28 @@ import (
 	"log"
 	"net/http"
 
-	openapi "github.com/GIT_USER_ID/GIT_REPO_ID/go"
+	api "github.com/celo-org/rosetta/api"
 )
 
 func main() {
 	log.Printf("Server started")
 
-	AccountApiService := openapi.NewAccountApiService()
-	AccountApiController := openapi.NewAccountApiController(AccountApiService)
+	AccountApiService := api.NewAccountApiService()
+	AccountApiController := api.NewAccountApiController(AccountApiService)
 
-	BlockApiService := openapi.NewBlockApiService()
-	BlockApiController := openapi.NewBlockApiController(BlockApiService)
+	BlockApiService := api.NewBlockApiService()
+	BlockApiController := api.NewBlockApiController(BlockApiService)
 
-	ConstructionApiService := openapi.NewConstructionApiService()
-	ConstructionApiController := openapi.NewConstructionApiController(ConstructionApiService)
+	ConstructionApiService := api.NewConstructionApiService()
+	ConstructionApiController := api.NewConstructionApiController(ConstructionApiService)
 
-	MempoolApiService := openapi.NewMempoolApiService()
-	MempoolApiController := openapi.NewMempoolApiController(MempoolApiService)
+	MempoolApiService := api.NewMempoolApiService()
+	MempoolApiController := api.NewMempoolApiController(MempoolApiService)
 
-	NetworkApiService := openapi.NewNetworkApiService()
-	NetworkApiController := openapi.NewNetworkApiController(NetworkApiService)
+	NetworkApiService := api.NewNetworkApiService()
+	NetworkApiController := api.NewNetworkApiController(NetworkApiService)
 
-	router := openapi.NewRouter(AccountApiController, BlockApiController, ConstructionApiController, MempoolApiController, NetworkApiController)
+	router := api.NewRouter(AccountApiController, BlockApiController, ConstructionApiController, MempoolApiController, NetworkApiController)
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
