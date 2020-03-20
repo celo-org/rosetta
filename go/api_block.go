@@ -13,8 +13,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
-
-	"github.com/gorilla/mux"
 )
 
 // A BlockApiController binds http requests to an api service and writes the service results to the http response
@@ -24,12 +22,12 @@ type BlockApiController struct {
 
 // NewBlockApiController creates a default api controller
 func NewBlockApiController(s BlockApiServicer) Router {
-	return &BlockApiController{ service: s }
+	return &BlockApiController{service: s}
 }
 
 // Routes returns all of the api route for the BlockApiController
 func (c *BlockApiController) Routes() Routes {
-	return Routes{ 
+	return Routes{
 		{
 			"Block",
 			strings.ToUpper("Post"),
@@ -46,35 +44,35 @@ func (c *BlockApiController) Routes() Routes {
 }
 
 // Block - Get a Block
-func (c *BlockApiController) Block(w http.ResponseWriter, r *http.Request) { 
+func (c *BlockApiController) Block(w http.ResponseWriter, r *http.Request) {
 	blockRequest := &BlockRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&blockRequest); err != nil {
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	result, err := c.service.Block(*blockRequest)
 	if err != nil {
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	EncodeJSONResponse(result, nil, w)
 }
 
 // BlockTransaction - Get a Block Transaction
-func (c *BlockApiController) BlockTransaction(w http.ResponseWriter, r *http.Request) { 
+func (c *BlockApiController) BlockTransaction(w http.ResponseWriter, r *http.Request) {
 	blockTransactionRequest := &BlockTransactionRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&blockTransactionRequest); err != nil {
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	result, err := c.service.BlockTransaction(*blockTransactionRequest)
 	if err != nil {
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	EncodeJSONResponse(result, nil, w)
 }

@@ -13,8 +13,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
-
-	"github.com/gorilla/mux"
 )
 
 // A MempoolApiController binds http requests to an api service and writes the service results to the http response
@@ -24,12 +22,12 @@ type MempoolApiController struct {
 
 // NewMempoolApiController creates a default api controller
 func NewMempoolApiController(s MempoolApiServicer) Router {
-	return &MempoolApiController{ service: s }
+	return &MempoolApiController{service: s}
 }
 
 // Routes returns all of the api route for the MempoolApiController
 func (c *MempoolApiController) Routes() Routes {
-	return Routes{ 
+	return Routes{
 		{
 			"Mempool",
 			strings.ToUpper("Post"),
@@ -46,35 +44,35 @@ func (c *MempoolApiController) Routes() Routes {
 }
 
 // Mempool - Get All Mempool Transactions
-func (c *MempoolApiController) Mempool(w http.ResponseWriter, r *http.Request) { 
+func (c *MempoolApiController) Mempool(w http.ResponseWriter, r *http.Request) {
 	mempoolRequest := &MempoolRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&mempoolRequest); err != nil {
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	result, err := c.service.Mempool(*mempoolRequest)
 	if err != nil {
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	EncodeJSONResponse(result, nil, w)
 }
 
 // MempoolTransaction - Get a Mempool Transaction
-func (c *MempoolApiController) MempoolTransaction(w http.ResponseWriter, r *http.Request) { 
+func (c *MempoolApiController) MempoolTransaction(w http.ResponseWriter, r *http.Request) {
 	mempoolTransactionRequest := &MempoolTransactionRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&mempoolTransactionRequest); err != nil {
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	result, err := c.service.MempoolTransaction(*mempoolTransactionRequest)
 	if err != nil {
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	EncodeJSONResponse(result, nil, w)
 }
