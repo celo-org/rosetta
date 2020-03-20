@@ -1,4 +1,4 @@
-module github.com/yorhodes/celo-rosetta-go
+module github.com/GIT_USER_ID/GIT_REPO_ID
 
 go 1.13
 
