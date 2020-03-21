@@ -10,10 +10,9 @@
 package api
 
 type NetworkStatusResponse struct {
-
 	NetworkStatus NetworkStatus `json:"network_status"`
 
-	// If a node supports multiple sub-networks, their statuses should be returned in this array. 
+	// If a node supports multiple sub-networks, their statuses should be returned in this array.
 	SubNetworkStatus []SubNetworkStatus `json:"sub_network_status,omitempty"`
 
 	Version Version `json:"version"`

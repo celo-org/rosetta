@@ -10,9 +10,8 @@
 package api
 
 type AccountBalanceResponse struct {
-
 	BlockIdentifier BlockIdentifier `json:"block_identifier"`
 
-	// A GetAccountBalanceResponse may include multiple uniquely-identified balances. For example, the balance of an account on each shard could be returned or the balance of an account on each ERC-20 contract. 
+	// A GetAccountBalanceResponse may include multiple uniquely-identified balances. For example, the balance of an account on each shard could be returned or the balance of an account on each ERC-20 contract.
 	Balances []Balance `json:"balances"`
 }

@@ -10,7 +10,6 @@
 package api
 
 type AccountBalanceRequest struct {
-
 	NetworkIdentifier NetworkIdentifier `json:"network_identifier"`
 
 	AccountIdentifier AccountIdentifier `json:"account_identifier"`

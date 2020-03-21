@@ -10,7 +10,6 @@
 package api
 
 type NetworkStatus struct {
-
 	NetworkIdentifier PartialNetworkIdentifier `json:"network_identifier"`
 
 	NetworkInformation NetworkInformation `json:"network_information"`

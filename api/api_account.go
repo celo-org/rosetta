@@ -22,12 +22,12 @@ type AccountApiController struct {
 
 // NewAccountApiController creates a default api controller
 func NewAccountApiController(s AccountApiServicer) Router {
-	return &AccountApiController{ service: s }
+	return &AccountApiController{service: s}
 }
 
 // Routes returns all of the api route for the AccountApiController
 func (c *AccountApiController) Routes() Routes {
-	return Routes{ 
+	return Routes{
 		{
 			"AccountBalance",
 			strings.ToUpper("Post"),
@@ -38,18 +38,18 @@ func (c *AccountApiController) Routes() Routes {
 }
 
 // AccountBalance - Get an Account Balance
-func (c *AccountApiController) AccountBalance(w http.ResponseWriter, r *http.Request) { 
+func (c *AccountApiController) AccountBalance(w http.ResponseWriter, r *http.Request) {
 	accountBalanceRequest := &AccountBalanceRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&accountBalanceRequest); err != nil {
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	result, err := c.service.AccountBalance(*accountBalanceRequest)
 	if err != nil {
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	EncodeJSONResponse(result, nil, w)
 }

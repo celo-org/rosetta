@@ -28,13 +28,13 @@ func main() {
 		log.Fatalf("Error with TransactionByHash, %s\n", err)
 	}
 
-	fmt.Printf("tx: %v %s\n", tx, pending)
+	fmt.Printf("tx: %v %t\n", tx, pending)
 
 	isListening, err := client.NetworkListening(ctx)
 	if err != nil {
 		log.Fatalf("Error with IsListening, %s", err)
 	}
-	fmt.Printf("IsListening: %s\n", isListening)
+	fmt.Printf("IsListening: %t\n", isListening)
 
 	common.HexToAddress("0x21e6fc92f93c8a1bb41e2be64b4e1f88a54d3576")
 

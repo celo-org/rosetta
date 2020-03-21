@@ -10,6 +10,5 @@
 package api
 
 type NetworkStatusRequest struct {
-
 	Metadata map[string]interface{} `json:"metadata,omitempty"`
 }

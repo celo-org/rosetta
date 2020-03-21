@@ -10,6 +10,5 @@
 package api
 
 type MempoolResponse struct {
-
 	TransactionIdentifiers []TransactionIdentifier `json:"transaction_identifiers"`
 }

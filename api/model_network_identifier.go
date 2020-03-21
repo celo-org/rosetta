@@ -9,9 +9,8 @@
 
 package api
 
-// NetworkIdentifier - The `network_identifier` specifies which network a particular object is associated with. 
+// NetworkIdentifier - The `network_identifier` specifies which network a particular object is associated with.
 type NetworkIdentifier struct {
-
 	Blockchain string `json:"blockchain"`
 
 	Network string `json:"network"`

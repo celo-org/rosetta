@@ -9,9 +9,8 @@
 
 package api
 
-// BlockIdentifier - The `block_identifier` uniquely identifies a block in a particular network. 
+// BlockIdentifier - The `block_identifier` uniquely identifies a block in a particular network.
 type BlockIdentifier struct {
-
 	Index int64 `json:"index"`
 
 	Hash string `json:"hash"`

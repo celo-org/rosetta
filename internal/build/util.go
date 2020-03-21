@@ -41,4 +41,3 @@ func MustRun(cmd *exec.Cmd) {
 func MustRunCommand(cmd string, args ...string) {
 	MustRun(exec.Command(cmd, args...))
 }
-

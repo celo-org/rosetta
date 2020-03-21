@@ -10,7 +10,6 @@
 package api
 
 type MempoolTransactionResponse struct {
-
 	Transaction Transaction `json:"transaction"`
 
 	Metadata map[string]interface{} `json:"metadata,omitempty"`

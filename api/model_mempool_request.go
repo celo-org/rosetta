@@ -10,6 +10,5 @@
 package api
 
 type MempoolRequest struct {
-
 	NetworkIdentifier NetworkIdentifier `json:"network_identifier"`
 }

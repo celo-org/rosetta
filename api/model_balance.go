@@ -10,12 +10,11 @@
 package api
 
 type Balance struct {
-
 	AccountIdentifier AccountIdentifier `json:"account_identifier"`
 
-	// A single account may have a balance in multiple currencies. 
+	// A single account may have a balance in multiple currencies.
 	Amounts []Amount `json:"amounts"`
 
-	// Account-based blockchains that utilize a nonce or sequence number should include that number in the metadata. This number could be unique to the identifier or global across the account address. 
+	// Account-based blockchains that utilize a nonce or sequence number should include that number in the metadata. This number could be unique to the identifier or global across the account address.
 	Metadata map[string]interface{} `json:"metadata,omitempty"`
 }

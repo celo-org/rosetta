@@ -454,7 +454,7 @@
         }
       },
       "PartialNetworkIdentifier": {
-        "description": "The `partial_network_identifier` specifies which network a particular object is associated with\n(exculding the `sub_network_identifier`). This identifier is used exclusively in `/network/status`.\n",
+        "description": "The `partial_network_identifier` specifies which network a particular object is associated with\n(excluding the `sub_network_identifier`). This identifier is used exclusively in `/network/status`.\n",
         "type": "object",
         "required": [
           "blockchain",
@@ -734,7 +734,7 @@
         ],
         "properties": {
           "symbol": {
-            "description": "Cannonical symbol associated with a currency.\n",
+            "description": "Canonical symbol associated with a currency.\n",
             "type": "string",
             "example": "BTC"
           },
@@ -808,7 +808,7 @@
             "example": "1.2.3"
           },
           "node_version": {
-            "description": "The `node_version` is the cannonical version of the node\nruntime. This can help clients manage deployments.\n",
+            "description": "The `node_version` is the canonical version of the node\nruntime. This can help clients manage deployments.\n",
             "type": "string",
             "example": "1.0.2"
           },

@@ -14,7 +14,7 @@ import (
 )
 
 // BlockApiService is a service that implents the logic for the BlockApiServicer
-// This service should implement the business logic for every endpoint for the BlockApi API. 
+// This service should implement the business logic for every endpoint for the BlockApi API.
 // Include any external packages or services that will be required by this service.
 type BlockApiService struct {
 }

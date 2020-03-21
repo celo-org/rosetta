@@ -47,11 +47,13 @@ gen-rpc:
 ifeq ("$(OPENAPIGEN_exists)","")
 	$(error "No openapi-generator in PATH, consult https://github.com/OpenAPITools/openapi-generator#1---installation")
 else
+	GO_POST_PROCESS_FILE="$(GOPATH)/bin/goimports -w" \
 	openapi-generator generate -g go-server \
-    --input-spec swagger.json \
-    --git-user-id $(GITHUB_ORG) --git-repo-id $(GITHUB_REPO) \
-    --package-name "api" --additional-properties "sourceFolder=api" \
-    --template-dir ./templates
+	--input-spec swagger.json \
+	--git-user-id $(GITHUB_ORG) --git-repo-id $(GITHUB_REPO) \
+	--package-name "api" --additional-properties "sourceFolder=api" \
+	--template-dir ./templates \
+	--enable-post-process-file
 endif
 
 test: all

@@ -582,7 +582,7 @@ components:
     PartialNetworkIdentifier:
       description: |
         The `partial_network_identifier` specifies which network a particular object is associated with
-        (exculding the `sub_network_identifier`). This identifier is used exclusively in `/network/status`.
+        (excluding the `sub_network_identifier`). This identifier is used exclusively in `/network/status`.
       example:
         blockchain: bitcoin
         network: mainnet
@@ -1087,7 +1087,7 @@ components:
       properties:
         symbol:
           description: |
-            Cannonical symbol associated with a currency.
+            Canonical symbol associated with a currency.
           example: BTC
           type: string
         decimals:
@@ -1188,7 +1188,7 @@ components:
           type: string
         node_version:
           description: |
-            The `node_version` is the cannonical version of the node
+            The `node_version` is the canonical version of the node
             runtime. This can help clients manage deployments.
           example: 1.0.2
           type: string

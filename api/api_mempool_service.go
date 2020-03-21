@@ -14,7 +14,7 @@ import (
 )
 
 // MempoolApiService is a service that implents the logic for the MempoolApiServicer
-// This service should implement the business logic for every endpoint for the MempoolApi API. 
+// This service should implement the business logic for every endpoint for the MempoolApi API.
 // Include any external packages or services that will be required by this service.
 type MempoolApiService struct {
 }

@@ -10,6 +10,5 @@
 package api
 
 type BlockTransactionResponse struct {
-
 	Transaction Transaction `json:"transaction"`
 }

@@ -10,7 +10,6 @@
 package api
 
 type TransactionSubmitResponse struct {
-
 	TransactionIdentifier TransactionIdentifier `json:"transaction_identifier"`
 
 	// Network-specific transaction submission status

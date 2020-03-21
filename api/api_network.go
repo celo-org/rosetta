@@ -22,12 +22,12 @@ type NetworkApiController struct {
 
 // NewNetworkApiController creates a default api controller
 func NewNetworkApiController(s NetworkApiServicer) Router {
-	return &NetworkApiController{ service: s }
+	return &NetworkApiController{service: s}
 }
 
 // Routes returns all of the api route for the NetworkApiController
 func (c *NetworkApiController) Routes() Routes {
-	return Routes{ 
+	return Routes{
 		{
 			"NetworkStatus",
 			strings.ToUpper("Post"),
@@ -38,18 +38,18 @@ func (c *NetworkApiController) Routes() Routes {
 }
 
 // NetworkStatus - Get Network Status
-func (c *NetworkApiController) NetworkStatus(w http.ResponseWriter, r *http.Request) { 
+func (c *NetworkApiController) NetworkStatus(w http.ResponseWriter, r *http.Request) {
 	networkStatusRequest := &NetworkStatusRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&networkStatusRequest); err != nil {
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	result, err := c.service.NetworkStatus(*networkStatusRequest)
 	if err != nil {
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	EncodeJSONResponse(result, nil, w)
 }

@@ -10,6 +10,5 @@
 package api
 
 type TransactionSubmitRequest struct {
-
 	SignedTransaction string `json:"signed_transaction"`
 }

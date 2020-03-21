@@ -9,9 +9,8 @@
 
 package api
 
-// PartialNetworkIdentifier - The `partial_network_identifier` specifies which network a particular object is associated with (exculding the `sub_network_identifier`). This identifier is used exclusively in `/network/status`. 
+// PartialNetworkIdentifier - The `partial_network_identifier` specifies which network a particular object is associated with (excluding the `sub_network_identifier`). This identifier is used exclusively in `/network/status`.
 type PartialNetworkIdentifier struct {
-
 	Blockchain string `json:"blockchain"`
 
 	Network string `json:"network"`

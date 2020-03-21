@@ -10,7 +10,6 @@
 package api
 
 type MempoolTransactionRequest struct {
-
 	NetworkIdentifier NetworkIdentifier `json:"network_identifier"`
 
 	TransactionIdentifier TransactionIdentifier `json:"transaction_identifier"`

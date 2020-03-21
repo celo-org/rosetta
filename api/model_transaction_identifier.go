@@ -9,8 +9,7 @@
 
 package api
 
-// TransactionIdentifier - The `transaction_identifier` uniquely identifies a transaction in a particular network and block or in the mempool. 
+// TransactionIdentifier - The `transaction_identifier` uniquely identifies a transaction in a particular network and block or in the mempool.
 type TransactionIdentifier struct {
-
 	Hash string `json:"hash"`
 }

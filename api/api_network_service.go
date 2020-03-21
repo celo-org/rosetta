@@ -14,7 +14,7 @@ import (
 )
 
 // NetworkApiService is a service that implents the logic for the NetworkApiServicer
-// This service should implement the business logic for every endpoint for the NetworkApi API. 
+// This service should implement the business logic for every endpoint for the NetworkApi API.
 // Include any external packages or services that will be required by this service.
 type NetworkApiService struct {
 }

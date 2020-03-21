@@ -9,15 +9,15 @@
 
 package api
 
-// Options - The `options` object contains the `methods`, `operation_statuses`, and `operation_types` supported by this Rosetta implementation.  It is important to keep these updated across changes because they are used by clients to validate your implementation (ex: are there any unexpected `operation_statuses`). 
+// Options - The `options` object contains the `methods`, `operation_statuses`, and `operation_types` supported by this Rosetta implementation.  It is important to keep these updated across changes because they are used by clients to validate your implementation (ex: are there any unexpected `operation_statuses`).
 type Options struct {
 
-	// All methods that this implementation supports. 
+	// All methods that this implementation supports.
 	Methods []string `json:"methods"`
 
-	// All `Operation` status that this implementation supports. Any status that is returnede during parsing that is not listed here could cause consumers to error. 
+	// All `Operation` status that this implementation supports. Any status that is returnede during parsing that is not listed here could cause consumers to error.
 	OperationStatuses []string `json:"operation_statuses"`
 
-	// All `Operation` types that this implementation supports. Any type that is returned during parsing that is not listed here could cause consumers to error. 
+	// All `Operation` types that this implementation supports. Any type that is returned during parsing that is not listed here could cause consumers to error.
 	OperationTypes []string `json:"operation_types"`
 }

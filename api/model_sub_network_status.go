@@ -10,7 +10,6 @@
 package api
 
 type SubNetworkStatus struct {
-
 	SubNetworkIdentifier SubNetworkIdentifier `json:"sub_network_identifier"`
 
 	NetworkInformation NetworkInformation `json:"network_information"`

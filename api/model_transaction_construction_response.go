@@ -10,7 +10,6 @@
 package api
 
 type TransactionConstructionResponse struct {
-
 	SuggestedFee Amount `json:"suggested_fee"`
 
 	Metadata map[string]interface{} `json:"metadata,omitempty"`

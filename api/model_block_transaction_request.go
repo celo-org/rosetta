@@ -10,7 +10,6 @@
 package api
 
 type BlockTransactionRequest struct {
-
 	NetworkIdentifier NetworkIdentifier `json:"network_identifier"`
 
 	BlockIdentifier BlockIdentifier `json:"block_identifier"`
