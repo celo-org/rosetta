@@ -48,12 +48,8 @@ docker run --rm -it api
 
 ## How to generate RPC code
 
-Copy `swagger.json` to a folder, and then run inside that folder: 
-```
-alias openapi-generator='docker run --rm  -v ${PWD}:/local openapitools/openapi-generator-cli'
-openapi-generator generate -g go-server -i /local/swagger.json -o /local/generated \
-  --additional-properties="packageName=api,sourceFolder=api" \
-  --git-user-id=celo-org --git-repo-id=rosetta
-```
+Customize source generation in `templates` directory
 
-Then generated code will be at `generated` folder. Copy whatever you need to the repo
+Adjust `scripts/env.sh` as necessary.
+
+Use `./scripts/swagger_generate.sh`
