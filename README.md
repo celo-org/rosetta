@@ -27,6 +27,23 @@ This will compile bls-zexe rust library that is required for celo-blockchain
 
 On subsequent builds, you can just run `go build ./...`
 
+## How to generate contracts code
+
+On root folder run:
+```shell
+go run cmd/gen-contracts/main.go -gcelo ../geth -monorepo ../celo-monorepo
+```
+
+Replacing `../geth` and `../celo-monorepo` as you need
+
+## How to generate RPC code
+
+Customize source generation in `templates` directory
+
+Adjust `scripts/env.sh` as necessary.
+
+Use `./scripts/swagger_generate.sh`
+
 ### Running the server
 To run the server, follow these simple steps:
 
@@ -43,13 +60,3 @@ Once image is built use
 ```
 docker run --rm -it api 
 ```
-
-
-
-## How to generate RPC code
-
-Customize source generation in `templates` directory
-
-Adjust `scripts/env.sh` as necessary.
-
-Use `./scripts/swagger_generate.sh`

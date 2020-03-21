@@ -7,9 +7,12 @@
 
 GO ?= latest
 BLS_RS_PATH ?= external/bls-zexe
+CELO_BLOCKCHAIN_PATH?=../celo-blockchain
+CELO_MONOREPO_PATH?=../celo-monorepo
 
 CARGO_exists := $(shell command -v cargo 2> /dev/null)
 LSB_exists := $(shell command -v lsb_release 2> /dev/null)
+GOLANGCI_exists := $(shell command -v golangci-lint 2> /dev/null)
 
 ifdef CARGO_exists
 .PHONY: $(BLS_RS_PATH)/target/release/libepoch_snark.a
@@ -23,6 +26,7 @@ else
 endif
 
 all: bls-zexe
+	go run cmd/gen-contracts/main.go -gcelo $(CELO_BLOCKCHAIN_PATH) -monorepo $(CELO_MONOREPO_PATH)
 	go build ./...
 
 bls-zexe: $(BLS_RS_PATH)/target/release/libepoch_snark.a
@@ -39,7 +43,11 @@ test: all
 	build/env.sh go run build/ci.go test $(TEST_FLAGS)
 
 lint: ## Run linters.
-	build/env.sh go run build/ci.go lint
+ifeq ("$(GOLANGCI_exists)","")
+	$(error "No golangci in PATH, consult https://github.com/golangci/golangci-lint#install")
+else
+	golangci-lint run -c .golangci.yml
+endif
 
 clean-geth:
 	go clean -cache
