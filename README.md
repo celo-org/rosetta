@@ -40,9 +40,10 @@ Replacing `../geth` and `../celo-monorepo` as you need
 
 Customize source generation in `templates` directory
 
-Adjust `scripts/env.sh` as necessary.
-
-Use `./scripts/swagger_generate.sh`
+Run
+```
+make gen-rpc
+```
 
 ### Running the server
 To run the server, follow these simple steps:

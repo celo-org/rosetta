@@ -9,14 +9,19 @@ GO ?= latest
 BLS_RS_PATH ?= external/bls-zexe
 CELO_BLOCKCHAIN_PATH?=../celo-blockchain
 CELO_MONOREPO_PATH?=../celo-monorepo
+GITHUB_ORG?=celo-org
+GITHUB_REPO?=rosetta
 
 CARGO_exists := $(shell command -v cargo 2> /dev/null)
 LSB_exists := $(shell command -v lsb_release 2> /dev/null)
 GOLANGCI_exists := $(shell command -v golangci-lint 2> /dev/null)
+OPENAPIGEN_exists := $(shell command -v openapi-generator 2> /dev/null)
 
-ifdef CARGO_exists
-.PHONY: $(BLS_RS_PATH)/target/release/libepoch_snark.a
-endif
+.PHONY: 
+	gen-rpc 
+	ifdef CARGO_exists
+		$(BLS_RS_PATH)/target/release/libepoch_snark.a
+	endif
 
 OS :=
 ifeq ("$(LSB_exists)","")
@@ -38,6 +43,16 @@ else
 	cd $(BLS_RS_PATH) && cargo build --release
 endif
 
+gen-rpc:
+ifeq ("$(OPENAPIGEN_exists)","")
+	$(error "No openapi-generator in PATH, consult https://github.com/OpenAPITools/openapi-generator#1---installation")
+else
+	openapi-generator generate -g go-server \
+    --input-spec swagger.json \
+    --git-user-id $(GITHUB_ORG) --git-repo-id $(GITHUB_REPO) \
+    --package-name "api" --additional-properties "sourceFolder=api" \
+    --template-dir ./templates
+endif
 
 test: all
 	build/env.sh go run build/ci.go test $(TEST_FLAGS)
