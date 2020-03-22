@@ -10,23 +10,123 @@
 package api
 
 import (
-	"errors"
+	"context"
+
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/p2p"
+	"github.com/ethereum/go-ethereum/rpc"
 )
 
 // NetworkApiService is a service that implents the logic for the NetworkApiServicer
 // This service should implement the business logic for every endpoint for the NetworkApi API.
 // Include any external packages or services that will be required by this service.
 type NetworkApiService struct {
+	client *rpc.Client
 }
 
 // NewNetworkApiService creates a default api service
-func NewNetworkApiService() NetworkApiServicer {
-	return &NetworkApiService{}
+func NewNetworkApiService(_client *rpc.Client) NetworkApiServicer {
+	return &NetworkApiService{_client}
+}
+
+func (s *NetworkApiService) getPeers(ctx context.Context) (*[]Peer, error) {
+	var peerInfos []p2p.PeerInfo
+	err := s.client.CallContext(ctx, &peerInfos, "admin_peers")
+	if err != nil {
+		return &[]Peer{}, err
+	}
+
+	peers := make([]Peer, len(peerInfos))
+	for i, peerInfo := range peerInfos {
+		peers[i].PeerId = peerInfo.ID
+	}
+	return &peers, err
+}
+
+func (s *NetworkApiService) getBlockHeader(ctx context.Context, target string) (*types.Header, error) {
+	var head *types.Header
+	err := s.client.CallContext(ctx, &head, "eth_getBlockByNumber", target, false)
+	if err == nil && head == nil {
+		err = ethereum.NotFound
+	}
+	return head, err
+}
+
+func blockIdentifierFromHeader(header *types.Header) BlockIdentifier {
+	return BlockIdentifier{
+		Index: header.Number.Int64(),
+		Hash:  header.Hash().Hex(),
+	}
+}
+
+func buildErrorResponse(code int32, err error) Error {
+	return Error{
+		Code:    code,
+		Message: err.Error(),
+	}
 }
 
 // NetworkStatus - Get Network Status
 func (s *NetworkApiService) NetworkStatus(networkStatusRequest NetworkStatusRequest) (interface{}, error) {
-	// TODO - update NetworkStatus with the required logic for this service method.
-	// Add api_network_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-	return nil, errors.New("service method 'NetworkStatus' not implemented")
+	ctx := context.Background()
+
+	var networkId string
+	if err := s.client.CallContext(ctx, &networkId, "net_version"); err != nil {
+		return buildErrorResponse(1, err), nil
+	}
+
+	latestHeader, err := s.getBlockHeader(ctx, "latest")
+	if err != nil {
+		return buildErrorResponse(2, err), nil
+	}
+
+	genesisHeader, err := s.getBlockHeader(ctx, "earliest")
+	if err != nil {
+		return buildErrorResponse(3, err), nil
+	}
+
+	modules, err := s.client.SupportedModules()
+	if err != nil {
+		return buildErrorResponse(4, err), nil
+	}
+
+	var peers *[]Peer
+	if _, ok := modules["admin"]; ok {
+		peers, err = s.getPeers(ctx)
+		if err != nil {
+			return buildErrorResponse(5, err), nil
+		}
+	} else {
+		peers = &[]Peer{}
+	}
+
+	response := NetworkStatusResponse{
+		NetworkStatus: NetworkStatus{
+			NetworkIdentifier: PartialNetworkIdentifier{
+				Blockchain: BlockchainName,
+				Network:    networkId,
+			},
+			NetworkInformation: NetworkInformation{
+				CurrentBlockIdentifier: blockIdentifierFromHeader(latestHeader),
+				CurrentBlockTimestamp:  int64(latestHeader.Time),
+				GenesisBlockIdentifier: blockIdentifierFromHeader(genesisHeader),
+				Peers:                  *peers,
+			},
+		},
+		SubNetworkStatus: []SubNetworkStatus{},
+		Version: Version{
+			RosettaVersion:    RosettaVersion,
+			NodeVersion:       NodeVersion,
+			MiddlewareVersion: MiddlewareVersion,
+		},
+		// TODO: implement
+		Options: Options{
+			Methods:           []string{},
+			OperationStatuses: []string{},
+			OperationTypes:    []string{},
+		},
+		Metadata: map[string]interface{}{},
+	}
+	return response, nil
 }

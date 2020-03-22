@@ -14,10 +14,16 @@ import (
 	"net/http"
 
 	api "github.com/celo-org/rosetta/api"
+	"github.com/ethereum/go-ethereum/rpc"
 )
 
 func main() {
 	log.Printf("Server started")
+
+	rpcClient, err := rpc.Dial("https://alfajores-forno.celo-testnet.org/")
+	if err != nil {
+		log.Fatalf("Can't connect to node, %s", err)
+	}
 
 	AccountApiService := api.NewAccountApiService()
 	AccountApiController := api.NewAccountApiController(AccountApiService)
@@ -31,7 +37,7 @@ func main() {
 	MempoolApiService := api.NewMempoolApiService()
 	MempoolApiController := api.NewMempoolApiController(MempoolApiService)
 
-	NetworkApiService := api.NewNetworkApiService()
+	NetworkApiService := api.NewNetworkApiService(rpcClient)
 	NetworkApiController := api.NewNetworkApiController(NetworkApiService)
 
 	router := api.NewRouter(AccountApiController, BlockApiController, ConstructionApiController, MempoolApiController, NetworkApiController)

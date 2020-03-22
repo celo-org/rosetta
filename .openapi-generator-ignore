@@ -5,6 +5,9 @@
 # The patterns follow closely to .gitignore or .dockerignore.
 
 api/api_*_service.go
+main.go
+
 go.mod
 go.sum
+
 Dockerfile
