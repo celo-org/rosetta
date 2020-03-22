@@ -1,4 +1,4 @@
-package debugclient
+package debug
 
 import (
 	"context"
@@ -9,17 +9,17 @@ import (
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
-// Client defines typed wrappers for the Debug RPC API.
-type Client struct {
+// DebugClient defines typed wrappers for the Debug RPC API.
+type DebugClient struct {
 	c *rpc.Client
 }
 
 // Dial connects a client to the given URL.
-func Dial(rawurl string) (*Client, error) {
+func Dial(rawurl string) (*DebugClient, error) {
 	return DialContext(context.Background(), rawurl)
 }
 
-func DialContext(ctx context.Context, rawurl string) (*Client, error) {
+func DialContext(ctx context.Context, rawurl string) (*DebugClient, error) {
 	c, err := rpc.DialContext(ctx, rawurl)
 	if err != nil {
 		return nil, err
@@ -28,18 +28,18 @@ func DialContext(ctx context.Context, rawurl string) (*Client, error) {
 }
 
 // NewClient creates a client that uses the given RPC client.
-func NewClient(c *rpc.Client) *Client {
-	return &Client{c}
+func NewClient(c *rpc.Client) *DebugClient {
+	return &DebugClient{c}
 }
 
-func (ec *Client) Close() {
-	ec.c.Close()
+func (dc *DebugClient) Close() {
+	dc.c.Close()
 }
 
 // TraceTransactions performs a tracer over a transaction. Can use a custom tracer or default one
 // result type depends on the tracer, and it's the caller reponsability to use the proper one
-func (ec *Client) TraceTransaction(ctx context.Context, result interface{}, txhash common.Hash, traceConfig *eth.TraceConfig) error {
-	return ec.c.CallContext(ctx, result, "debug_traceTransaction", txhash, traceConfig)
+func (dc *DebugClient) TraceTransaction(ctx context.Context, result interface{}, txhash common.Hash, traceConfig *eth.TraceConfig) error {
+	return dc.c.CallContext(ctx, result, "debug_traceTransaction", txhash, traceConfig)
 }
 
 // ReadTracer reads a tracer file from the filesystem

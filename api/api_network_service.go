@@ -11,10 +11,12 @@ package api
 
 import (
 	"context"
+	"math/big"
 
+	"github.com/celo-org/rosetta/celo/client/admin"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/p2p"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
@@ -31,8 +33,8 @@ func NewNetworkApiService(_client *rpc.Client) NetworkApiServicer {
 }
 
 func (s *NetworkApiService) getPeers(ctx context.Context) (*[]Peer, error) {
-	var peerInfos []p2p.PeerInfo
-	err := s.client.CallContext(ctx, &peerInfos, "admin_peers")
+	adminClient := admin.NewClient(s.client)
+	err, peerInfos := adminClient.Peers(ctx)
 	if err != nil {
 		return &[]Peer{}, err
 	}
@@ -71,17 +73,19 @@ func buildErrorResponse(code int32, err error) Error {
 func (s *NetworkApiService) NetworkStatus(networkStatusRequest NetworkStatusRequest) (interface{}, error) {
 	ctx := context.Background()
 
+	ethClient := ethclient.NewClient(s.client)
+
 	var networkId string
 	if err := s.client.CallContext(ctx, &networkId, "net_version"); err != nil {
 		return buildErrorResponse(1, err), nil
 	}
 
-	latestHeader, err := s.getBlockHeader(ctx, "latest")
+	latestHeader, err := ethClient.HeaderByNumber(nil)
 	if err != nil {
 		return buildErrorResponse(2, err), nil
 	}
 
-	genesisHeader, err := s.getBlockHeader(ctx, "earliest")
+	genesisHeader, err := ethClient.HeaderByNumber(big.NewInt(0))
 	if err != nil {
 		return buildErrorResponse(3, err), nil
 	}
