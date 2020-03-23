@@ -10,23 +10,94 @@
 package api
 
 import (
-	"errors"
+	"context"
+
+	"github.com/celo-org/rosetta/contract"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	eth "github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/rpc"
 )
 
 // AccountApiService is a service that implents the logic for the AccountApiServicer
 // This service should implement the business logic for every endpoint for the AccountApi API.
 // Include any external packages or services that will be required by this service.
 type AccountApiService struct {
+	ethClient *eth.Client
 }
 
 // NewAccountApiService creates a default api service
-func NewAccountApiService() AccountApiServicer {
-	return &AccountApiService{}
+func NewAccountApiService(rpcClient *rpc.Client) AccountApiServicer {
+	return &AccountApiService{
+		ethClient: eth.NewClient(rpcClient),
+	}
 }
 
 // AccountBalance - Get an Account Balance
 func (s *AccountApiService) AccountBalance(accountBalanceRequest AccountBalanceRequest) (interface{}, error) {
-	// TODO - update AccountBalance with the required logic for this service method.
-	// Add api_account_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-	return nil, errors.New("service method 'AccountBalance' not implemented")
+	address := common.HexToAddress(accountBalanceRequest.AccountIdentifier.Address)
+
+	ctx := context.Background()
+	latestHeader, err := s.ethClient.HeaderByNumber(ctx, nil) // nil == latest
+
+	goldBalance, err := s.ethClient.BalanceAt(ctx, address, latestHeader.Number)
+	if err != nil {
+		return BuildErrorResponse(1, err), nil
+	}
+
+	registry, err := contract.NewRegistry(RegistrySmartContractAddress, s.ethClient)
+	if err != nil {
+		return BuildErrorResponse(2, err), nil
+	}
+
+	lockedGoldAddr, err := registry.GetAddressForString(&bind.CallOpts{
+		BlockNumber: latestHeader.Number,
+		Context:     ctx,
+	}, LockedGoldId)
+	if err != nil {
+		return BuildErrorResponse(3, err), nil
+	}
+
+	lockedGold, err := contract.NewLockedGold(lockedGoldAddr, s.ethClient)
+	if err != nil {
+		return BuildErrorResponse(4, err), nil
+	}
+
+	lockedGoldBalance, err := lockedGold.GetAccountTotalLockedGold(&bind.CallOpts{
+		BlockNumber: latestHeader.Number,
+		Context:     ctx,
+	}, address)
+	if err != nil {
+		return BuildErrorResponse(5, err), nil
+	}
+
+	response := AccountBalanceResponse{
+		BlockIdentifier: BlockIdentifierFromHeader(latestHeader),
+		Balances: []Balance{
+			Balance{
+				AccountIdentifier: accountBalanceRequest.AccountIdentifier,
+				Amounts: []Amount{
+					Amount{
+						Value:    goldBalance.String(),
+						Currency: CeloGold,
+					},
+				},
+			},
+			Balance{
+				AccountIdentifier: AccountIdentifier{
+					Address: lockedGoldAddr.String(),
+					SubAccount: SubAccountIdentifier{
+						SubAccount: accountBalanceRequest.AccountIdentifier.Address,
+					},
+				},
+				Amounts: []Amount{
+					Amount{
+						Value:    lockedGoldBalance.String(),
+						Currency: CeloGold,
+					},
+				},
+			},
+		},
+	}
+	return response, nil
 }

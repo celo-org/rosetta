@@ -11,14 +11,11 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"math/big"
 
 	admin "github.com/celo-org/rosetta/celo/client/admin"
 	network "github.com/celo-org/rosetta/celo/client/network"
-	"github.com/ethereum/go-ethereum/core/types"
 	eth "github.com/ethereum/go-ethereum/ethclient"
-	"github.com/ethereum/go-ethereum/p2p"
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
@@ -40,71 +37,41 @@ func NewNetworkApiService(rpcClient *rpc.Client) NetworkApiServicer {
 	}
 }
 
-func blockIdentifierFromHeader(header *types.Header) BlockIdentifier {
-	return BlockIdentifier{
-		Index: header.Number.Int64(),
-		Hash:  header.Hash().Hex(),
-	}
-}
-
-func networkNameFromId(id *big.Int) string {
-	uid := id.Uint64()
-	if name, ok := ChainIdToNetwork[uid]; ok {
-		return name
-	}
-	return fmt.Sprintf("unknown %d", uid)
-}
-
-func peersFromInfo(peersInfo *[]p2p.PeerInfo) []Peer {
-	peers := make([]Peer, len(*peersInfo))
-	for i, peerInfo := range *peersInfo {
-		peers[i].PeerId = peerInfo.ID
-	}
-	return peers
-}
-
-func buildErrorResponse(code int32, err error) Error {
-	return Error{
-		Code:    code,
-		Message: err.Error(),
-	}
-}
-
 // NetworkStatus - Get Network Status
 func (s *NetworkApiService) NetworkStatus(networkStatusRequest NetworkStatusRequest) (interface{}, error) {
 	ctx := context.Background()
 
 	networkId, err := s.networkClient.NetworkId(ctx)
 	if err != nil {
-		return buildErrorResponse(1, err), nil
+		return BuildErrorResponse(1, err), nil
 	}
 
 	latestHeader, err := s.ethClient.HeaderByNumber(ctx, nil) // nil == latest
 	if err != nil {
-		return buildErrorResponse(2, err), nil
+		return BuildErrorResponse(2, err), nil
 	}
 
 	genesisHeader, err := s.ethClient.HeaderByNumber(ctx, big.NewInt(0)) // 0 == genesis
 	if err != nil {
-		return buildErrorResponse(3, err), nil
+		return BuildErrorResponse(3, err), nil
 	}
 
 	peersInfo, err := s.adminClient.Peers(ctx)
 	if err != nil {
-		return buildErrorResponse(4, err), nil
+		return BuildErrorResponse(4, err), nil
 	}
 
 	response := NetworkStatusResponse{
 		NetworkStatus: NetworkStatus{
 			NetworkIdentifier: PartialNetworkIdentifier{
 				Blockchain: BlockchainName,
-				Network:    networkNameFromId(networkId),
+				Network:    NetworkNameFromId(networkId),
 			},
 			NetworkInformation: NetworkInformation{
-				CurrentBlockIdentifier: blockIdentifierFromHeader(latestHeader),
+				CurrentBlockIdentifier: BlockIdentifierFromHeader(latestHeader),
 				CurrentBlockTimestamp:  int64(latestHeader.Time),
-				GenesisBlockIdentifier: blockIdentifierFromHeader(genesisHeader),
-				Peers:                  peersFromInfo(peersInfo),
+				GenesisBlockIdentifier: BlockIdentifierFromHeader(genesisHeader),
+				Peers:                  PeersFromInfo(peersInfo),
 			},
 		},
 		SubNetworkStatus: []SubNetworkStatus{},

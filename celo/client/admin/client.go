@@ -21,7 +21,7 @@ func (ac *AdminClient) Peers(ctx context.Context) (*[]p2p.PeerInfo, error) {
 	var peerInfos []p2p.PeerInfo
 	err := ac.c.CallContext(ctx, &peerInfos, "admin_peers")
 	if err != nil {
-		return &[]p2p.PeerInfo{}, err
+		return nil, err
 	}
 	return &peerInfos, nil
 }

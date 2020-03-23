@@ -25,7 +25,7 @@ func main() {
 		log.Fatalf("Can't connect to node, %s", err)
 	}
 
-	AccountApiService := api.NewAccountApiService()
+	AccountApiService := api.NewAccountApiService(rpcClient)
 	AccountApiController := api.NewAccountApiController(AccountApiService)
 
 	BlockApiService := api.NewBlockApiService()

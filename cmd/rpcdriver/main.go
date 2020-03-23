@@ -3,10 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/celo-org/rosetta/celo/client/debug"
 	"log"
 	"os"
 	"text/tabwriter"
+
+	"github.com/celo-org/rosetta/celo/client/debug"
 
 	"github.com/celo-org/rosetta/contract"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -49,7 +50,6 @@ func main() {
 	// if err != nil {
 	// 	log.Fatalf("Error %s", err)
 	// }
-
 
 	// printRegistryUpdated(registry)
 	// printGoldLocked(lockedGold)
