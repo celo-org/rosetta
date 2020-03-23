@@ -14,26 +14,9 @@ type DebugClient struct {
 	c *rpc.Client
 }
 
-// Dial connects a client to the given URL.
-func Dial(rawurl string) (*DebugClient, error) {
-	return DialContext(context.Background(), rawurl)
-}
-
-func DialContext(ctx context.Context, rawurl string) (*DebugClient, error) {
-	c, err := rpc.DialContext(ctx, rawurl)
-	if err != nil {
-		return nil, err
-	}
-	return NewClient(c), nil
-}
-
 // NewClient creates a client that uses the given RPC client.
 func NewClient(c *rpc.Client) *DebugClient {
 	return &DebugClient{c}
-}
-
-func (dc *DebugClient) Close() {
-	dc.c.Close()
 }
 
 // TraceTransactions performs a tracer over a transaction. Can use a custom tracer or default one
