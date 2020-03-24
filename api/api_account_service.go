@@ -74,26 +74,27 @@ func (s *AccountApiService) AccountBalance(accountBalanceRequest AccountBalanceR
 		return BuildErrorResponse(5, err), nil
 	}
 
-	stableTokenAddr, err := registry.GetAddressForString(&bind.CallOpts{
-		BlockNumber: latestHeader.Number,
-		Context:     ctx,
-	}, StableTokenRegistryId)
-	if err != nil {
-		return BuildErrorResponse(6, err), nil
-	}
+	// STABLETOKEN DISABLED FOR v1.0.0
+	// stableTokenAddr, err := registry.GetAddressForString(&bind.CallOpts{
+	// 	BlockNumber: latestHeader.Number,
+	// 	Context:     ctx,
+	// }, StableTokenRegistryId)
+	// if err != nil {
+	// 	return BuildErrorResponse(6, err), nil
+	// }
 
-	stableToken, err := contract.NewStableToken(stableTokenAddr, s.ethClient)
-	if err != nil {
-		return BuildErrorResponse(7, err), nil
-	}
+	// stableToken, err := contract.NewStableToken(stableTokenAddr, s.ethClient)
+	// if err != nil {
+	// 	return BuildErrorResponse(7, err), nil
+	// }
 
-	stableTokenBalance, err := stableToken.BalanceOf(&bind.CallOpts{
-		BlockNumber: latestHeader.Number,
-		Context:     ctx,
-	}, address)
-	if err != nil {
-		return BuildErrorResponse(8, err), nil
-	}
+	// stableTokenBalance, err := stableToken.BalanceOf(&bind.CallOpts{
+	// 	BlockNumber: latestHeader.Number,
+	// 	Context:     ctx,
+	// }, address)
+	// if err != nil {
+	// 	return BuildErrorResponse(8, err), nil
+	// }
 
 	response := AccountBalanceResponse{
 		BlockIdentifier: BlockIdentifierFromHeader(latestHeader),
@@ -105,17 +106,17 @@ func (s *AccountApiService) AccountBalance(accountBalanceRequest AccountBalanceR
 						Value:    goldBalance.String(),
 						Currency: CeloGold,
 					},
-					Amount{
-						Value:    stableTokenBalance.String(),
-						Currency: CeloDollar,
-					},
+					// Amount{
+					// 	Value:    stableTokenBalance.String(),
+					// 	Currency: CeloDollar,
+					// },
 				},
 			},
 			Balance{
 				AccountIdentifier: AccountIdentifier{
-					Address: lockedGoldAddr.String(),
+					Address: accountBalanceRequest.AccountIdentifier.Address,
 					SubAccount: SubAccountIdentifier{
-						SubAccount: accountBalanceRequest.AccountIdentifier.Address,
+						SubAccount: LockedGoldRegistryId,
 					},
 				},
 				Amounts: []Amount{
