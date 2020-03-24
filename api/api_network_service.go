@@ -41,7 +41,7 @@ func NewNetworkApiService(rpcClient *rpc.Client) NetworkApiServicer {
 func (s *NetworkApiService) NetworkStatus(networkStatusRequest NetworkStatusRequest) (interface{}, error) {
 	ctx := context.Background()
 
-	networkId, err := s.networkClient.NetworkId(ctx)
+	chainId, err := s.networkClient.ChainId(ctx)
 	if err != nil {
 		return BuildErrorResponse(1, err), nil
 	}
@@ -65,7 +65,7 @@ func (s *NetworkApiService) NetworkStatus(networkStatusRequest NetworkStatusRequ
 		NetworkStatus: NetworkStatus{
 			NetworkIdentifier: PartialNetworkIdentifier{
 				Blockchain: BlockchainName,
-				Network:    NetworkNameFromId(networkId),
+				Network:    NetworkNameFromId(chainId),
 			},
 			NetworkInformation: NetworkInformation{
 				CurrentBlockIdentifier: BlockIdentifierFromHeader(latestHeader),

@@ -13,6 +13,7 @@ import (
 	"context"
 	"errors"
 
+	network "github.com/celo-org/rosetta/celo/client/network"
 	txpool "github.com/celo-org/rosetta/celo/client/txpool"
 	"github.com/ethereum/go-ethereum/rpc"
 )
@@ -21,13 +22,15 @@ import (
 // This service should implement the business logic for every endpoint for the MempoolApi API.
 // Include any external packages or services that will be required by this service.
 type MempoolApiService struct {
-	txPoolClient *txpool.TxPoolClient
+	txPoolClient  *txpool.TxPoolClient
+	networkClient *network.NetworkClient
 }
 
 // NewMempoolApiService creates a default api service
 func NewMempoolApiService(rpcClient *rpc.Client) MempoolApiServicer {
 	return &MempoolApiService{
-		txPoolClient: txpool.NewClient(rpcClient),
+		txPoolClient:  txpool.NewClient(rpcClient),
+		networkClient: network.NewClient(rpcClient),
 	}
 }
 
@@ -35,12 +38,17 @@ func NewMempoolApiService(rpcClient *rpc.Client) MempoolApiServicer {
 func (m *MempoolApiService) Mempool(mempoolRequest MempoolRequest) (interface{}, error) {
 	ctx := context.Background()
 
-	content, err := m.txPoolClient.Content(ctx)
+	err := ValidateNetworkId(&mempoolRequest.NetworkIdentifier, m.networkClient, ctx)
 	if err != nil {
 		return BuildErrorResponse(1, err), nil
 	}
 
-	allTransactionIds := append(TxIdsFromTxAccountMap(&content.Pending), TxIdsFromTxAccountMap(&content.Queued)...)
+	content, err := m.txPoolClient.Content(ctx)
+	if err != nil {
+		return BuildErrorResponse(2, err), nil
+	}
+
+	allTransactionIds := append(TxIdsFromTxAccountMap((*content)["pending"]), TxIdsFromTxAccountMap((*content)["queued"])...)
 
 	response := MempoolResponse{
 		TransactionIdentifiers: allTransactionIds,

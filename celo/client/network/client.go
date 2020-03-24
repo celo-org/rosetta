@@ -1,4 +1,4 @@
-package admin
+package network
 
 import (
 	"context"
@@ -18,7 +18,7 @@ func NewClient(c *rpc.Client) *NetworkClient {
 	return &NetworkClient{c}
 }
 
-func (nc *NetworkClient) NetworkId(ctx context.Context) (*big.Int, error) {
+func (nc *NetworkClient) ChainId(ctx context.Context) (*big.Int, error) {
 	version := new(big.Int)
 	var ver string
 	if err := nc.c.CallContext(ctx, &ver, "net_version"); err != nil {

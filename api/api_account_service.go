@@ -12,6 +12,7 @@ package api
 import (
 	"context"
 
+	network "github.com/celo-org/rosetta/celo/client/network"
 	"github.com/celo-org/rosetta/contract"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -23,34 +24,42 @@ import (
 // This service should implement the business logic for every endpoint for the AccountApi API.
 // Include any external packages or services that will be required by this service.
 type AccountApiService struct {
-	ethClient *eth.Client
+	ethClient     *eth.Client
+	networkClient *network.NetworkClient
 }
 
 // NewAccountApiService creates a default api service
 func NewAccountApiService(rpcClient *rpc.Client) AccountApiServicer {
 	return &AccountApiService{
-		ethClient: eth.NewClient(rpcClient),
+		ethClient:     eth.NewClient(rpcClient),
+		networkClient: network.NewClient(rpcClient),
 	}
 }
 
 // AccountBalance - Get an Account Balance
 func (s *AccountApiService) AccountBalance(accountBalanceRequest AccountBalanceRequest) (interface{}, error) {
-	address := common.HexToAddress(accountBalanceRequest.AccountIdentifier.Address)
-
 	ctx := context.Background()
-	latestHeader, err := s.ethClient.HeaderByNumber(ctx, nil) // nil == latest
-	if err != nil {
-		return BuildErrorResponse(0, err), nil
-	}
 
-	goldBalance, err := s.ethClient.BalanceAt(ctx, address, latestHeader.Number)
+	err := ValidateNetworkId(&accountBalanceRequest.NetworkIdentifier, s.networkClient, ctx)
 	if err != nil {
 		return BuildErrorResponse(1, err), nil
 	}
 
-	registry, err := contract.NewRegistry(RegistrySmartContractAddress, s.ethClient)
+	address := common.HexToAddress(accountBalanceRequest.AccountIdentifier.Address)
+
+	latestHeader, err := s.ethClient.HeaderByNumber(ctx, nil) // nil == latest
 	if err != nil {
 		return BuildErrorResponse(2, err), nil
+	}
+
+	goldBalance, err := s.ethClient.BalanceAt(ctx, address, latestHeader.Number)
+	if err != nil {
+		return BuildErrorResponse(3, err), nil
+	}
+
+	registry, err := contract.NewRegistry(RegistrySmartContractAddress, s.ethClient)
+	if err != nil {
+		return BuildErrorResponse(4, err), nil
 	}
 
 	lockedGoldAddr, err := registry.GetAddressForString(&bind.CallOpts{
@@ -58,12 +67,12 @@ func (s *AccountApiService) AccountBalance(accountBalanceRequest AccountBalanceR
 		Context:     ctx,
 	}, LockedGoldRegistryId)
 	if err != nil {
-		return BuildErrorResponse(3, err), nil
+		return BuildErrorResponse(5, err), nil
 	}
 
 	lockedGold, err := contract.NewLockedGold(lockedGoldAddr, s.ethClient)
 	if err != nil {
-		return BuildErrorResponse(4, err), nil
+		return BuildErrorResponse(6, err), nil
 	}
 
 	lockedGoldBalance, err := lockedGold.GetAccountTotalLockedGold(&bind.CallOpts{
@@ -71,7 +80,7 @@ func (s *AccountApiService) AccountBalance(accountBalanceRequest AccountBalanceR
 		Context:     ctx,
 	}, address)
 	if err != nil {
-		return BuildErrorResponse(5, err), nil
+		return BuildErrorResponse(7, err), nil
 	}
 
 	// STABLETOKEN DISABLED FOR v1.0.0

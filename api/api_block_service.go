@@ -15,6 +15,7 @@ import (
 	"math/big"
 
 	"github.com/celo-org/rosetta/celo/client/debug"
+	"github.com/celo-org/rosetta/celo/client/network"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
@@ -24,32 +25,38 @@ import (
 // This service should implement the business logic for every endpoint for the BlockApi API.
 // Include any external packages or services that will be required by this service.
 type BlockApiService struct {
-	ethClient   *ethclient.Client
-	debugClient *debug.DebugClient
+	ethClient     *ethclient.Client
+	debugClient   *debug.DebugClient
+	networkClient *network.NetworkClient
 }
 
 // NewBlockApiService creates a default api service
 func NewBlockApiService(rpcClient *rpc.Client) BlockApiServicer {
 	return &BlockApiService{
-		ethClient:   ethclient.NewClient(rpcClient),
-		debugClient: debug.NewClient(rpcClient),
+		ethClient:     ethclient.NewClient(rpcClient),
+		debugClient:   debug.NewClient(rpcClient),
+		networkClient: network.NewClient(rpcClient),
 	}
 }
 
 // Block - Get a Block
-func (s *BlockApiService) Block(blockRequest BlockRequest) (interface{}, error) {
+func (b *BlockApiService) Block(blockRequest BlockRequest) (interface{}, error) {
 	ctx := context.Background()
 
+	err := ValidateNetworkId(&blockRequest.NetworkIdentifier, b.networkClient, ctx)
+	if err != nil {
+		return BuildErrorResponse(1, err), nil
+	}
+
 	var blockHeader *ethclient.ExtendedHeader
-	var err error
 	if blockRequest.BlockIdentifier.Hash != "" {
 		hash := common.HexToHash(blockRequest.BlockIdentifier.Hash)
-		blockHeader, err = s.ethClient.ExtendedHeaderByHash(ctx, hash)
+		blockHeader, err = b.ethClient.ExtendedHeaderByHash(ctx, hash)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		blockHeader, err = s.ethClient.ExtendedHeaderByNumber(ctx, big.NewInt(blockRequest.BlockIdentifier.Index))
+		blockHeader, err = b.ethClient.ExtendedHeaderByNumber(ctx, big.NewInt(blockRequest.BlockIdentifier.Index))
 		if err != nil {
 			return nil, err
 		}
