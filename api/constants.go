@@ -7,7 +7,7 @@ import (
 
 // TODO(yorke): consider reading version info from disk
 const (
-	RosettaVersion    = "1.2.3"
+	RosettaVersion    = "1.2.4"
 	MiddlewareVersion = "1.0.0"
 	BlockchainName    = "celo"
 )
