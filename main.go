@@ -28,7 +28,7 @@ func main() {
 	AccountApiService := api.NewAccountApiService(rpcClient)
 	AccountApiController := api.NewAccountApiController(AccountApiService)
 
-	BlockApiService := api.NewBlockApiService()
+	BlockApiService := api.NewBlockApiService(rpcClient)
 	BlockApiController := api.NewBlockApiController(BlockApiService)
 
 	ConstructionApiService := api.NewConstructionApiService()

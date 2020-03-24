@@ -10,25 +10,75 @@
 package api
 
 import (
+	"context"
 	"errors"
+	"math/big"
+
+	"github.com/celo-org/rosetta/celo/client/debug"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/rpc"
 )
 
 // BlockApiService is a service that implents the logic for the BlockApiServicer
 // This service should implement the business logic for every endpoint for the BlockApi API.
 // Include any external packages or services that will be required by this service.
 type BlockApiService struct {
+	ethClient   *ethclient.Client
+	debugClient *debug.DebugClient
 }
 
 // NewBlockApiService creates a default api service
-func NewBlockApiService() BlockApiServicer {
-	return &BlockApiService{}
+func NewBlockApiService(rpcClient *rpc.Client) BlockApiServicer {
+	return &BlockApiService{
+		ethClient:   ethclient.NewClient(rpcClient),
+		debugClient: debug.NewClient(rpcClient),
+	}
 }
 
 // Block - Get a Block
 func (s *BlockApiService) Block(blockRequest BlockRequest) (interface{}, error) {
-	// TODO - update Block with the required logic for this service method.
-	// Add api_block_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-	return nil, errors.New("service method 'Block' not implemented")
+	ctx := context.Background()
+
+	var blockHeader *ethclient.ExtendedHeader
+	var err error
+	if blockRequest.BlockIdentifier.Hash != "" {
+		hash := common.HexToHash(blockRequest.BlockIdentifier.Hash)
+		blockHeader, err = s.ethClient.ExtendedHeaderByHash(ctx, hash)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		blockHeader, err = s.ethClient.ExtendedHeaderByNumber(ctx, big.NewInt(blockRequest.BlockIdentifier.Index))
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	transactions := make([]Transaction, len(blockHeader.Transactions))
+	for i, tx := range blockHeader.Transactions {
+		transactions[i] = Transaction{
+			TransactionIdentifier: TransactionIdentifier{
+				Hash: tx.Hex(),
+			},
+		}
+	}
+
+	return &BlockResponse{
+		Block: Block{
+			BlockIdentifier: BlockIdentifier{
+				Hash:  blockHeader.Hash().Hex(),
+				Index: blockHeader.Number.Int64(),
+			},
+			ParentBlockIdentifier: BlockIdentifier{
+				Hash:  blockHeader.ParentHash.Hex(),
+				Index: blockHeader.Number.Int64() - 1,
+			},
+			Timestamp:    int64(blockHeader.Time), // TODO unsafe casting from uint to int 64
+			Transactions: transactions,
+		},
+	}, nil
+
 }
 
 // BlockTransaction - Get a Block Transaction
