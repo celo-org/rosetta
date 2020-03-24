@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	network "github.com/celo-org/rosetta/celo/client/network"
@@ -10,7 +9,7 @@ import (
 
 func ValidateNetworkId(id *NetworkIdentifier, client *network.NetworkClient, ctx context.Context) error {
 	if id.Blockchain != BlockchainName {
-		return errors.New(fmt.Sprintf("Mismatched blockchain identifiers: %s != %s", id.Blockchain, BlockchainName))
+		return fmt.Errorf("Mismatched blockchain identifiers: %s != %s", id.Blockchain, BlockchainName)
 	}
 
 	chainId, err := client.ChainId(ctx)
@@ -20,7 +19,7 @@ func ValidateNetworkId(id *NetworkIdentifier, client *network.NetworkClient, ctx
 
 	networkName := NetworkNameFromId(chainId)
 	if networkName != id.Network {
-		return errors.New(fmt.Sprintf("Mismatched network identifiers: %s != %s", id.Network, networkName))
+		return fmt.Errorf("Mismatched network identifiers: %s != %s", id.Network, networkName)
 	}
 	return nil
 }

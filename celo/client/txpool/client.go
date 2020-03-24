@@ -18,6 +18,7 @@ func NewClient(c *rpc.Client) *TxPoolClient {
 
 type TxNonceMap map[string]*rpc.RPCTransaction
 type TxAccountMap map[string]TxNonceMap
+type TxPoolContent map[string]TxAccountMap
 
 /*
 {
@@ -26,7 +27,7 @@ type TxAccountMap map[string]TxNonceMap
       806: RPCTransaction,
     },
     0x24d407e5a0b506e1cb2fae163100b5de01f5193c: {
-      34: RPCTransacti
+      34: RPCTransaction,
     }
   },
   queued: {
@@ -40,8 +41,6 @@ type TxAccountMap map[string]TxNonceMap
   }
 }
 */
-type TxPoolContent map[string]TxAccountMap
-
 func (tpc *TxPoolClient) Content(ctx context.Context) (*TxPoolContent, error) {
 	var result TxPoolContent
 	if err := tpc.c.CallContext(ctx, &result, "txpool_content"); err != nil {

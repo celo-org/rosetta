@@ -42,8 +42,8 @@ func BuildErrorResponse(code int32, err error) Error {
 
 func TxIdsFromTxAccountMap(txAccountMap txpool.TxAccountMap) []TransactionIdentifier {
 	identifiers := []TransactionIdentifier{}
-	for _, transactions := range txAccountMap {
-		for _, tx := range transactions {
+	for _, txNonceMap := range txAccountMap {
+		for _, tx := range txNonceMap {
 			identifiers = append(identifiers, TransactionIdentifier{
 				Hash: tx.Hash.String(),
 			})
