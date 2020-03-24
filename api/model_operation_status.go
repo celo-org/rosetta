@@ -9,12 +9,11 @@
 
 package api
 
-// Transaction - <code>Transactions</code> contain an array of <code>Operations</code> that are attributable to the same <code>TransactionIdentifier</code>.
-type Transaction struct {
-	TransactionIdentifier TransactionIdentifier `json:"transaction_identifier"`
+type OperationStatus struct {
 
-	Operations []Operation `json:"operations"`
+	// The `status` is the network-specific status of the operation.
+	Status string `json:"status"`
 
-	// Transactions that are related to other transactions (like a cross-shard transactioin) should include the `tranaction_identifier` of these transactions in the metadata.
-	Metadata map[string]interface{} `json:"metadata,omitempty"`
+	// An `Operation` is considered `successful` if the `Operation.Amount` should affect the `Operation.Account`. Some blockchains (like Bitcoin) only include `successful` operations in blocks but other blockchains (like Ethereum) include unsuccessful operations that incur a fee.  To reconcile the computed balance from the stream of `Operations`, it is critical to understand which `Operation.Status` indicate an `Operation` is `successful` and should affect an `Account`.
+	Successful bool `json:"successful"`
 }

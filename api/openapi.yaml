@@ -1,11 +1,36 @@
 openapi: 3.0.2
 info:
-  description: A standard for blockchain interaction
+  description: |
+    <h2>Backstory</h2>
+    Writing reliable blockchain integrations is complicated and time-consuming.
+    The process requires careful analysis of the unique aspects of each blockchain and extensive
+    communication with its developers to understand the best strategies to deploy nodes,
+    recognize deposits, broadcast transactions, etc. Even a minor misunderstanding can lead to
+    downtime, or even worse, incorrect fund attribution. Not to mention, this integration
+    must be continuously modified and tested each time a blockchain team releases new software.
+
+    Instead of spending time working on their blockchain, project developers spend countless hours
+    answering similar support questions for each team integrating their blockchain.
+    With their questions answered, each integrating team then writes similar code to
+    interface with the blockchain instead of spending their engineering resources adding support
+    for more blockchain projects or working on unique products and applications.
+
+    <h2>Standard for Blockchain Interaction</h2>
+    Rosetta is a new project from Coinbase to standardize the process of deploying
+    and interacting with blockchains. With an explicit specification to adhere to,
+    all parties involved in blockchain development can spend less time figuring out how to integrate
+    with each other and more time working on the novel advances that will push
+    the blockchain ecosystem forward. In practice, this means that any blockchain
+    project that implements the requirements outlined in this specification will enable
+    exchanges, block explorers, and wallets to integrate with much less communication
+    overhead and network-specific work.
+
+    <h5>© 2020 Coinbase</h5>
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   title: Rosetta
-  version: 1.2.3
+  version: 1.2.4
   x-logo:
     url: https://www.centre.io/images/usdc/logos/coinbase-2019-0615383b8a.png
 servers:
@@ -20,204 +45,251 @@ tags:
     any number of <a href=\"https://docs.docker.com/develop/develop-images/multistage-build/\"\
     >build stages</a>)\nthat starts the node runtime and all of its dependent services\
     \ without human intervention.\n\n<h3>Requirements</h3>\n<h4>Dockerfile</h4>\n\
-    There are many projects that allow you to configure and manage the automated deployment\
-    \ of a service. From our experience,\nwe have found that the small learning curve,\
-    \ mature tooling, generality, and widespread ecosystem support of\n<a href=\"\
-    https://docs.docker.com/get-docker\">Docker</a> make for a relatively painless\
-    \ and sufficiently\nreliable deployment.\n\nUpon first glance, using a single\
-    \ Dockerfile to start all services required by the node may sound antithetical\n\
-    to best practices. However, we have found that restricting blockchain node deployment\
-    \ to a\nsingle container makes the orchestration of multiple nodes much easier\
-    \ because of coordinated start/stop and\nsingle volume mounting.\n\n<h5>Coordinated\
-    \ Start/Stop</h5>\nSome blockchain nodes and their dependent services must be\
-    \ started and stopped in some explicit order\nto function correctly and prevent\
-    \ corruption. With distributed services (in multiple containers),\nthis sequencing\
-    \ of operations can require a custom deployer for each network. Building and maintaining\n\
-    these deployers can take a lot of communication with asset issuers and a lot of\
-    \ testing to ensure\ncorrectness. It is easier to just utilize a script imported\
-    \ into the Dockerfile\nthat can start and stop the node(and its dependent services)\
-    \ correctly.\n\n<h5>Single Volume Mounting</h5>\nWhen a deployment is started\
-    \ from a single Dockerfile it is straightforward to\nmount a single volume to\
-    \ the new container and manage all of its state. Node deployments\ncan be easily\
-    \ scaled by duplicating this volume to any number of new hosts without\nany sophisticated\
-    \ tooling. As mentioned previously, coordinated start/stop of all\nservices provides\
-    \ strong guarantees around the corruption of the state that would\nbe much more\
-    \ difficult to achieve with distributed services as there may be specific\nordering\
-    \ restrictions to prevent corruption.\n\nRunning multiple instances of a node\
-    \ configuration can get complicated quickly if the node\nutilizes multiple stateful\
-    \ containers (ex: a node that stores historical state in an external database).\n\
-    In this scenario, the node orchestration engine must manage which node deployment\
-    \ talks to\nwhich services based on which state the node runtime is in. Furthermore,\
-    \ it is more time-intensive\nto scale up a node deployment as a deployment and\
-    \ all its services must be synced from scratch to ensure correctness\nor the volumes\
-    \ of another deployment's stateful containers must be used to bootstrap the new\
-    \ deployment\n(which can be a manual procedure).\n\n<h4>Persistent Data Storage</h4>\n\
-    All persistent data must be written to the <code>/data</code> directory. If your\
-    \ node utilizes a database (like Postgres)\nto store data reliably, ensure this\
-    \ is configured to save information to this directory (and in a manner that would\
-    \ not corrupt\nany data stored by the core node process or other necessary services).\
-    \ It should be possible to stop all services defined\nin the Dockerfile and restart\
-    \ them (without corruption) using only the state stored in this <code>/data</code>\
+    There are many projects that allow you to configure and manage the automated\n\
+    deployment of a service. From our experience, we have found that the small\nlearning\
+    \ curve, mature tooling, generality, and widespread ecosystem support of\n<a href=\"\
+    https://docs.docker.com/get-docker\">Docker</a> make for a relatively\npainless\
+    \ and sufficiently reliable deployment.\n\nUpon first glance, using a single Dockerfile\
+    \ to start all services required\nby the node may sound antithetical to best practices.\
+    \ However, we have found\nthat restricting blockchain node deployment to a single\
+    \ container makes\nthe orchestration of multiple nodes much easier because of\
+    \ coordinated start/stop and\nsingle volume mounting.\n\n<h5>Coordinated Start/Stop</h5>\n\
+    Some blockchain nodes and their dependent services must be started and stopped\
+    \ in some explicit order\nto function correctly and prevent corruption. With distributed\
+    \ services (in multiple containers),\nthis sequencing of operations can require\
+    \ a custom deployer for each network. Building and maintaining\nthese deployers\
+    \ can take a lot of communication with asset issuers and a lot of testing to ensure\n\
+    correctness. It is easier to just utilize a script imported into the Dockerfile\n\
+    that can start and stop the node(and its dependent services) correctly.\n\n<h5>Single\
+    \ Volume Mounting</h5>\nWhen a deployment is started from a single Dockerfile\
+    \ it is straightforward to\nmount a single volume to the new container and manage\
+    \ all of its state. Node deployments\ncan be easily scaled by duplicating this\
+    \ volume to any number of new hosts without\nany sophisticated tooling. As mentioned\
+    \ previously, coordinated start/stop of all\nservices provides strong guarantees\
+    \ around the corruption of the state that would\nbe much more difficult to achieve\
+    \ with distributed services as there may be specific\nordering restrictions to\
+    \ prevent corruption.\n\nRunning multiple instances of a node configuration can\
+    \ get complicated quickly if the node\nutilizes multiple stateful containers (ex:\
+    \ a node that stores historical state in an external database).\nIn this scenario,\
+    \ the node orchestration engine must manage which node deployment talks to\nwhich\
+    \ services based on which state the node runtime is in. Furthermore, it is more\
+    \ time-intensive\nto scale up a node deployment as a deployment and all its services\
+    \ must be synced from scratch to ensure correctness\nor the volumes of another\
+    \ deployment's stateful containers must be used to bootstrap the new deployment\n\
+    (which can be a manual procedure).\n\n<h4>Persistent Data Storage</h4>\nAll persistent\
+    \ data must be written to the <code>/data</code> directory.\nIf your node utilizes\
+    \ a database (like Postgres) to store data reliably,\nensure this is configured\
+    \ to save information to this directory (and in a manner that would not corrupt\n\
+    any data stored by the core node process or other necessary services).\nIt should\
+    \ be possible to stop all services defined in the Dockerfile and\nrestart them\
+    \ (without corruption) using only the state stored in this <code>/data</code>\
     \ directory\nwith a single command.\n\n<h4>Configurable Storage Pruning</h4>\n\
     It must be possible to prune persistent data storage using block number. For example,\n\
     anyone running your node should be able to configure the node to delete blocks\
     \ that are\nover 1000 blocks old. \n"
   name: Automated Node Deployment
-- description: |
-    The second challenge of reliably supporting a blockchain integration is correctly and efficiently communicating with a
-    deployed node. This communication (fetching block data, retrieving account state, submitting transactions, etc) often requires
-    a myriad of network-specific strategies that must be discussed with a blockchain team to ensure correctness.
-    Once complete, these integrations require constant maintenance to ensure software upgrades do not cause unintended
-    behavior, data irregularities, or degradations in performance.
-
-    In Rosetta, blockchain teams must implement a server that adheres to the Rosetta Interface (described in the
-    following sections). Blockchain teams that do not wish to modify their node's interface may alternatively
-    choose to write a middleware server that communicates with the node to provide clients with access to the
-    Rosetta Interface.
-
-    <h3>Design Principles</h3>
-    <i>Before reading this section, it may be helpful to familiarize yourself with <a href="/#tag/Objects">Rosetta Objects</a>.</i>
-
-    <h4>No Predefined Operation Types</h4>
-    The Rosetta interface does not restrict implementations to use a predefined set of types to describe network-specific activity.
-    For example, <code>PAYMENT</code> could be a predefined type that could be required for all implementers to apply to network-specific
-    transactions. While this sounds appealing and feasible for a simple type like <code>PAYMENT</code>, the task of producing such a set
-    of types can quickly become very complex and controversial. Instead, the interface puts the burden on the client to apply
-    whatever types they feel best apply to the standardized <code>Operations</code> that compose each transaction.
-
-    <h4>Signed Operation Amounts</h4>
-    Although there are no predefined <code>Operation</code> types in the interface, an explicit attempt is made to make balance
-    reconciliation much easier: using signed <code>Operation</code> amounts. This means that all operations within a transaction
-    must clearly specify the balance change that results from that operation are explicitly credit or debits to a
-    specified account.
-
-    <h4>Single Party, Linked Operations</h4>
-    All <code>Operations</code> in the interface can affect at most 1 account but can be linked to any number of other <code>Operations</code>.
-    To represent network-specific operations that are inherently multi-participant (a network-specific transfer that has
-    a sender and recipient specified in a single op), this entails creating an explicit operation for each account involved.
-    At a high-level, this means reducing account-based blockchains to something resembling ledger accounting (all credits have debits).
-    While this approach may seem burdensome for simple payments, the generality of this design allows for capturing the
-    structure of complicated on-chain interactions more closely to how they are represented natively on-chain without imposing more restrictions
-    on the <code>Operation</code> model. This single operation abstraction for all accounting types also means that downstream
-    processing does not require conditional parsing on different operation abstractions.
-
-    <h4>Operation Status, Not Transaction Status</h4>
-    Indication of status on the <code>Transaction</code> implies that all <code>Operations</code> within that
-    <code>Transaction</code> atomically succeed or fail. While this is often true on blockchains without smart contracting,
-    it is not always the case on blockchains that support generalized smart contracting. In Ethereum,
-    transactions can fail anytime during execution and changes are only rolled back when explicitly
-    indicated to do so in the smart contract itself. Requiring that implementers have atomic transaction
-    success/failure is a pretty heavy handed restriction that could limit innovation.
-
-    <h4>Transaction Fees are Just Operations</h4>
-    For blockchains where there is no explicit fee payer, where there are multiple fee payers, where fees can be paid in multiple
-    currencies, or where fee payment is made by one of many parties in a transaction, it becomes complicated to represent
-    a fee payment as a <code>Transaction</code> property. Thus, all <code>Transaction</code> fees are represented exclusively as <code>Operations</code>.
-
-    <h4>Sharded Blockchain Support</h4>
-    Many new blockchains are utilizing a sharded design to offer increased scalability. It is critical that this interface treats
-    these blockchains as first-class citizens, albeit in a generalized manner. The interface introduces the idea of <code>SubNetworks</code>
-    to identify specific portions of the network that can be used to qualify a fetch of blocks or state.
-
-    <h4>Staking and Smart Contract Support</h4>
-    In blockchains with generalized smart contracting, the notion of account state can be much more nuanced than a single token balance
-    at a single height. The interface introduces <code>SubAccounts</code> to identify state that is specific to a certain contract or lockup period
-    (ex: delegated stake). Each account can have an array of balances that are uniquely identified by a <code>SubAccount</code>.
-
-    <h4>JSON-Based RPC Protocol</h4>
-    When working on this interface, we considered many interface specification formats that have gained popularity in recent years
-    (like <a href="https://grpc.io">Protobuf + gRPC</a> and <a href="https://avro.apache.org/docs/current">Avro</a>) but found most only
-    had strong support for a few programming languages, required users to have enough programming experience to know how to use autogenerated
-    code to encode/decode some binary format, and/or <a href="https://grpc.io/blog/state-of-grpc-web">didn't work well in the browser</a>.
-
-    The Rosetta interface is specified in the <a href="https://www.openapis.org">OpenAPI format (formerly known as Swagger)</a>. Requests
-    and responses can be crafted with autogenerated code using <a href="https://swagger.io/tools/swagger-codegen">Swagger Codegen</a> or
-    <a href="https://openapi-generator.tech">OpenAPI Generator</a> (but don't have to be), are human-readable (easy to debug and understand),
-    and can be used in servers and browsers. Using JSON incurs some performance penalty, however, we have found the challenge of robust
-    integration to be a much more painful issue than mitigating JSON overhead.
-
-    Due to the complexity of requests (which can often contain a number of parameters of unspecified size), all communication with
-    the Rosetta Interface Server utilizes <b>POST</b> requests. This makes the interface much closer to
-    <a href="https://www.jsonrpc.org/specification">JSON-RPC 2.0</a> with the exception that requests go to specific paths instead
-    of using methods. If you have used gRPC, it will feel very familiar.
-
-    <h3>Requirements</h3>
-    <i>These requirements must be satisfied in any Rosetta Interface Server implementation.</i>
-
-    <h4>Return All Balance-Changing Operations</h4>
-    A Rosetta Interface Server implementation must return all balance-changing operations in a block.
-    Some clients compare the balance computed from all of an account's block operations with the
-    balance returned for an account by the node itself. If these balances do not match (reconcile) for any account,
-    these clients will not be able to integrate with your blockchain.
-
-    There is only one known exception to this requirement: staking reward distribution in Proof-of-Stake blockchains that separate
-    an account's "staked" balance from their "transferable" balance. In these blockchains, staking rewards accrue in each
-    staking account's "staked" balance but can't be transferred until they are explicitly withdrawn to an account's "transferable" balance.
-    If this applies to your blockchain, it is okay to only return an account's transfer into their "staked" balance (often called a
-    "delegation") and the transfer from the "staked" balance into the "transferable" balance (often called "undelegation") after rewards
-    have been accrued. No events recording the increase of the "staked" balance on each block must be returned.
-    However, it must still be possible to fetch the current value of a "staked" balance in the `/account/balance` endpoint. Blockchains
-    that distribute rewards into an account's "transferable" balance must return all such events for all accounts.
+- description: "The second challenge of reliably supporting a blockchain integration\
+    \ is\ncorrectly and efficiently communicating with a\ndeployed node. This communication\
+    \ (fetching block data, retrieving account\nstate, submitting transactions, etc)\
+    \ often requires\na myriad of network-specific strategies that must be discussed\
+    \ with a\nblockchain team to ensure correctness. Once complete, these integrations\n\
+    require constant maintenance to ensure software upgrades do not cause unintended\n\
+    behavior, data irregularities, or degradations in performance.\n\nIn Rosetta,\
+    \ blockchain teams must implement a server that adheres to the\nRosetta Interface\
+    \ (described in the following sections). Blockchain teams\nthat do not wish to\
+    \ modify their node's interface may alternatively\nchoose to write a middleware\
+    \ server that communicates with the node to\nprovide clients with access to the\
+    \ Rosetta Interface. This middleware server\nmay keep persistent state to provide\
+    \ faster query responses (ex: index \nBitcoin UTXOs).\n\n<h3>Design Principles</h3>\n\
+    <i>Before reading this section, it may be helpful to familiarize\nyourself with\
+    \ <a href=\"/#tag/Objects\">Rosetta Objects</a>.</i>\n\n<h4>No Predefined Operation\
+    \ Types</h4>\nThe Rosetta interface does not restrict implementations\nto use\
+    \ a predefined set of types to describe network-specific activity.\nFor example,\
+    \ <code>PAYMENT</code> could be a predefined type that could\nbe required for\
+    \ all implementers to apply to network-specific\ntransactions. While this sounds\
+    \ appealing and feasible for a simple type\nlike <code>PAYMENT</code>, the task\
+    \ of producing such a set\nof types can quickly become very complex and controversial.\
+    \ Instead, the\ninterface puts the burden on the client to apply\nwhatever types\
+    \ they feel best apply to the standardized\n<code>Operations</code> that compose\
+    \ each transaction.\n\n<h4>Signed Operation Amounts</h4>\nAlthough there are no\
+    \ predefined <code>Operation</code> types in the\ninterface, an explicit attempt\
+    \ is made to make balance\nreconciliation much easier: using signed <code>Operation</code>\
+    \ amounts.\nThis means that all operations within a transaction\nmust clearly\
+    \ specify the balance change that results from that operation\nare explicitly\
+    \ credit or debits to a specified account.\n\n<h4>Single Party, Linked Operations</h4>\n\
+    All <code>Operations</code> in the interface can affect at most 1 account\nbut\
+    \ can be linked to any number of other <code>Operations</code>.\nTo represent\
+    \ network-specific operations that are inherently\nmulti-participant (a network-specific\
+    \ transfer that has\na sender and recipient specified in a single op), this entails\
+    \ creating an\nexplicit operation for each account involved.\nAt a high-level,\
+    \ this means reducing account-based blockchains to\nsomething resembling ledger\
+    \ accounting (all credits have debits).\nWhile this approach may seem burdensome\
+    \ for simple payments, the\ngenerality of this design allows for capturing the\n\
+    structure of complicated on-chain interactions more closely to how they\nare represented\
+    \ natively on-chain without imposing more restrictions\non the <code>Operation</code>\
+    \ model. This single operation abstraction\nfor all accounting types also means\
+    \ that downstream\nprocessing does not require conditional parsing on different\n\
+    operation abstractions.\n\n<h4>Operation Status, Not Transaction Status</h4>\n\
+    Indication of status on the <code>Transaction</code> implies\nthat all <code>Operations</code>\
+    \ within that\n<code>Transaction</code> atomically succeed or fail. While this\
+    \ is\noften true on blockchains without smart contracting,\nit is not always the\
+    \ case on blockchains that support generalized smart contracting. In Ethereum,\n\
+    transactions can fail anytime during execution and changes are only rolled back\
+    \ when explicitly\nindicated to do so in the smart contract itself. Requiring\
+    \ that implementers have atomic transaction\nsuccess/failure is a pretty heavy\
+    \ handed restriction that could limit innovation.\n\n<h4>Transaction Fees are\
+    \ Just Operations</h4>\nFor blockchains where there is no explicit fee payer,\
+    \ where there are\nmultiple fee payers, where fees can be paid in multiple\ncurrencies,\
+    \ or where fee payment is made by one of many parties in a\ntransaction, it becomes\
+    \ complicated to represent\na fee payment as a <code>Transaction</code> property.\
+    \ Thus, all\n<code>Transaction</code> fees are represented exclusively as <code>Operations</code>.\n\
+    \n<h4>Sharded Blockchain Support</h4>\nMany new blockchains are utilizing a sharded\
+    \ design to offer increased\nscalability. It is critical that this interface treats\n\
+    these blockchains as first-class citizens, albeit in a generalized manner.\nThe\
+    \ interface introduces the idea of <code>SubNetworks</code>\nto identify specific\
+    \ portions of the network that can be used to qualify a\nfetch of blocks or state.\n\
+    \n<h4>Staking and Smart Contract Support</h4>\nIn blockchains with generalized\
+    \ smart contracting, the notion of account\nstate can be much more nuanced than\
+    \ a single token balance\nat a single height. The interface introduces <code>SubAccounts</code>\
+    \ to\nidentify state that is specific to a certain contract or lockup period\n\
+    (ex: delegated stake). Each account can have an array of balances that\nare uniquely\
+    \ identified by a <code>SubAccount</code>.\n\n<h4>JSON-Based RPC Protocol</h4>\n\
+    When working on this interface, we considered many interface\nspecification formats\
+    \ that have gained popularity in recent years\n(like <a href=\"https://grpc.io\"\
+    >Protobuf + gRPC</a> and\n<a href=\"https://avro.apache.org/docs/current\">Avro</a>)\
+    \ but found most only\nhad strong support for a few programming languages, required\
+    \ users to\nhave enough programming experience to know how to use autogenerated\n\
+    code to encode/decode some binary format, and/or\n<a href=\"https://grpc.io/blog/state-of-grpc-web\"\
+    >didn't work well in the browser</a>.\n\nThe Rosetta interface is specified in\
+    \ the <a href=\"https://www.openapis.org\">OpenAPI 3.0 format</a> (the\n<a href=\"\
+    https://swagger.io/blog/news/whats-new-in-openapi-3-0\">successor to Swagger/OpenAPI\
+    \ 2.0</a>).\nRequests and responses can be crafted with autogenerated code using\n\
+    <a href=\"https://swagger.io/tools/swagger-codegen\">Swagger Codegen</a> or\n\
+    <a href=\"https://openapi-generator.tech\">OpenAPI Generator</a> (with\nthe downloadable\
+    \ JSON spec at the top of this site),\nare human-readable (easy to debug and understand),\
+    \ and can be used in servers and browsers.\nUsing JSON incurs some performance\
+    \ penalty, however, we have found the challenge of robust\nintegration to be a\
+    \ much more painful issue than mitigating JSON overhead.\n\nDue to the complexity\
+    \ of requests (which can often contain a number of\nparameters of unspecified\
+    \ size), all communication with\nthe Rosetta Interface Server utilizes <b>POST</b>\
+    \ requests. This makes\nthe interface much closer to <a href=\"https://www.jsonrpc.org/specification\"\
+    >JSON-RPC 2.0</a>\nwith the exception that requests go to specific paths instead\n\
+    of using methods. If you have used gRPC, it will feel very familiar.\n\n<h3>Requirements</h3>\n\
+    <i>These requirements must be satisfied in any Rosetta Interface Server implementation.</i>\n\
+    \n<h4>Return All Balance-Changing Operations</h4>\nA Rosetta Interface Server\
+    \ implementation must return all\nbalance-changing operations in a block. To be\
+    \ considered a correct\nimplementaion, the balance computed from all of an\n<code>AccountIdentifier</code>'s\
+    \ operations must equal\nthe balance returned for an <code>AccountIdentifier</code>\n\
+    by the <code>/account/balance</code> endpoint at the end of each block.\nIf these\
+    \ balances do not match (reconcile)\nfor any account, some clients will not be\
+    \ able to\nintegrate with your blockchain.\n\n<h4>Retrievable AccountIdentifiers</h4>\n\
+    Any <code>AccountIdentifier</code> returned in a block must\nbe retrievable from\
+    \ the <code>/account/balance</code> endpoint.\nIf an <code>AccountIdentifier</code>\
+    \ active in a block is not retrievable,\nit will not be possible to compare the\
+    \ balance of the account with the node itself.\n\n<h4>Fully Populated NetworkStatus.Options</h4>\n\
+    The <code>/network/status</code> endpoint returns an <code>Options</code> object\
+    \ that specifies\nall possible <code>Operation.Type</code>, <code>Operation.Status</code>,\
+    \ and transaction submission\nstatuses. This returned <code>Options</code> object\
+    \ is used by clients to validate responses\nfrom your Rosetta Server and will\
+    \ stop processing if any block contains an\n<code>Operation.Type</code> or <code>Operation.Status</code>\
+    \ that is not present here.\n"
   name: RPC Service Interface
-- description: |
-    <ul>
-      <li><b>Interface Validation Tooling:</b> Easy tool to run during development to find areas of implementation that don't adhere
-      to the published interface standards.
-      <li><b>Autogenerated Clients:</b> Provide autogenerated clients in a variety of common languages so users of this interface don't
-      need to investigate the autogeneration toolchain.</li>
-      <li><b>Reference Implementations:</b> Demonstrate how a Rosetta Server implementation would look and how a basic block explorer
-      on top of the Rosetta interface could be built.</li>
-      <li><b>Explorer Methods:</b> Add common explorer methods to the interface (like fetching transaction by hash or all transactions
-      for an account). It is likely that these methods would be used extensively by wallets or client-side explorers. These methods
-      will most likely require an additional database to serve queries efficiently.</li>
-      <li><b>Performance Benchmarking:</b> Record performance changes from each implementation modification.</li>
-      <li><b>Transaction Construction:</b> Add an extension to the interface that specifies methods used to construct network-specific
-      transactions using only Rosetta standardized types.</li>
-    </ul>
+- description: "<ul>\n  <li><b>Interface Validation Tooling:</b> Easy tool to run\
+    \ during development\n  to find areas of implementation that don't adhere to the\
+    \ published interface standards.\n\n  <li><b>Autogenerated Clients:</b> Provide\
+    \ autogenerated clients in a variety\n  of common languages so users of this interface\
+    \ don't\n  need to investigate the autogeneration toolchain.</li>\n\n  <li><b>Reference\
+    \ Implementations:</b> Demonstrate how a Rosetta Server \n  implementation would\
+    \ look and how a basic block explorer\n  on top of the Rosetta interface could\
+    \ be built.</li>\n\n  <li><b>Explorer Methods:</b> Add common explorer methods\
+    \ to the interface\n  (like fetching transaction by hash or all transactions\n\
+    \  for an account). It is likely that these methods would be used extensively\n\
+    \  by wallets or client-side explorers. These methods\n  will most likely require\
+    \ an additional database to serve queries efficiently.</li>\n\n  <li><b>Performance\
+    \ Benchmarking:</b> Record performance changes from each\n  implementation modification.</li>\n\
+    \n  <li><b>Transaction Construction:</b> Add an extension to the interface \n\
+    \  that specifies methods used to construct network-specific\n  transactions using\
+    \ only Rosetta standardized types.</li>\n</ul>\n"
   name: Future Work
 - description: |
     <h2>Block</h2>
+    <code>Blocks</code> contain an array of <code>Transactions</code> that
+    occured at a particular <code>BlockIdentifier</code>.
     <SchemaDefinition schemaRef="#/components/schemas/Block" />
 
     <h2>Transaction</h2>
+    <code>Transactions</code> contain an array of <code>Operations</code>
+    that are attributable to the same <code>TransactionIdentifier</code>.
     <SchemaDefinition schemaRef="#/components/schemas/Transaction" />
 
     <h2>Operation</h2>
+    <code>Operations</code> contain all balance-changing information within a
+    transaction. They are always one-sided (only affect 1 <code>AccountIdentifier</code>)
+    and can succeed or fail independently from a <code>Transaction</code>.
     <SchemaDefinition schemaRef="#/components/schemas/Operation" />
 
     <h2>Balance</h2>
+    <code>Balance</code> is the array of <code>Amount</code> controlled
+    by an <code>AccountIdentifier</code>. An underspecified <code>AccountIdentifier</code>
+    may result in many amounts (ex: all ERC-20 balances for a single address).
     <SchemaDefinition schemaRef="#/components/schemas/Balance" />
 
     <h2>Amount</h2>
+    <code>Amount</code> is some integer <code>Value</code> of a <code>Currency</code>.
+    It is considered invalid to specify a <code>Value</code> without a <code>Currency</code>.
     <SchemaDefinition schemaRef="#/components/schemas/Amount" />
 
     <h2>Currency</h2>
+    <code>Currency</code> is composed of a cannonical <code>Symbol</code> and
+    <code>Decimals</code>. This <code>Decimals</code> value is used to convert
+    an <code>Amount.Value</code> from atomic units (Satoshis) to standard units
+    (Bitcoins).
     <SchemaDefinition schemaRef="#/components/schemas/Currency" />
+
+    <h2>Options</h2>
+    <code>Options</code> specify supported <code>methods</code>, <code>Operation.Status</code>,
+    <code>Operation.Type</code>, and all possible transaction submission statuses. This <code>Options</code>
+    object is used by clients to validate the correctness of a Rosetta Server implementation. It is
+    expected that these clients will error if they receive some response that contains any of the above
+    information that is not specified here.
+    <SchemaDefinition schemaRef="#/components/schemas/Options" />
   name: Objects
 - description: |
     <h2>Network Identifier</h2>
+    The <code>network_identifier</code> specifies which network a particular object is associated with.
     <SchemaDefinition schemaRef="#/components/schemas/NetworkIdentifier" />
 
     <h2>Sub-Network Identifier</h2>
+    In blockchains with sharded state, the <code>SubNetworkIdentifier</code>
+    is required to query some object on a specific shard. This identifier is
+    optional for all non-sharded blockchains.
     <SchemaDefinition schemaRef="#/components/schemas/SubNetworkIdentifier" />
 
     <h2>Block Identifier</h2>
+    The <code>BlockIdentifier</code> uniquely identifies a block in a particular network.
     <SchemaDefinition schemaRef="#/components/schemas/BlockIdentifier" />
 
     <h2>Transaction Identifier</h2>
+    The <code>TransactionIdentifier</code> uniquely identifies a transaction
+    in a particular network and block or in the mempool.
     <SchemaDefinition schemaRef="#/components/schemas/TransactionIdentifier" />
 
     <h2>Operation Identifier</h2>
+    The <code>OperationIdentifier</code> uniquely identifies an operation within a transaction.
     <SchemaDefinition schemaRef="#/components/schemas/OperationIdentifier" />
 
     <h2>Account Identifier</h2>
+    The <code>AccountIdentifier</code> uniquely identifies an account within a network.
+    All fields in the <code>AccountIdentifier</code> are utilized to determine this uniqueness
+    (including the <code>metadata</code> field, if populated).
     <SchemaDefinition schemaRef="#/components/schemas/AccountIdentifier" />
 
     <h2>Sub-Account Identifier</h2>
+    An account may have state specific to a contract address (ERC-20 token)
+    and/or a stake (delegated balance). The <code>SubAccountIdentifier</code>
+    should specify which state (if applicable) an account instantiation refers
+    to.
     <SchemaDefinition schemaRef="#/components/schemas/SubAccountIdentifier" />
-
-    <h2>Account Identifier</h2>
-    <SchemaDefinition schemaRef="#/components/schemas/AccountIdentifier" />
   name: Object Identifiers
 - description: |
     <i>Network Methods</i> are used when first connecting to a Rosetta endpoint to determine which network and subnetworks are supported,
@@ -243,9 +315,18 @@ tags:
     <i>Construction Methods</i> are used to retrieve metadata needed for an account to construct a transaction and used to submit
     signed transactions. Transaction construction and signing is currently outside the scope of Rosetta.
   name: Construction
-- description: "<h2>1.2.3</h2>\n<ul>\n  <li><b>Make \"Version\" Object:</b> Create\
-    \ an object to return node and server version instead of using an\n  inline object\
-    \ definition.</li>\n</ul>\n<h2>1.2.2</h2>\n<ul>\n  <li><b>Modify \"NetworkStatus\"\
+- description: "<h2>1.2.4</h2>\n<ul>\n  <li><b>Return Successful Operation Statuses\
+    \ in /network/status:</b> To reconcile (see description in the introduction)\n\
+    \  balance changes, it is necessary to understand which network-specific <code>Operation.Status</code>\
+    \ are result in a balance change.\n  If information returned here is incorrect,\
+    \ validation will fail and some clients will be unable to use your implementation.</li>\n\
+    \  <li><b>Return Transaction Submission Statuses in /network/status:</b> To reliably\
+    \ submit transactions, it is important to understand if\n  a network-specific\
+    \ submission status could result in a transaction being included in a block. Being\
+    \ explicit about each status,\n  makes automatically testing transaction submission\
+    \ possible.</li>\n</ul>\n<h2>1.2.3</h2>\n<ul>\n  <li><b>Make \"Version\" Object:</b>\
+    \ Create an object to return node and server version instead of using an\n  inline\
+    \ object definition.</li>\n</ul>\n<h2>1.2.2</h2>\n<ul>\n  <li><b>Modify \"NetworkStatus\"\
     \ Model for Multiple Sub-Networks Support:</b> In 1.2.1 it was not possible to\
     \ return\n  multiple \"SubNetworkStatus\" in the <code>/network/status</code>\
     \ method. This prevented sharded blockchains from\n  providing sufficient information\
@@ -437,6 +518,10 @@ paths:
 
         This is a separate request than fetching a block transaction (`/block/transaction`) because some blockchain nodes need to
         know that a transaction query is for something in the mempool instead of a transaction in a block.
+
+        Transactions may not be fully parsable until they are in a block (ex: may not be possible to determine the fee to pay
+        before a transaction is executed). On this endpoint, it is ok that returned transactions are only estimates of what
+        may actually be included in a block.
       operationId: mempoolTransaction
       requestBody:
         content:
@@ -571,6 +656,10 @@ components:
           example: bitcoin
           type: string
         network:
+          description: |
+            If a blockchain has a specific `chain-id` or network identifier, it
+            should go in this field. It is up to the client to determine which
+            network-specific identifier is `mainnet` or `testnet`.
           example: mainnet
           type: string
         sub_network_identifier:
@@ -582,7 +671,7 @@ components:
     PartialNetworkIdentifier:
       description: |
         The `partial_network_identifier` specifies which network a particular object is associated with
-        (excluding the `sub_network_identifier`). This identifier is used exclusively in `/network/status`.
+        (exculding the `sub_network_identifier`). This identifier is used exclusively in `/network/status`.
       example:
         blockchain: bitcoin
         network: mainnet
@@ -599,7 +688,9 @@ components:
       type: object
     SubNetworkIdentifier:
       description: |
-        In blockchains with sharded state, the `sub_network_identifier` is required to wholly specify a shard block.
+        In blockchains with sharded state, the <code>SubNetworkIdentifier</code>
+        is required to query some object on a specific shard. This identifier is
+        optional for all non-sharded blockchains.
       example:
         metadata:
           producer: 0x52bc44d5378309ee2abf1539bf71de1b7d7be3b5
@@ -623,6 +714,8 @@ components:
         hash: 0x1f2cc6c5027d2f201a5453ad1119574d2aed23a392654742ac3c78783c071f85
       properties:
         index:
+          description: |
+            This is also known as the block height.
           example: 1123941
           format: int64
           type: integer
@@ -697,6 +790,8 @@ components:
     AccountIdentifier:
       description: |
         The `account_identifier` uniquely identifies an account within a network.
+        All fields in the `account_identifier` are utilized to determine this uniqueness
+        (including the `metadata` field, if populated).
       example:
         metadata: '{}'
         address: address
@@ -720,8 +815,9 @@ components:
       type: object
     SubAccountIdentifier:
       description: |
-        An account may have state specific to a contract address (ERC-20 token) and/or a stake (delegated balance).
-        The `sub_account_identifier` should specify which state (if applicable) the account instantiation refers to.
+        An account may have state specific to a contract address (ERC-20 token)
+        and/or a stake (delegated balance). The `sub_account_identifier` should
+        specify which state (if applicable) an account instantiation refers to.
       example:
         metadata: '{}'
         sub_account: 0x6b175474e89094c44da98b954eedeac495271d0f
@@ -735,6 +831,9 @@ components:
       - sub_account
       type: object
     Block:
+      description: |
+        <code>Blocks</code> contain an array of <code>Transactions</code> that
+        occured at a particular <code>BlockIdentifier</code>.
       example:
         metadata:
           transactions_root: 0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347
@@ -896,6 +995,9 @@ components:
       - transactions
       type: object
     Transaction:
+      description: |
+        <code>Transactions</code> contain an array of <code>Operations</code>
+        that are attributable to the same <code>TransactionIdentifier</code>.
       example:
         metadata:
           size: 12378
@@ -977,6 +1079,10 @@ components:
       - transaction_identifier
       type: object
     Operation:
+      description: |
+        <code>Operations</code> contain all balance-changing information within a
+        transaction. They are always one-sided (only affect 1 <code>AccountIdentifier</code>)
+        and can succeed or fail independently from a <code>Transaction</code>.
       example:
         amount:
           metadata: '{}'
@@ -1010,11 +1116,12 @@ components:
           $ref: '#/components/schemas/OperationIdentifier'
         related_operations:
           description: |
-            Restrict referenced `related_operations` to identifier indexes `<` the current `operation_identifier.index`.
-            This ensures there exists a clear DAG-structure of relations.
+            Restrict referenced `related_operations` to identifier indexes
+            `<` the current `operation_identifier.index`. This ensures there
+            exists a clear DAG-structure of relations.
 
-            Since `operations` are one-sided, one could imagine relating operations in a single transfer or linking
-            `operations` in a call tree.
+            Since `operations` are one-sided, one could imagine relating operations
+            in a single transfer or linking `operations` in a call tree.
           example:
           - index: 0
             operation_identifier:
@@ -1054,6 +1161,9 @@ components:
       - type
       type: object
     Amount:
+      description: |
+        <code>Amount</code> is some <code>Value</code> of a <code>Currency</code>.
+        It is considered invalid to specify a <code>Value</code> without a <code>Currency</code>.
       example:
         metadata: '{}'
         currency:
@@ -1079,6 +1189,11 @@ components:
       - value
       type: object
     Currency:
+      description: |
+        <code>Currency</code> is composed of a cannonical <code>Symbol</code> and
+        <code>Decimals</code>. This <code>Decimals</code> value is used to convert
+        an <code>Amount.Value</code> from atomic units (Satoshis) to standard units
+        (Bitcoins).
       example:
         symbol: BTC
         metadata:
@@ -1087,7 +1202,7 @@ components:
       properties:
         symbol:
           description: |
-            Canonical symbol associated with a currency.
+            Cannonical symbol associated with a currency.
           example: BTC
           type: string
         decimals:
@@ -1114,6 +1229,10 @@ components:
       - symbol
       type: object
     Balance:
+      description: |
+        <code>Balance</code> is the array of <code>Amount</code> controlled
+        by an <code>AccountIdentifier</code>. An underspecified <code>AccountIdentifier</code>
+        may result in many amounts (ex: all ERC-20 balances for a single address).
       example:
         metadata:
           sequence_number: 23
@@ -1175,20 +1294,20 @@ components:
     Version:
       example:
         metadata: '{}'
-        rosetta_version: 1.2.3
+        rosetta_version: 1.2.4
         node_version: 1.0.2
-        middleware_version: 1.2.7
+        middleware_version: 0.2.7
       properties:
         rosetta_version:
           description: |
             The `rosetta_version` is the version of the Rosetta interface
             the implementation adheres to. This can be useful for clients
             looking to reliably parse responses.
-          example: 1.2.3
+          example: 1.2.4
           type: string
         node_version:
           description: |
-            The `node_version` is the canonical version of the node
+            The `node_version` is the cannonical version of the node
             runtime. This can help clients manage deployments.
           example: 1.0.2
           type: string
@@ -1197,7 +1316,7 @@ components:
             When a middleware server is used to adhere to the Rosetta
             interface, it should return its version here. This can help
             clients manage deployments.
-          example: 1.2.7
+          example: 0.2.7
           type: string
         metadata:
           description: |
@@ -1302,12 +1421,11 @@ components:
       type: object
     Options:
       description: |
-        The `options` object contains the `methods`, `operation_statuses`,
-        and `operation_types` supported by this Rosetta implementation.
-
-        It is important to keep these updated across changes because they are
-        used by clients to validate your implementation (ex: are there any
-        unexpected `operation_statuses`).
+        <code>Options</code> specify supported <code>methods</code>, <code>Operation.Status</code>,
+        <code>Operation.Type</code>, and all possible transaction submission statuses. This <code>Options</code>
+        object is used by clients to validate the correctness of a Rosetta Server implementation. It is
+        expected that these clients will error if they receive some response that contains any of the above
+        information that is not specified here.
       example:
         operation_types:
         - TRANSFER
@@ -1316,8 +1434,15 @@ components:
         - /account/transactions
         - /account/transactions
         operation_statuses:
-        - SUCCESS
-        - SUCCESS
+        - status: SUCCESS
+          successful: true
+        - status: SUCCESS
+          successful: true
+        submission_statuses:
+        - status: MEMPOOL
+          successful: true
+        - status: MEMPOOL
+          successful: true
       properties:
         methods:
           description: |
@@ -1328,26 +1453,80 @@ components:
           type: array
         operation_statuses:
           description: |
-            All `Operation` status that this implementation supports. Any status
-            that is returnede during parsing that is not listed here could cause
-            consumers to error.
+            All `Operation.Status` this implementation supports. Any status
+            that is returned during parsing that is not listed here will cause
+            client validation to error.
           items:
-            example: SUCCESS
-            type: string
+            $ref: '#/components/schemas/OperationStatus'
           type: array
         operation_types:
           description: |
-            All `Operation` types that this implementation supports. Any type
-            that is returned during parsing that is not listed here could cause
-            consumers to error.
+            All `Operation.Type` this implementation supports. Any type
+            that is returned during parsing that is not listed here will
+            cause client validation to error.
           items:
             example: TRANSFER
             type: string
+          type: array
+        submission_statuses:
+          description: |
+            All `status` that can be returned when submitting a transaction
+            using the `/construction/submit` endpoint.
+          items:
+            $ref: '#/components/schemas/SubmissionStatus'
           type: array
       required:
       - methods
       - operation_statuses
       - operation_types
+      - submission_statuses
+      type: object
+    OperationStatus:
+      example:
+        status: SUCCESS
+        successful: true
+      properties:
+        status:
+          description: |
+            The `status` is the network-specific status of the operation.
+          type: string
+        successful:
+          description: |
+            An `Operation` is considered `successful` if the `Operation.Amount`
+            should affect the `Operation.Account`. Some blockchains (like Bitcoin)
+            only include `successful` operations in blocks but other blockchains
+            (like Ethereum) include unsuccessful operations that incur a fee.
+
+            To reconcile the computed balance from the stream of `Operations`,
+            it is critical to understand which `Operation.Status` indicate an
+            `Operation` is `successful` and should affect an `Account`.
+          type: boolean
+      required:
+      - status
+      - successful
+      type: object
+    SubmissionStatus:
+      example:
+        status: MEMPOOL
+        successful: true
+      properties:
+        status:
+          description: |
+            The `status` is the network-specific status of transaction
+            submission.
+          type: string
+        successful:
+          description: |
+            A transaction submission is considered `successful` if there
+            is any way that the transaction could be included in a block.
+            For example, a transaction submission status that indicates
+            a transaction is in the mempool would be `successful` and a
+            status that indicates signature validation failed would not
+            be `successful`.
+          type: boolean
+      required:
+      - status
+      - successful
       type: object
     Timestamp:
       description: |
@@ -1980,8 +2159,15 @@ components:
           - /account/transactions
           - /account/transactions
           operation_statuses:
-          - SUCCESS
-          - SUCCESS
+          - status: SUCCESS
+            successful: true
+          - status: SUCCESS
+            successful: true
+          submission_statuses:
+          - status: MEMPOOL
+            successful: true
+          - status: MEMPOOL
+            successful: true
         network_status:
           network_information:
             current_block_identifier:
@@ -2001,9 +2187,9 @@ components:
             network: mainnet
         version:
           metadata: '{}'
-          rosetta_version: 1.2.3
+          rosetta_version: 1.2.4
           node_version: 1.0.2
-          middleware_version: 1.2.7
+          middleware_version: 0.2.7
       properties:
         network_status:
           $ref: '#/components/schemas/NetworkStatus'

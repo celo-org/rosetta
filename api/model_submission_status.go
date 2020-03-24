@@ -9,12 +9,11 @@
 
 package api
 
-// Transaction - <code>Transactions</code> contain an array of <code>Operations</code> that are attributable to the same <code>TransactionIdentifier</code>.
-type Transaction struct {
-	TransactionIdentifier TransactionIdentifier `json:"transaction_identifier"`
+type SubmissionStatus struct {
 
-	Operations []Operation `json:"operations"`
+	// The `status` is the network-specific status of transaction submission.
+	Status string `json:"status"`
 
-	// Transactions that are related to other transactions (like a cross-shard transactioin) should include the `tranaction_identifier` of these transactions in the metadata.
-	Metadata map[string]interface{} `json:"metadata,omitempty"`
+	// A transaction submission is considered `successful` if there is any way that the transaction could be included in a block. For example, a transaction submission status that indicates a transaction is in the mempool would be `successful` and a status that indicates signature validation failed would not be `successful`.
+	Successful bool `json:"successful"`
 }
