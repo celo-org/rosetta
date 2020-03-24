@@ -10,29 +10,46 @@
 package api
 
 import (
+	"context"
 	"errors"
+
+	txpool "github.com/celo-org/rosetta/celo/client/txpool"
+	"github.com/ethereum/go-ethereum/rpc"
 )
 
 // MempoolApiService is a service that implents the logic for the MempoolApiServicer
 // This service should implement the business logic for every endpoint for the MempoolApi API.
 // Include any external packages or services that will be required by this service.
 type MempoolApiService struct {
+	txPoolClient *txpool.TxPoolClient
 }
 
 // NewMempoolApiService creates a default api service
-func NewMempoolApiService() MempoolApiServicer {
-	return &MempoolApiService{}
+func NewMempoolApiService(rpcClient *rpc.Client) MempoolApiServicer {
+	return &MempoolApiService{
+		txPoolClient: txpool.NewClient(rpcClient),
+	}
 }
 
 // Mempool - Get All Mempool Transactions
-func (s *MempoolApiService) Mempool(mempoolRequest MempoolRequest) (interface{}, error) {
-	// TODO - update Mempool with the required logic for this service method.
-	// Add api_mempool_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-	return nil, errors.New("service method 'Mempool' not implemented")
+func (m *MempoolApiService) Mempool(mempoolRequest MempoolRequest) (interface{}, error) {
+	ctx := context.Background()
+
+	content, err := m.txPoolClient.Content(ctx)
+	if err != nil {
+		return BuildErrorResponse(1, err), nil
+	}
+
+	allTransactionIds := append(TxIdsFromTxAccountMap(&content.Pending), TxIdsFromTxAccountMap(&content.Queued)...)
+
+	response := MempoolResponse{
+		TransactionIdentifiers: allTransactionIds,
+	}
+	return response, nil
 }
 
 // MempoolTransaction - Get a Mempool Transaction
-func (s *MempoolApiService) MempoolTransaction(mempoolTransactionRequest MempoolTransactionRequest) (interface{}, error) {
+func (m *MempoolApiService) MempoolTransaction(mempoolTransactionRequest MempoolTransactionRequest) (interface{}, error) {
 	// TODO - update MempoolTransaction with the required logic for this service method.
 	// Add api_mempool_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 	return nil, errors.New("service method 'MempoolTransaction' not implemented")

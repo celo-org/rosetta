@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/p2p"
 )
@@ -36,4 +37,16 @@ func BuildErrorResponse(code int32, err error) Error {
 		Code:    code,
 		Message: err.Error(),
 	}
+}
+
+func TxIdsFromTxAccountMap(txAccountMap *map[common.Address]types.Transactions) []TransactionIdentifier {
+	identifiers := []TransactionIdentifier{}
+	for _, transactions := range *txAccountMap {
+		for _, tx := range transactions {
+			identifiers = append(identifiers, TransactionIdentifier{
+				Hash: tx.Hash().String(),
+			})
+		}
+	}
+	return identifiers
 }

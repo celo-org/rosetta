@@ -34,7 +34,7 @@ func main() {
 	ConstructionApiService := api.NewConstructionApiService()
 	ConstructionApiController := api.NewConstructionApiController(ConstructionApiService)
 
-	MempoolApiService := api.NewMempoolApiService()
+	MempoolApiService := api.NewMempoolApiService(rpcClient)
 	MempoolApiController := api.NewMempoolApiController(MempoolApiService)
 
 	NetworkApiService := api.NewNetworkApiService(rpcClient)
