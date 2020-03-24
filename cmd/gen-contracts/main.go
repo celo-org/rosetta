@@ -16,6 +16,7 @@ var contractsToGenerate = []string{
 	"Registry",
 	"LockedGold",
 	"Election",
+	"StableToken",
 }
 
 func main() {

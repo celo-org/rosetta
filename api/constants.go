@@ -20,14 +20,14 @@ var (
 		200312: "rc0",
 	}
 	RegistrySmartContractAddress = common.HexToAddress("0x000000000000000000000000000000000000ce10")
-	LockedGoldId                 = "LockedGold"
-	// TODO(yorke): fix decimals
-	CeloGold = Currency{
+	LockedGoldRegistryId         = "LockedGold"
+	StableTokenRegistryId        = "StableToken"
+	CeloGold                     = Currency{
 		Symbol:   "cGLD",
-		Decimals: 1000,
+		Decimals: 18,
 	}
 	CeloDollar = Currency{
 		Symbol:   "cUSD",
-		Decimals: 1000,
+		Decimals: 18,
 	}
 )

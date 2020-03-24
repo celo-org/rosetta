@@ -39,6 +39,9 @@ func (s *AccountApiService) AccountBalance(accountBalanceRequest AccountBalanceR
 
 	ctx := context.Background()
 	latestHeader, err := s.ethClient.HeaderByNumber(ctx, nil) // nil == latest
+	if err != nil {
+		return BuildErrorResponse(0, err), nil
+	}
 
 	goldBalance, err := s.ethClient.BalanceAt(ctx, address, latestHeader.Number)
 	if err != nil {
@@ -53,7 +56,7 @@ func (s *AccountApiService) AccountBalance(accountBalanceRequest AccountBalanceR
 	lockedGoldAddr, err := registry.GetAddressForString(&bind.CallOpts{
 		BlockNumber: latestHeader.Number,
 		Context:     ctx,
-	}, LockedGoldId)
+	}, LockedGoldRegistryId)
 	if err != nil {
 		return BuildErrorResponse(3, err), nil
 	}
@@ -71,6 +74,27 @@ func (s *AccountApiService) AccountBalance(accountBalanceRequest AccountBalanceR
 		return BuildErrorResponse(5, err), nil
 	}
 
+	stableTokenAddr, err := registry.GetAddressForString(&bind.CallOpts{
+		BlockNumber: latestHeader.Number,
+		Context:     ctx,
+	}, StableTokenRegistryId)
+	if err != nil {
+		return BuildErrorResponse(6, err), nil
+	}
+
+	stableToken, err := contract.NewStableToken(stableTokenAddr, s.ethClient)
+	if err != nil {
+		return BuildErrorResponse(7, err), nil
+	}
+
+	stableTokenBalance, err := stableToken.BalanceOf(&bind.CallOpts{
+		BlockNumber: latestHeader.Number,
+		Context:     ctx,
+	}, address)
+	if err != nil {
+		return BuildErrorResponse(8, err), nil
+	}
+
 	response := AccountBalanceResponse{
 		BlockIdentifier: BlockIdentifierFromHeader(latestHeader),
 		Balances: []Balance{
@@ -80,6 +104,10 @@ func (s *AccountApiService) AccountBalance(accountBalanceRequest AccountBalanceR
 					Amount{
 						Value:    goldBalance.String(),
 						Currency: CeloGold,
+					},
+					Amount{
+						Value:    stableTokenBalance.String(),
+						Currency: CeloDollar,
 					},
 				},
 			},
