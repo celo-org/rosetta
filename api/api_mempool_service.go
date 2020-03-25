@@ -13,24 +13,20 @@ import (
 	"context"
 	"errors"
 
-	network "github.com/celo-org/rosetta/celo/client/network"
-	txpool "github.com/celo-org/rosetta/celo/client/txpool"
-	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/celo-org/rosetta/celo/client"
 )
 
 // MempoolApiService is a service that implents the logic for the MempoolApiServicer
 // This service should implement the business logic for every endpoint for the MempoolApi API.
 // Include any external packages or services that will be required by this service.
 type MempoolApiService struct {
-	txPoolClient  *txpool.TxPoolClient
-	networkClient *network.NetworkClient
+	celoClient *client.CeloClient
 }
 
 // NewMempoolApiService creates a default api service
-func NewMempoolApiService(rpcClient *rpc.Client) MempoolApiServicer {
+func NewMempoolApiService(celoClient *client.CeloClient) MempoolApiServicer {
 	return &MempoolApiService{
-		txPoolClient:  txpool.NewClient(rpcClient),
-		networkClient: network.NewClient(rpcClient),
+		celoClient: celoClient,
 	}
 }
 
@@ -38,12 +34,12 @@ func NewMempoolApiService(rpcClient *rpc.Client) MempoolApiServicer {
 func (m *MempoolApiService) Mempool(mempoolRequest MempoolRequest) (interface{}, error) {
 	ctx := context.Background()
 
-	err := ValidateNetworkId(&mempoolRequest.NetworkIdentifier, m.networkClient, ctx)
+	err := ValidateNetworkId(&mempoolRequest.NetworkIdentifier, m.celoClient.Net, ctx)
 	if err != nil {
 		return BuildErrorResponse(1, err), nil
 	}
 
-	content, err := m.txPoolClient.Content(ctx)
+	content, err := m.celoClient.TxPool.Content(ctx)
 	if err != nil {
 		return BuildErrorResponse(2, err), nil
 	}

@@ -14,6 +14,7 @@ import (
 	"net/http"
 
 	api "github.com/celo-org/rosetta/api"
+	"github.com/celo-org/rosetta/celo/client"
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
@@ -25,19 +26,21 @@ func main() {
 		log.Fatalf("Can't connect to node, %s", err)
 	}
 
-	AccountApiService := api.NewAccountApiService(rpcClient)
+	celoClient := client.NewCeloClient(rpcClient)
+
+	AccountApiService := api.NewAccountApiService(celoClient)
 	AccountApiController := api.NewAccountApiController(AccountApiService)
 
-	BlockApiService := api.NewBlockApiService(rpcClient)
+	BlockApiService := api.NewBlockApiService(celoClient)
 	BlockApiController := api.NewBlockApiController(BlockApiService)
 
 	ConstructionApiService := api.NewConstructionApiService()
 	ConstructionApiController := api.NewConstructionApiController(ConstructionApiService)
 
-	MempoolApiService := api.NewMempoolApiService(rpcClient)
+	MempoolApiService := api.NewMempoolApiService(celoClient)
 	MempoolApiController := api.NewMempoolApiController(MempoolApiService)
 
-	NetworkApiService := api.NewNetworkApiService(rpcClient)
+	NetworkApiService := api.NewNetworkApiService(celoClient)
 	NetworkApiController := api.NewNetworkApiController(NetworkApiService)
 
 	router := api.NewRouter(AccountApiController, BlockApiController, ConstructionApiController, MempoolApiController, NetworkApiController)

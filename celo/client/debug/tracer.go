@@ -115,7 +115,7 @@ type transferTracerResponse struct {
 
 type Transfer struct {
 	From  common.Address `json:"from"`
-	To    common.Address `json:"from"`
+	To    common.Address `json:"to"`
 	Value *big.Int       `json:"value"`
 }
 
@@ -123,7 +123,7 @@ type Transfer struct {
 func (t *Transfer) UnmarshalJSON(input []byte) error {
 	type Transfer struct {
 		From  common.Address `json:"from"`
-		To    common.Address `json:"from"`
+		To    common.Address `json:"to"`
 		Value *hexutil.Big   `json:"value"`
 	}
 	var dec Transfer

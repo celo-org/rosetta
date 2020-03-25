@@ -13,27 +13,20 @@ import (
 	"context"
 	"math/big"
 
-	admin "github.com/celo-org/rosetta/celo/client/admin"
-	network "github.com/celo-org/rosetta/celo/client/network"
-	eth "github.com/ethereum/go-ethereum/ethclient"
-	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/celo-org/rosetta/celo/client"
 )
 
 // NetworkApiService is a service that implents the logic for the NetworkApiServicer
 // This service should implement the business logic for every endpoint for the NetworkApi API.
 // Include any external packages or services that will be required by this service.
 type NetworkApiService struct {
-	adminClient   *admin.AdminClient
-	networkClient *network.NetworkClient
-	ethClient     *eth.Client
+	celoClient *client.CeloClient
 }
 
 // NewNetworkApiService creates a default api service
-func NewNetworkApiService(rpcClient *rpc.Client) NetworkApiServicer {
+func NewNetworkApiService(celoClient *client.CeloClient) NetworkApiServicer {
 	return &NetworkApiService{
-		adminClient:   admin.NewClient(rpcClient),
-		networkClient: network.NewClient(rpcClient),
-		ethClient:     eth.NewClient(rpcClient),
+		celoClient: celoClient,
 	}
 }
 
@@ -41,22 +34,22 @@ func NewNetworkApiService(rpcClient *rpc.Client) NetworkApiServicer {
 func (s *NetworkApiService) NetworkStatus(networkStatusRequest NetworkStatusRequest) (interface{}, error) {
 	ctx := context.Background()
 
-	chainId, err := s.networkClient.ChainId(ctx)
+	chainId, err := s.celoClient.Net.ChainId(ctx)
 	if err != nil {
 		return BuildErrorResponse(1, err), nil
 	}
 
-	latestHeader, err := s.ethClient.HeaderByNumber(ctx, nil) // nil == latest
+	latestHeader, err := s.celoClient.Eth.HeaderByNumber(ctx, nil) // nil == latest
 	if err != nil {
 		return BuildErrorResponse(2, err), nil
 	}
 
-	genesisHeader, err := s.ethClient.HeaderByNumber(ctx, big.NewInt(0)) // 0 == genesis
+	genesisHeader, err := s.celoClient.Eth.HeaderByNumber(ctx, big.NewInt(0)) // 0 == genesis
 	if err != nil {
 		return BuildErrorResponse(3, err), nil
 	}
 
-	peersInfo, err := s.adminClient.Peers(ctx)
+	peersInfo, err := s.celoClient.Admin.Peers(ctx)
 	if err != nil {
 		return BuildErrorResponse(4, err), nil
 	}
@@ -68,9 +61,9 @@ func (s *NetworkApiService) NetworkStatus(networkStatusRequest NetworkStatusRequ
 				Network:    NetworkNameFromId(chainId),
 			},
 			NetworkInformation: NetworkInformation{
-				CurrentBlockIdentifier: BlockIdentifierFromHeader(latestHeader),
+				CurrentBlockIdentifier: *HeaderToBlockIdentifier(latestHeader),
 				CurrentBlockTimestamp:  int64(latestHeader.Time),
-				GenesisBlockIdentifier: BlockIdentifierFromHeader(genesisHeader),
+				GenesisBlockIdentifier: *HeaderToBlockIdentifier(genesisHeader),
 				Peers:                  PeersFromInfo(peersInfo),
 			},
 		},

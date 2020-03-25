@@ -12,27 +12,23 @@ package api
 import (
 	"context"
 
-	network "github.com/celo-org/rosetta/celo/client/network"
+	"github.com/celo-org/rosetta/celo/client"
 	"github.com/celo-org/rosetta/contract"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	eth "github.com/ethereum/go-ethereum/ethclient"
-	"github.com/ethereum/go-ethereum/rpc"
 )
 
 // AccountApiService is a service that implents the logic for the AccountApiServicer
 // This service should implement the business logic for every endpoint for the AccountApi API.
 // Include any external packages or services that will be required by this service.
 type AccountApiService struct {
-	ethClient     *eth.Client
-	networkClient *network.NetworkClient
+	celoClient *client.CeloClient
 }
 
 // NewAccountApiService creates a default api service
-func NewAccountApiService(rpcClient *rpc.Client) AccountApiServicer {
+func NewAccountApiService(celoClient *client.CeloClient) AccountApiServicer {
 	return &AccountApiService{
-		ethClient:     eth.NewClient(rpcClient),
-		networkClient: network.NewClient(rpcClient),
+		celoClient: celoClient,
 	}
 }
 
@@ -40,24 +36,24 @@ func NewAccountApiService(rpcClient *rpc.Client) AccountApiServicer {
 func (s *AccountApiService) AccountBalance(accountBalanceRequest AccountBalanceRequest) (interface{}, error) {
 	ctx := context.Background()
 
-	err := ValidateNetworkId(&accountBalanceRequest.NetworkIdentifier, s.networkClient, ctx)
+	err := ValidateNetworkId(&accountBalanceRequest.NetworkIdentifier, s.celoClient.Net, ctx)
 	if err != nil {
 		return BuildErrorResponse(1, err), nil
 	}
 
 	address := common.HexToAddress(accountBalanceRequest.AccountIdentifier.Address)
 
-	latestHeader, err := s.ethClient.HeaderByNumber(ctx, nil) // nil == latest
+	latestHeader, err := s.celoClient.Eth.HeaderByNumber(ctx, nil) // nil == latest
 	if err != nil {
 		return BuildErrorResponse(2, err), nil
 	}
 
-	goldBalance, err := s.ethClient.BalanceAt(ctx, address, latestHeader.Number)
+	goldBalance, err := s.celoClient.Eth.BalanceAt(ctx, address, latestHeader.Number)
 	if err != nil {
 		return BuildErrorResponse(3, err), nil
 	}
 
-	registry, err := contract.NewRegistry(RegistrySmartContractAddress, s.ethClient)
+	registry, err := contract.NewRegistry(RegistrySmartContractAddress, s.celoClient.Eth)
 	if err != nil {
 		return BuildErrorResponse(4, err), nil
 	}
@@ -70,7 +66,7 @@ func (s *AccountApiService) AccountBalance(accountBalanceRequest AccountBalanceR
 		return BuildErrorResponse(5, err), nil
 	}
 
-	lockedGold, err := contract.NewLockedGold(lockedGoldAddr, s.ethClient)
+	lockedGold, err := contract.NewLockedGold(lockedGoldAddr, s.celoClient.Eth)
 	if err != nil {
 		return BuildErrorResponse(6, err), nil
 	}
@@ -92,7 +88,7 @@ func (s *AccountApiService) AccountBalance(accountBalanceRequest AccountBalanceR
 	// 	return BuildErrorResponse(6, err), nil
 	// }
 
-	// stableToken, err := contract.NewStableToken(stableTokenAddr, s.ethClient)
+	// stableToken, err := contract.NewStableToken(stableTokenAddr, s.celoClient.Eth)
 	// if err != nil {
 	// 	return BuildErrorResponse(7, err), nil
 	// }
@@ -106,7 +102,7 @@ func (s *AccountApiService) AccountBalance(accountBalanceRequest AccountBalanceR
 	// }
 
 	response := AccountBalanceResponse{
-		BlockIdentifier: BlockIdentifierFromHeader(latestHeader),
+		BlockIdentifier: *HeaderToBlockIdentifier(latestHeader),
 		Balances: []Balance{
 			Balance{
 				AccountIdentifier: accountBalanceRequest.AccountIdentifier,

@@ -29,7 +29,7 @@ func NewTxExplorer(
 	tx *types.Transaction,
 	receipt *types.Receipt,
 ) *TxExplorer {
-	return TxExplorer{
+	return &TxExplorer{
 		celoClient:  celoClient,
 		blockHeader: blockHeader,
 		tx:          tx,

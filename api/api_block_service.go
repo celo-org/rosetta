@@ -12,85 +12,185 @@ package api
 import (
 	"context"
 	"errors"
+	"fmt"
 	"math/big"
 
+	"github.com/celo-org/rosetta/celo/client"
 	"github.com/celo-org/rosetta/celo/client/debug"
-	"github.com/celo-org/rosetta/celo/client/network"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/ethereum/go-ethereum/rpc"
+)
+
+var (
+	InvalidBlockIdentifier = errors.New("Invalid Block Identifier")
 )
 
 // BlockApiService is a service that implents the logic for the BlockApiServicer
 // This service should implement the business logic for every endpoint for the BlockApi API.
 // Include any external packages or services that will be required by this service.
 type BlockApiService struct {
-	ethClient     *ethclient.Client
-	debugClient   *debug.DebugClient
-	networkClient *network.NetworkClient
+	celoClient *client.CeloClient
 }
 
 // NewBlockApiService creates a default api service
-func NewBlockApiService(rpcClient *rpc.Client) BlockApiServicer {
+func NewBlockApiService(celoClient *client.CeloClient) BlockApiServicer {
 	return &BlockApiService{
-		ethClient:     ethclient.NewClient(rpcClient),
-		debugClient:   debug.NewClient(rpcClient),
-		networkClient: network.NewClient(rpcClient),
+		celoClient: celoClient,
 	}
+}
+
+func (b *BlockApiService) BlockHeader(ctx context.Context, blockIdentifier PartialBlockIdentifier) (*ethclient.ExtendedHeader, error) {
+	// TODO Check latest if no one is specified
+
+	var blockHeader *ethclient.ExtendedHeader
+	var err error
+	if blockIdentifier.Hash != nil {
+		hash := common.HexToHash(*blockIdentifier.Hash)
+		blockHeader, err = b.celoClient.Eth.ExtendedHeaderByHash(ctx, hash)
+		if err != nil {
+			return nil, err
+		}
+		// If both were specified check the result matches
+		if blockIdentifier.Index != nil && blockHeader.Number.Cmp(big.NewInt(*blockIdentifier.Index)) != 0 {
+			return nil, InvalidBlockIdentifier
+		}
+
+	} else if blockIdentifier.Index != nil {
+		blockHeader, err = b.celoClient.Eth.ExtendedHeaderByNumber(ctx, big.NewInt(*blockIdentifier.Index))
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		blockHeader, err = b.celoClient.Eth.ExtendedHeaderByNumber(ctx, nil)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return blockHeader, nil
+
 }
 
 // Block - Get a Block
 func (b *BlockApiService) Block(blockRequest BlockRequest) (interface{}, error) {
 	ctx := context.Background()
 
-	err := ValidateNetworkId(&blockRequest.NetworkIdentifier, b.networkClient, ctx)
+	err := ValidateNetworkId(&blockRequest.NetworkIdentifier, b.celoClient.Net, ctx)
 	if err != nil {
 		return BuildErrorResponse(1, err), nil
 	}
 
-	var blockHeader *ethclient.ExtendedHeader
-	if blockRequest.BlockIdentifier.Hash != "" {
-		hash := common.HexToHash(blockRequest.BlockIdentifier.Hash)
-		blockHeader, err = b.ethClient.ExtendedHeaderByHash(ctx, hash)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		blockHeader, err = b.ethClient.ExtendedHeaderByNumber(ctx, big.NewInt(blockRequest.BlockIdentifier.Index))
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	transactions := make([]Transaction, len(blockHeader.Transactions))
-	for i, tx := range blockHeader.Transactions {
-		transactions[i] = Transaction{
-			TransactionIdentifier: TransactionIdentifier{
-				Hash: tx.Hex(),
-			},
-		}
+	blockHeader, err := b.BlockHeader(ctx, blockRequest.BlockIdentifier)
+	if err != nil {
+		return BuildErrorResponse(2, err), nil
 	}
 
 	return &BlockResponse{
 		Block: Block{
-			BlockIdentifier: BlockIdentifier{
-				Hash:  blockHeader.Hash().Hex(),
-				Index: blockHeader.Number.Int64(),
-			},
-			ParentBlockIdentifier: BlockIdentifier{
-				Hash:  blockHeader.ParentHash.Hex(),
-				Index: blockHeader.Number.Int64() - 1,
-			},
-			Timestamp:    int64(blockHeader.Time), // TODO unsafe casting from uint to int 64
-			Transactions: transactions,
+			BlockIdentifier:       *HeaderToBlockIdentifier(&blockHeader.Header),
+			ParentBlockIdentifier: *HeaderToParentBlockIdentifier(&blockHeader.Header),
+			Timestamp:             int64(blockHeader.Time), // TODO unsafe casting from uint to int 64
+			Transactions:          MapTxHashesToTransaction(blockHeader.Transactions),
 		},
 	}, nil
 
 }
 
 // BlockTransaction - Get a Block Transaction
-func (s *BlockApiService) BlockTransaction(blockTransactionRequest BlockTransactionRequest) (interface{}, error) {
-	// TODO - update BlockTransaction with the required logic for this service method.
-	// Add api_block_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-	return nil, errors.New("service method 'BlockTransaction' not implemented")
+func (s *BlockApiService) BlockTransaction(request BlockTransactionRequest) (interface{}, error) {
+	ctx := context.Background()
+
+	txHash := common.HexToHash(request.TransactionIdentifier.Hash)
+	blockHeader, err := s.BlockHeader(ctx, FullToPartialBlockIdentifier(request.BlockIdentifier))
+	if err != nil {
+		return nil, err
+	}
+	if !HeaderContainsTx(blockHeader, txHash) {
+		// TODO error handling
+		return BuildErrorResponse(1, fmt.Errorf("Some Error")), nil
+	}
+
+	tx, pending, err := s.celoClient.Eth.TransactionByHash(ctx, txHash)
+	if err != nil {
+		return nil, err
+	}
+
+	if pending {
+		return nil, fmt.Errorf("Pending Transaction")
+	}
+	receipt, err := s.celoClient.Eth.TransactionReceipt(ctx, tx.Hash())
+
+	// TODO - Validate correct Block
+
+	// Get Internal Transfers
+	transfers, err := s.celoClient.Debug.TransactionTransfers(ctx, tx.Hash())
+	if err != nil {
+		return nil, err
+	}
+
+	return &BlockTransactionResponse{
+		Transaction: Transaction{
+			TransactionIdentifier: TransactionIdentifier{Hash: tx.Hash().Hex()},
+			Operations:            computeToOperations(tx, receipt, transfers),
+		},
+	}, nil
+}
+
+func newOperation(kind string, index int64, account common.Address, amount *big.Int) *Operation {
+	return &Operation{
+		Type:   kind,
+		Status: "succeed",
+		OperationIdentifier: OperationIdentifier{
+			Index: index,
+			// NetworkIndex: ,
+		},
+		Account: AccountIdentifier{
+			Address: account.Hex(),
+		},
+		Amount: Amount{
+			Value: amount.String(),
+		},
+	}
+}
+
+func computeToOperations(tx *types.Transaction, receipt *types.Receipt, transfers []debug.Transfer) []Operation {
+
+	operations := make([]Operation, len(transfers)*2)
+
+	for i, transfer := range transfers {
+		// Debit Operation
+		operations[2*i] = Operation{
+			OperationIdentifier: OperationIdentifier{
+				Index: int64(2 * i),
+				// NetworkIndex: ,
+			},
+			Amount: Amount{
+				Value: new(big.Int).Neg(transfer.Value).String(),
+			},
+			Account: AccountIdentifier{
+				Address: transfer.From.Hex(),
+			},
+			Status: "succeed",
+			Type:   "transfer",
+		}
+
+		// Credit Operation
+		operations[2*i+1] = Operation{
+			OperationIdentifier: OperationIdentifier{
+				Index: int64(2*i + 1),
+				// NetworkIndex: ,
+			},
+			Amount: Amount{
+				Value: transfer.Value.String(),
+			},
+			Account: AccountIdentifier{
+				Address: transfer.To.Hex(),
+			},
+			Status: "succeed",
+			Type:   "transfer",
+		}
+	}
+
+	return operations
 }

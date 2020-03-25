@@ -6,16 +6,11 @@ import (
 
 	"github.com/celo-org/rosetta/celo/client/txpool"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/p2p"
 )
-
-func BlockIdentifierFromHeader(header *types.Header) BlockIdentifier {
-	return BlockIdentifier{
-		Index: header.Number.Int64(),
-		Hash:  header.Hash().Hex(),
-	}
-}
 
 func NetworkNameFromId(id *big.Int) string {
 	uid := id.Uint64()
@@ -50,4 +45,46 @@ func TxIdsFromTxAccountMap(txAccountMap txpool.TxAccountMap) []TransactionIdenti
 		}
 	}
 	return identifiers
+}
+
+func HeaderContainsTx(header *ethclient.ExtendedHeader, txHash common.Hash) bool {
+	for _, tx := range header.Transactions {
+		if tx == txHash {
+			return true
+		}
+	}
+	return false
+}
+
+func FullToPartialBlockIdentifier(blockIdentifer BlockIdentifier) PartialBlockIdentifier {
+	return PartialBlockIdentifier{
+		Index: &blockIdentifer.Index,
+		Hash:  &blockIdentifer.Hash,
+	}
+}
+
+func HeaderToBlockIdentifier(header *types.Header) *BlockIdentifier {
+	return &BlockIdentifier{
+		Hash:  header.Hash().Hex(),
+		Index: header.Number.Int64(),
+	}
+}
+
+func HeaderToParentBlockIdentifier(header *types.Header) *BlockIdentifier {
+	return &BlockIdentifier{
+		Hash:  header.Hash().Hex(),
+		Index: new(big.Int).Sub(header.Number, big.NewInt(1)).Int64(),
+	}
+}
+
+func MapTxHashesToTransaction(txHashes []common.Hash) []Transaction {
+	transactions := make([]Transaction, len(txHashes))
+	for i, tx := range txHashes {
+		transactions[i] = Transaction{
+			TransactionIdentifier: TransactionIdentifier{
+				Hash: tx.Hex(),
+			},
+		}
+	}
+	return transactions
 }

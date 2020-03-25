@@ -3,18 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"text/tabwriter"
-
-	"github.com/celo-org/rosetta/celo/client/debug"
 
 	"github.com/celo-org/rosetta/contract"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/eth"
-	"github.com/ethereum/go-ethereum/rpc"
-	"github.com/k0kubun/pp"
 )
 
 var (
@@ -22,51 +16,20 @@ var (
 )
 
 func main() {
-	rpc, err := rpc.Dial("https://alfajores-forno.celo-testnet.org/")
+	// _, err := rpc.Dial("https://alfajores-forno.celo-testnet.org/")
 	// rpc, err := rpc.Dial("https://rc0-forno.celo-testnet.org/")
-	if err != nil {
-		log.Fatalf("Can't connect, %s", err)
-	}
-
-	modules, err := rpc.SupportedModules()
-	if err != nil {
-		log.Fatalf("Error %s", err)
-	}
-	pp.Print(modules)
-
-	// client := ethclient.NewClient(rpc)
-
-	// registry, err := contract.NewRegistry(RegistrySmartContractAddress, client)
 	// if err != nil {
-	// 	log.Fatalf("Error %s", err)
+	// 	log.Fatalf("Can't connect, %s", err)
 	// }
 
-	// lockedGoldAddr, err := registry.GetAddressForString(nil, "LockedGold")
+	// debugClient := debug.NewClient(rpc)
+
+	// var result []interface{}
+	// err = debugClient.TraceTransaction(context.Background(), &result, common.HexToHash("0x82864c43454f7b3dc993315cbbe5f18807c2998f4a58c0561448f38929e4f263"), tracerConfig)
 	// if err != nil {
-	// 	log.Fatalf("Error %s", err)
+	// 	log.Fatalf("Error calling debug_traceTransaction %s", err)
 	// }
 
-	// lockedGold, err := contract.NewLockedGold(lockedGoldAddr, client)
-	// if err != nil {
-	// 	log.Fatalf("Error %s", err)
-	// }
-
-	// printRegistryUpdated(registry)
-	// printGoldLocked(lockedGold)
-
-	tracer, err := debug.ReadTracer("tracer.js")
-	if err != nil {
-		log.Fatalf("Failed to read tracer %s", err)
-	}
-	debugClient := debug.NewClient(rpc)
-	tracerConfig := &eth.TraceConfig{Tracer: tracer}
-	var result []interface{}
-	err = debugClient.TraceTransaction(context.Background(), &result, common.HexToHash("0x82864c43454f7b3dc993315cbbe5f18807c2998f4a58c0561448f38929e4f263"), tracerConfig)
-	if err != nil {
-		log.Fatalf("Error calling debug_traceTransaction %s", err)
-	}
-
-	pp.Print(result)
 	// tx, pending, err := client.TransactionByHash(ctx, common.HexToHash("0x7c5b0a06c8f138a8d48ba2ebb34304ef17c4cec6294cddd42d7b1753f0e335c4"))
 	// if err != nil {
 	// 	log.Fatalf("Error with TransactionByHash, %s\n", err)
