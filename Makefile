@@ -30,8 +30,7 @@ else
 	OS = linux
 endif
 
-all: bls-zexe
-	go run cmd/gen-contracts/main.go -gcelo $(CELO_BLOCKCHAIN_PATH) -monorepo $(CELO_MONOREPO_PATH)
+all: bls-zexe gen-contracts
 	go build ./...
 
 bls-zexe: $(BLS_RS_PATH)/target/release/libepoch_snark.a
@@ -42,6 +41,9 @@ ifeq ("$(CARGO_exists)","")
 else
 	cd $(BLS_RS_PATH) && cargo build --release
 endif
+
+gen-contracts:
+	go run cmd/gen-contracts/main.go -gcelo $(CELO_BLOCKCHAIN_PATH) -monorepo $(CELO_MONOREPO_PATH)
 
 gen-rpc:
 ifeq ("$(OPENAPIGEN_exists)","")
