@@ -83,7 +83,7 @@ func (s *NetworkApiService) NetworkStatus(networkStatusRequest NetworkStatusRequ
 		// TODO: implement
 		Options: Options{
 			Methods:           []string{},
-			OperationStatuses: []string{},
+			OperationStatuses: []OperationStatus{},
 			OperationTypes:    []string{},
 		},
 		Metadata: map[string]interface{}{},
