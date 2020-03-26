@@ -70,9 +70,7 @@ func (s *ConstructionApiService) getTxdata(ctx context.Context, address common.A
 }
 
 // TransactionConstruction - Get Transaction Construction Metadata
-func (s *ConstructionApiService) TransactionConstruction(txConstructionRequest TransactionConstructionRequest) (interface{}, error) {
-	ctx := context.Background()
-
+func (s *ConstructionApiService) TransactionConstruction(ctx context.Context, txConstructionRequest TransactionConstructionRequest) (interface{}, error) {
 	err := ValidateNetworkId(&txConstructionRequest.NetworkIdentifier, s.celoClient.Net, ctx)
 	if err != nil {
 		return BuildErrorResponse(1, err), nil
