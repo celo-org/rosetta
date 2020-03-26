@@ -72,8 +72,7 @@ func (b *BlockApiService) BlockHeader(ctx context.Context, blockIdentifier Parti
 }
 
 // Block - Get a Block
-func (b *BlockApiService) Block(blockRequest BlockRequest) (interface{}, error) {
-	ctx := context.Background()
+func (b *BlockApiService) Block(ctx context.Context, blockRequest BlockRequest) (interface{}, error) {
 
 	err := ValidateNetworkId(&blockRequest.NetworkIdentifier, b.celoClient.Net, ctx)
 	if err != nil {
@@ -97,8 +96,7 @@ func (b *BlockApiService) Block(blockRequest BlockRequest) (interface{}, error) 
 }
 
 // BlockTransaction - Get a Block Transaction
-func (s *BlockApiService) BlockTransaction(request BlockTransactionRequest) (interface{}, error) {
-	ctx := context.Background()
+func (s *BlockApiService) BlockTransaction(ctx context.Context, request BlockTransactionRequest) (interface{}, error) {
 
 	txHash := common.HexToHash(request.TransactionIdentifier.Hash)
 	blockHeader, err := s.BlockHeader(ctx, FullToPartialBlockIdentifier(request.BlockIdentifier))

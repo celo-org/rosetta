@@ -51,7 +51,7 @@ func (c *MempoolApiController) Mempool(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := c.service.Mempool(*mempoolRequest)
+	result, err := c.service.Mempool(r.Context(), *mempoolRequest)
 	if err != nil {
 		w.WriteHeader(500)
 		return
@@ -68,7 +68,7 @@ func (c *MempoolApiController) MempoolTransaction(w http.ResponseWriter, r *http
 		return
 	}
 
-	result, err := c.service.MempoolTransaction(*mempoolTransactionRequest)
+	result, err := c.service.MempoolTransaction(r.Context(), *mempoolTransactionRequest)
 	if err != nil {
 		w.WriteHeader(500)
 		return

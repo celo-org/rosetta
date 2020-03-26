@@ -45,7 +45,7 @@ func (c *AccountApiController) AccountBalance(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	result, err := c.service.AccountBalance(*accountBalanceRequest)
+	result, err := c.service.AccountBalance(r.Context(), *accountBalanceRequest)
 	if err != nil {
 		w.WriteHeader(500)
 		return

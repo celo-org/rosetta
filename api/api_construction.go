@@ -51,7 +51,7 @@ func (c *ConstructionApiController) TransactionConstruction(w http.ResponseWrite
 		return
 	}
 
-	result, err := c.service.TransactionConstruction(*transactionConstructionRequest)
+	result, err := c.service.TransactionConstruction(r.Context(), *transactionConstructionRequest)
 	if err != nil {
 		w.WriteHeader(500)
 		return
@@ -68,7 +68,7 @@ func (c *ConstructionApiController) TransactionSubmit(w http.ResponseWriter, r *
 		return
 	}
 
-	result, err := c.service.TransactionSubmit(*transactionSubmitRequest)
+	result, err := c.service.TransactionSubmit(r.Context(), *transactionSubmitRequest)
 	if err != nil {
 		w.WriteHeader(500)
 		return

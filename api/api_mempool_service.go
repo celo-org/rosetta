@@ -31,8 +31,7 @@ func NewMempoolApiService(celoClient *client.CeloClient) MempoolApiServicer {
 }
 
 // Mempool - Get All Mempool Transactions
-func (m *MempoolApiService) Mempool(mempoolRequest MempoolRequest) (interface{}, error) {
-	ctx := context.Background()
+func (m *MempoolApiService) Mempool(ctx context.Context, mempoolRequest MempoolRequest) (interface{}, error) {
 
 	err := ValidateNetworkId(&mempoolRequest.NetworkIdentifier, m.celoClient.Net, ctx)
 	if err != nil {
@@ -53,7 +52,7 @@ func (m *MempoolApiService) Mempool(mempoolRequest MempoolRequest) (interface{},
 }
 
 // MempoolTransaction - Get a Mempool Transaction
-func (m *MempoolApiService) MempoolTransaction(mempoolTransactionRequest MempoolTransactionRequest) (interface{}, error) {
+func (m *MempoolApiService) MempoolTransaction(ctx context.Context, mempoolTransactionRequest MempoolTransactionRequest) (interface{}, error) {
 	// TODO - update MempoolTransaction with the required logic for this service method.
 	// Add api_mempool_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 	return nil, errors.New("service method 'MempoolTransaction' not implemented")

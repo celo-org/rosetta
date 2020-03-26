@@ -51,7 +51,7 @@ func (c *BlockApiController) Block(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := c.service.Block(*blockRequest)
+	result, err := c.service.Block(r.Context(), *blockRequest)
 	if err != nil {
 		w.WriteHeader(500)
 		return
@@ -68,7 +68,7 @@ func (c *BlockApiController) BlockTransaction(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	result, err := c.service.BlockTransaction(*blockTransactionRequest)
+	result, err := c.service.BlockTransaction(r.Context(), *blockTransactionRequest)
 	if err != nil {
 		w.WriteHeader(500)
 		return

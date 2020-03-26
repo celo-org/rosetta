@@ -7,6 +7,9 @@
 api/api_*_service.go
 main.go
 
+# Modified for optional Fields
+api/model_partial_block_identifier.go
+
 go.mod
 go.sum
 

@@ -31,8 +31,7 @@ func NewNetworkApiService(celoClient *client.CeloClient) NetworkApiServicer {
 }
 
 // NetworkStatus - Get Network Status
-func (s *NetworkApiService) NetworkStatus(networkStatusRequest NetworkStatusRequest) (interface{}, error) {
-	ctx := context.Background()
+func (s *NetworkApiService) NetworkStatus(ctx context.Context, networkStatusRequest NetworkStatusRequest) (interface{}, error) {
 
 	chainId, err := s.celoClient.Net.ChainId(ctx)
 	if err != nil {

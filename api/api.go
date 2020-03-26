@@ -10,6 +10,7 @@
 package api
 
 import (
+	"context"
 	"net/http"
 )
 
@@ -56,7 +57,7 @@ type NetworkApiRouter interface {
 // while the service implementation can ignored with the .openapi-generator-ignore file
 // and updated with the logic required for the API.
 type AccountApiServicer interface {
-	AccountBalance(AccountBalanceRequest) (interface{}, error)
+	AccountBalance(context.Context, AccountBalanceRequest) (interface{}, error)
 }
 
 // BlockApiServicer defines the api actions for the BlockApi service
@@ -64,8 +65,8 @@ type AccountApiServicer interface {
 // while the service implementation can ignored with the .openapi-generator-ignore file
 // and updated with the logic required for the API.
 type BlockApiServicer interface {
-	Block(BlockRequest) (interface{}, error)
-	BlockTransaction(BlockTransactionRequest) (interface{}, error)
+	Block(context.Context, BlockRequest) (interface{}, error)
+	BlockTransaction(context.Context, BlockTransactionRequest) (interface{}, error)
 }
 
 // ConstructionApiServicer defines the api actions for the ConstructionApi service
@@ -73,8 +74,8 @@ type BlockApiServicer interface {
 // while the service implementation can ignored with the .openapi-generator-ignore file
 // and updated with the logic required for the API.
 type ConstructionApiServicer interface {
-	TransactionConstruction(TransactionConstructionRequest) (interface{}, error)
-	TransactionSubmit(TransactionSubmitRequest) (interface{}, error)
+	TransactionConstruction(context.Context, TransactionConstructionRequest) (interface{}, error)
+	TransactionSubmit(context.Context, TransactionSubmitRequest) (interface{}, error)
 }
 
 // MempoolApiServicer defines the api actions for the MempoolApi service
@@ -82,8 +83,8 @@ type ConstructionApiServicer interface {
 // while the service implementation can ignored with the .openapi-generator-ignore file
 // and updated with the logic required for the API.
 type MempoolApiServicer interface {
-	Mempool(MempoolRequest) (interface{}, error)
-	MempoolTransaction(MempoolTransactionRequest) (interface{}, error)
+	Mempool(context.Context, MempoolRequest) (interface{}, error)
+	MempoolTransaction(context.Context, MempoolTransactionRequest) (interface{}, error)
 }
 
 // NetworkApiServicer defines the api actions for the NetworkApi service
@@ -91,5 +92,5 @@ type MempoolApiServicer interface {
 // while the service implementation can ignored with the .openapi-generator-ignore file
 // and updated with the logic required for the API.
 type NetworkApiServicer interface {
-	NetworkStatus(NetworkStatusRequest) (interface{}, error)
+	NetworkStatus(context.Context, NetworkStatusRequest) (interface{}, error)
 }

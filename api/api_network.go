@@ -45,7 +45,7 @@ func (c *NetworkApiController) NetworkStatus(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	result, err := c.service.NetworkStatus(*networkStatusRequest)
+	result, err := c.service.NetworkStatus(r.Context(), *networkStatusRequest)
 	if err != nil {
 		w.WriteHeader(500)
 		return
