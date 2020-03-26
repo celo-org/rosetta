@@ -12,24 +12,97 @@ package api
 import (
 	"context"
 	"errors"
+	"fmt"
+	"math/big"
+
+	"github.com/celo-org/rosetta/celo"
+	"github.com/celo-org/rosetta/celo/client"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/params"
 )
 
 // ConstructionApiService is a service that implents the logic for the ConstructionApiServicer
 // This service should implement the business logic for every endpoint for the ConstructionApi API.
 // Include any external packages or services that will be required by this service.
 type ConstructionApiService struct {
+	celoClient *client.CeloClient
 }
 
 // NewConstructionApiService creates a default api service
-func NewConstructionApiService() ConstructionApiServicer {
-	return &ConstructionApiService{}
+func NewConstructionApiService(celoClient *client.CeloClient) ConstructionApiServicer {
+	return &ConstructionApiService{
+		celoClient: celoClient,
+	}
+}
+
+func (s *ConstructionApiService) getTxdata(ctx context.Context, address common.Address) (*types.Txdata, error) {
+	var txData types.Txdata
+	var err error
+	txData.AccountNonce, err = s.celoClient.Eth.NonceAt(ctx, address, nil) // nil == latest
+	if err != nil {
+		return nil, err
+	}
+
+	registry, err := celo.GetRegistry(s.celoClient.Eth)
+	if err != nil {
+		return nil, err
+	}
+
+	*txData.FeeCurrency, err = registry.GetAddressFor(nil, params.GoldTokenRegistryId)
+	if err != nil {
+		return nil, err
+	}
+
+	txData.GatewayFeeRecipient, err = s.celoClient.Eth.Coinbase(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	txData.Price, err = s.celoClient.Eth.SuggestGasPrice(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	txData.GatewayFee = big.NewInt(0)
+
+	return &txData, nil
 }
 
 // TransactionConstruction - Get Transaction Construction Metadata
-func (s *ConstructionApiService) TransactionConstruction(ctx context.Context, transactionConstructionRequest TransactionConstructionRequest) (interface{}, error) {
-	// TODO - update TransactionConstruction with the required logic for this service method.
-	// Add api_construction_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-	return nil, errors.New("service method 'TransactionConstruction' not implemented")
+func (s *ConstructionApiService) TransactionConstruction(txConstructionRequest TransactionConstructionRequest) (interface{}, error) {
+	ctx := context.Background()
+
+	err := ValidateNetworkId(&txConstructionRequest.NetworkIdentifier, s.celoClient.Net, ctx)
+	if err != nil {
+		return BuildErrorResponse(1, err), nil
+	}
+	address := common.HexToAddress(txConstructionRequest.AccountIdentifier.Address)
+
+	var metadata map[string]interface{}
+	switch txConstructionRequest.Method {
+	case TransferMethod:
+		metadata["balance"], err = s.celoClient.Eth.BalanceAt(ctx, address, nil) // nil == latest
+	default:
+		err = fmt.Errorf("Method not supported: %s", txConstructionRequest.Method)
+	}
+	if err != nil {
+		return BuildErrorResponse(2, err), nil
+	}
+
+	metadata["txdata"], err = s.getTxdata(ctx, address)
+	if err != nil {
+		return BuildErrorResponse(3, err), nil
+	}
+
+	response := TransactionConstructionResponse{
+		SuggestedFee: Amount{
+			Value:    GasUpperBound[txConstructionRequest.Method],
+			Currency: CeloGold,
+		},
+		Metadata: metadata,
+	}
+	return response, nil
 }
 
 // TransactionSubmit - Submit a Signed Transaction

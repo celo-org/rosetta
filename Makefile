@@ -7,8 +7,8 @@
 
 GO ?= latest
 BLS_RS_PATH ?= external/bls-zexe
-CELO_BLOCKCHAIN_PATH?=../celo-blockchain
-CELO_MONOREPO_PATH?=../celo-monorepo
+CELO_BLOCKCHAIN_PATH?=../blockchain
+CELO_MONOREPO_PATH?=../monorepo
 GITHUB_ORG?=celo-org
 GITHUB_REPO?=rosetta
 
@@ -17,7 +17,7 @@ LSB_exists := $(shell command -v lsb_release 2> /dev/null)
 GOLANGCI_exists := $(shell command -v golangci-lint 2> /dev/null)
 OPENAPIGEN_exists := $(shell command -v openapi-generator 2> /dev/null)
 
-.PHONY: 
+.PHONY:
 	gen-rpc 
 	ifdef CARGO_exists
 		$(BLS_RS_PATH)/target/release/libepoch_snark.a

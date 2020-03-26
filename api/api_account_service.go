@@ -12,10 +12,12 @@ package api
 import (
 	"context"
 
+	"github.com/celo-org/rosetta/celo"
 	"github.com/celo-org/rosetta/celo/client"
 	"github.com/celo-org/rosetta/contract"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/params"
 )
 
 // AccountApiService is a service that implents the logic for the AccountApiServicer
@@ -52,15 +54,15 @@ func (s *AccountApiService) AccountBalance(ctx context.Context, accountBalanceRe
 		return BuildErrorResponse(3, err), nil
 	}
 
-	registry, err := contract.NewRegistry(RegistrySmartContractAddress, s.celoClient.Eth)
+	registry, err := celo.GetRegistry(s.celoClient.Eth)
 	if err != nil {
 		return BuildErrorResponse(4, err), nil
 	}
 
-	lockedGoldAddr, err := registry.GetAddressForString(&bind.CallOpts{
+	lockedGoldAddr, err := registry.GetAddressFor(&bind.CallOpts{
 		BlockNumber: latestHeader.Number,
 		Context:     ctx,
-	}, LockedGoldRegistryId)
+	}, params.LockedGoldRegistryId)
 	if err != nil {
 		return BuildErrorResponse(5, err), nil
 	}
@@ -77,28 +79,6 @@ func (s *AccountApiService) AccountBalance(ctx context.Context, accountBalanceRe
 	if err != nil {
 		return BuildErrorResponse(7, err), nil
 	}
-
-	// STABLETOKEN DISABLED FOR v1.0.0
-	// stableTokenAddr, err := registry.GetAddressForString(&bind.CallOpts{
-	// 	BlockNumber: latestHeader.Number,
-	// 	Context:     ctx,
-	// }, StableTokenRegistryId)
-	// if err != nil {
-	// 	return BuildErrorResponse(6, err), nil
-	// }
-
-	// stableToken, err := contract.NewStableToken(stableTokenAddr, s.celoClient.Eth)
-	// if err != nil {
-	// 	return BuildErrorResponse(7, err), nil
-	// }
-
-	// stableTokenBalance, err := stableToken.BalanceOf(&bind.CallOpts{
-	// 	BlockNumber: latestHeader.Number,
-	// 	Context:     ctx,
-	// }, address)
-	// if err != nil {
-	// 	return BuildErrorResponse(8, err), nil
-	// }
 
 	response := AccountBalanceResponse{
 		BlockIdentifier: *HeaderToBlockIdentifier(latestHeader),
@@ -120,7 +100,7 @@ func (s *AccountApiService) AccountBalance(ctx context.Context, accountBalanceRe
 				AccountIdentifier: AccountIdentifier{
 					Address: accountBalanceRequest.AccountIdentifier.Address,
 					SubAccount: SubAccountIdentifier{
-						SubAccount: LockedGoldRegistryId,
+						SubAccount: "LockedGold",
 					},
 				},
 				Amounts: []Amount{

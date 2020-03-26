@@ -74,7 +74,7 @@ func (s *NetworkApiService) NetworkStatus(ctx context.Context, networkStatusRequ
 		},
 		// TODO: implement
 		Options: Options{
-			Methods:           []string{},
+			Methods:           []string{TransferMethod},
 			OperationStatuses: []OperationStatus{},
 			OperationTypes:    []string{},
 		},

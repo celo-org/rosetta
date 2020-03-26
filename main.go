@@ -49,7 +49,7 @@ func CreateRouter(celoClient *client.CeloClient) *mux.Router {
 	BlockApiService := api.NewBlockApiService(celoClient)
 	BlockApiController := api.NewBlockApiController(BlockApiService)
 
-	ConstructionApiService := api.NewConstructionApiService()
+	ConstructionApiService := api.NewConstructionApiService(celoClient)
 	ConstructionApiController := api.NewConstructionApiController(ConstructionApiService)
 
 	MempoolApiService := api.NewMempoolApiService(celoClient)
