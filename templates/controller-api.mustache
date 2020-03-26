@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+
+	"github.com/ethereum/go-ethereum/log"
 )
 
 // A {{classname}}Controller binds http requests to an api service and writes the service results to the http response
@@ -22,7 +24,7 @@ func (c *{{classname}}Controller) Routes() Routes {
 	return Routes{ {{#operations}}{{#operation}}
 		{
 			"{{operationId}}",
-			strings.ToUpper("{{httpMethod}}"),
+			http.Method{{httpMethod}},
 			"{{{basePathWithoutHost}}}{{{path}}}",
 			c.{{operationId}},
 		},{{/operation}}{{/operations}}
@@ -33,7 +35,7 @@ func (c *{{classname}}Controller) Routes() Routes {
 func (c *{{classname}}Controller) {{nickname}}(w http.ResponseWriter, r *http.Request) { {{#hasFormParams}}
 	err := r.ParseForm()
 	if err != nil {
-		w.WriteHeader(500)
+		BadRequest(w, NewValidationError("form", err))
 		return
 	}
 	{{/hasFormParams}}{{#hasPathParams}}
@@ -41,27 +43,27 @@ func (c *{{classname}}Controller) {{nickname}}(w http.ResponseWriter, r *http.Re
 	query := r.URL.Query(){{/hasQueryParams}}{{#allParams}}{{#isPathParam}}{{#isLong}}
 	{{paramName}}, err := parseIntParameter(params["{{paramName}}"])
 	if err != nil {
-		w.WriteHeader(500)
+		BadRequest(w, NewValidationError("{{paramName}}", err))
 		return
 	}
 	{{/isLong}}{{^isLong}}
 	{{paramName}} := params["{{paramName}}"]{{/isLong}}{{/isPathParam}}{{#isQueryParam}}{{#isLong}}
 	{{paramName}}, err := parseIntParameter(query.Get("{{paramName}}"))
 	if err != nil {
-		w.WriteHeader(500)
+		BadRequest(w, NewValidationError("{{paramName}}", err))
 		return
 	}
 	{{/isLong}}{{^isLong}}
 	{{paramName}} := {{#isListContainer}}strings.Split({{/isListContainer}}query.Get("{{paramName}}"){{#isListContainer}}, ","){{/isListContainer}}{{/isLong}}{{/isQueryParam}}{{#isFormParam}}{{#isFile}}
 	{{paramName}}, err := ReadFormFileToTempFile(r, "{{paramName}}")
 	if err != nil {
-		w.WriteHeader(500)
+		BadRequest(w, NewValidationError("{{paramName}}", err))
 		return
 	}
 	{{/isFile}}{{#isLong}}
 	{{paramName}}, err := parseIntParameter( r.FormValue("{{paramName}}"))
 	if err != nil {
-		w.WriteHeader(500)
+		BadRequest(w, NewValidationError("{{paramName}}", err))
 		return
 	}
 	{{/isLong}}{{^isFile}}{{^isLong}}
@@ -69,15 +71,16 @@ func (c *{{classname}}Controller) {{nickname}}(w http.ResponseWriter, r *http.Re
 	{{paramName}} := r.Header.Get("{{paramName}}"){{/isHeaderParam}}{{#isBodyParam}}
 	{{paramName}} := &{{dataType}}{}
 	if err := json.NewDecoder(r.Body).Decode(&{{paramName}}); err != nil {
-		w.WriteHeader(500)
+		BadRequest(w, NewValidationError("{{paramName}}", err))
 		return
 	}
 	{{/isBodyParam}}{{/allParams}}
 	result, err := c.service.{{nickname}}(r.Context(), {{#allParams}}{{#isBodyParam}}*{{/isBodyParam}}{{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}})
 	if err != nil {
+		log.Error("RequestError", "err", err)
 		w.WriteHeader(500)
 		return
 	}
 	
-	EncodeJSONResponse(result, nil, w)
+	EncodeJSONResponse(result, http.StatusOK, w)
 }{{/operation}}{{/operations}}

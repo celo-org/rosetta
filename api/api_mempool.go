@@ -12,7 +12,8 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
+
+	"github.com/ethereum/go-ethereum/log"
 )
 
 // A MempoolApiController binds http requests to an api service and writes the service results to the http response
@@ -30,13 +31,13 @@ func (c *MempoolApiController) Routes() Routes {
 	return Routes{
 		{
 			"Mempool",
-			strings.ToUpper("Post"),
+			http.MethodPost,
 			"/mempool",
 			c.Mempool,
 		},
 		{
 			"MempoolTransaction",
-			strings.ToUpper("Post"),
+			http.MethodPost,
 			"/mempool/transaction",
 			c.MempoolTransaction,
 		},
@@ -47,32 +48,34 @@ func (c *MempoolApiController) Routes() Routes {
 func (c *MempoolApiController) Mempool(w http.ResponseWriter, r *http.Request) {
 	mempoolRequest := &MempoolRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&mempoolRequest); err != nil {
-		w.WriteHeader(500)
+		BadRequest(w, NewValidationError("mempoolRequest", err))
 		return
 	}
 
 	result, err := c.service.Mempool(r.Context(), *mempoolRequest)
 	if err != nil {
+		log.Error("RequestError", "err", err)
 		w.WriteHeader(500)
 		return
 	}
 
-	EncodeJSONResponse(result, nil, w)
+	EncodeJSONResponse(result, http.StatusOK, w)
 }
 
 // MempoolTransaction - Get a Mempool Transaction
 func (c *MempoolApiController) MempoolTransaction(w http.ResponseWriter, r *http.Request) {
 	mempoolTransactionRequest := &MempoolTransactionRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&mempoolTransactionRequest); err != nil {
-		w.WriteHeader(500)
+		BadRequest(w, NewValidationError("mempoolTransactionRequest", err))
 		return
 	}
 
 	result, err := c.service.MempoolTransaction(r.Context(), *mempoolTransactionRequest)
 	if err != nil {
+		log.Error("RequestError", "err", err)
 		w.WriteHeader(500)
 		return
 	}
 
-	EncodeJSONResponse(result, nil, w)
+	EncodeJSONResponse(result, http.StatusOK, w)
 }

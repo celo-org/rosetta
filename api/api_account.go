@@ -12,7 +12,8 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
+
+	"github.com/ethereum/go-ethereum/log"
 )
 
 // A AccountApiController binds http requests to an api service and writes the service results to the http response
@@ -30,7 +31,7 @@ func (c *AccountApiController) Routes() Routes {
 	return Routes{
 		{
 			"AccountBalance",
-			strings.ToUpper("Post"),
+			http.MethodPost,
 			"/account/balance",
 			c.AccountBalance,
 		},
@@ -41,15 +42,16 @@ func (c *AccountApiController) Routes() Routes {
 func (c *AccountApiController) AccountBalance(w http.ResponseWriter, r *http.Request) {
 	accountBalanceRequest := &AccountBalanceRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&accountBalanceRequest); err != nil {
-		w.WriteHeader(500)
+		BadRequest(w, NewValidationError("accountBalanceRequest", err))
 		return
 	}
 
 	result, err := c.service.AccountBalance(r.Context(), *accountBalanceRequest)
 	if err != nil {
+		log.Error("RequestError", "err", err)
 		w.WriteHeader(500)
 		return
 	}
 
-	EncodeJSONResponse(result, nil, w)
+	EncodeJSONResponse(result, http.StatusOK, w)
 }

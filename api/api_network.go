@@ -12,7 +12,8 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
+
+	"github.com/ethereum/go-ethereum/log"
 )
 
 // A NetworkApiController binds http requests to an api service and writes the service results to the http response
@@ -30,7 +31,7 @@ func (c *NetworkApiController) Routes() Routes {
 	return Routes{
 		{
 			"NetworkStatus",
-			strings.ToUpper("Post"),
+			http.MethodPost,
 			"/network/status",
 			c.NetworkStatus,
 		},
@@ -41,15 +42,16 @@ func (c *NetworkApiController) Routes() Routes {
 func (c *NetworkApiController) NetworkStatus(w http.ResponseWriter, r *http.Request) {
 	networkStatusRequest := &NetworkStatusRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&networkStatusRequest); err != nil {
-		w.WriteHeader(500)
+		BadRequest(w, NewValidationError("networkStatusRequest", err))
 		return
 	}
 
 	result, err := c.service.NetworkStatus(r.Context(), *networkStatusRequest)
 	if err != nil {
+		log.Error("RequestError", "err", err)
 		w.WriteHeader(500)
 		return
 	}
 
-	EncodeJSONResponse(result, nil, w)
+	EncodeJSONResponse(result, http.StatusOK, w)
 }

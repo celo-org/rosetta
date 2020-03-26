@@ -54,3 +54,12 @@ func CreateRouter(celoClient *client.CeloClient) *mux.Router {
 	router := NewRouter(AccountApiController, BlockApiController, ConstructionApiController, MempoolApiController, NetworkApiController)
 	return router
 }
+
+// BaddRequest replies to the request with status 400 and the error message
+// It does not otherwise end the request; the caller should ensure no further
+func BadRequest(w http.ResponseWriter, err error) {
+	payload := BuildErrorResponse(int32(http.StatusBadRequest), err)
+	if err = EncodeJSONResponse(payload, http.StatusBadRequest, w); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}

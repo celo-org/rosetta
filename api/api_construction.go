@@ -12,7 +12,8 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
+
+	"github.com/ethereum/go-ethereum/log"
 )
 
 // A ConstructionApiController binds http requests to an api service and writes the service results to the http response
@@ -30,13 +31,13 @@ func (c *ConstructionApiController) Routes() Routes {
 	return Routes{
 		{
 			"TransactionConstruction",
-			strings.ToUpper("Post"),
+			http.MethodPost,
 			"/construction/metadata",
 			c.TransactionConstruction,
 		},
 		{
 			"TransactionSubmit",
-			strings.ToUpper("Post"),
+			http.MethodPost,
 			"/construction/submit",
 			c.TransactionSubmit,
 		},
@@ -47,32 +48,34 @@ func (c *ConstructionApiController) Routes() Routes {
 func (c *ConstructionApiController) TransactionConstruction(w http.ResponseWriter, r *http.Request) {
 	transactionConstructionRequest := &TransactionConstructionRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&transactionConstructionRequest); err != nil {
-		w.WriteHeader(500)
+		BadRequest(w, NewValidationError("transactionConstructionRequest", err))
 		return
 	}
 
 	result, err := c.service.TransactionConstruction(r.Context(), *transactionConstructionRequest)
 	if err != nil {
+		log.Error("RequestError", "err", err)
 		w.WriteHeader(500)
 		return
 	}
 
-	EncodeJSONResponse(result, nil, w)
+	EncodeJSONResponse(result, http.StatusOK, w)
 }
 
 // TransactionSubmit - Submit a Signed Transaction
 func (c *ConstructionApiController) TransactionSubmit(w http.ResponseWriter, r *http.Request) {
 	transactionSubmitRequest := &TransactionSubmitRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&transactionSubmitRequest); err != nil {
-		w.WriteHeader(500)
+		BadRequest(w, NewValidationError("transactionSubmitRequest", err))
 		return
 	}
 
 	result, err := c.service.TransactionSubmit(r.Context(), *transactionSubmitRequest)
 	if err != nil {
+		log.Error("RequestError", "err", err)
 		w.WriteHeader(500)
 		return
 	}
 
-	EncodeJSONResponse(result, nil, w)
+	EncodeJSONResponse(result, http.StatusOK, w)
 }

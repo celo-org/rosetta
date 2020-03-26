@@ -12,7 +12,8 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
+
+	"github.com/ethereum/go-ethereum/log"
 )
 
 // A BlockApiController binds http requests to an api service and writes the service results to the http response
@@ -30,13 +31,13 @@ func (c *BlockApiController) Routes() Routes {
 	return Routes{
 		{
 			"Block",
-			strings.ToUpper("Post"),
+			http.MethodPost,
 			"/block",
 			c.Block,
 		},
 		{
 			"BlockTransaction",
-			strings.ToUpper("Post"),
+			http.MethodPost,
 			"/block/transaction",
 			c.BlockTransaction,
 		},
@@ -47,32 +48,34 @@ func (c *BlockApiController) Routes() Routes {
 func (c *BlockApiController) Block(w http.ResponseWriter, r *http.Request) {
 	blockRequest := &BlockRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&blockRequest); err != nil {
-		w.WriteHeader(500)
+		BadRequest(w, NewValidationError("blockRequest", err))
 		return
 	}
 
 	result, err := c.service.Block(r.Context(), *blockRequest)
 	if err != nil {
+		log.Error("RequestError", "err", err)
 		w.WriteHeader(500)
 		return
 	}
 
-	EncodeJSONResponse(result, nil, w)
+	EncodeJSONResponse(result, http.StatusOK, w)
 }
 
 // BlockTransaction - Get a Block Transaction
 func (c *BlockApiController) BlockTransaction(w http.ResponseWriter, r *http.Request) {
 	blockTransactionRequest := &BlockTransactionRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&blockTransactionRequest); err != nil {
-		w.WriteHeader(500)
+		BadRequest(w, NewValidationError("blockTransactionRequest", err))
 		return
 	}
 
 	result, err := c.service.BlockTransaction(r.Context(), *blockTransactionRequest)
 	if err != nil {
+		log.Error("RequestError", "err", err)
 		w.WriteHeader(500)
 		return
 	}
 
-	EncodeJSONResponse(result, nil, w)
+	EncodeJSONResponse(result, http.StatusOK, w)
 }
