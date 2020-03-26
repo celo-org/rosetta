@@ -15,10 +15,9 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/celo-org/rosetta/celo"
 	"github.com/celo-org/rosetta/celo/client"
-	"github.com/celo-org/rosetta/celo/client/debug"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
@@ -41,16 +40,16 @@ func NewBlockApiService(celoClient *client.CeloClient) BlockApiServicer {
 }
 
 func (b *BlockApiService) BlockHeader(ctx context.Context, blockIdentifier PartialBlockIdentifier) (*ethclient.ExtendedHeader, error) {
-	// TODO Check latest if no one is specified
-
-	var blockHeader *ethclient.ExtendedHeader
 	var err error
+	var blockHeader *ethclient.ExtendedHeader
+
 	if blockIdentifier.Hash != nil {
 		hash := common.HexToHash(*blockIdentifier.Hash)
 		blockHeader, err = b.celoClient.Eth.ExtendedHeaderByHash(ctx, hash)
 		if err != nil {
 			return nil, err
 		}
+
 		// If both were specified check the result matches
 		if blockIdentifier.Index != nil && blockHeader.Number.Cmp(big.NewInt(*blockIdentifier.Index)) != 0 {
 			return nil, InvalidBlockIdentifier
@@ -119,78 +118,31 @@ func (s *BlockApiService) BlockTransaction(request BlockTransactionRequest) (int
 	if pending {
 		return nil, fmt.Errorf("Pending Transaction")
 	}
+
 	receipt, err := s.celoClient.Eth.TransactionReceipt(ctx, tx.Hash())
-
-	// TODO - Validate correct Block
-
-	// Get Internal Transfers
-	transfers, err := s.celoClient.Debug.TransactionTransfers(ctx, tx.Hash())
 	if err != nil {
 		return nil, err
+	}
+
+	txExplorer := celo.NewTxExplorer(ctx, s.celoClient, &blockHeader.Header, tx, receipt)
+
+	gasDetails, err := txExplorer.GasDetail()
+	if err != nil {
+		return nil, err
+	}
+
+	operations := GasDetailsToOperations(gasDetails)
+
+	transfers, err := txExplorer.TransferDetail()
+	opIndex := int64(len(operations))
+	for i, transfer := range transfers {
+		operations = append(operations, TransferToOperations(opIndex+int64(2*i), &transfer)...)
 	}
 
 	return &BlockTransactionResponse{
 		Transaction: Transaction{
 			TransactionIdentifier: TransactionIdentifier{Hash: tx.Hash().Hex()},
-			Operations:            computeToOperations(tx, receipt, transfers),
+			Operations:            operations,
 		},
 	}, nil
-}
-
-func newOperation(kind string, index int64, account common.Address, amount *big.Int) *Operation {
-	return &Operation{
-		Type:   kind,
-		Status: "succeed",
-		OperationIdentifier: OperationIdentifier{
-			Index: index,
-			// NetworkIndex: ,
-		},
-		Account: AccountIdentifier{
-			Address: account.Hex(),
-		},
-		Amount: Amount{
-			Value: amount.String(),
-		},
-	}
-}
-
-func computeToOperations(tx *types.Transaction, receipt *types.Receipt, transfers []debug.Transfer) []Operation {
-
-	operations := make([]Operation, len(transfers)*2)
-
-	for i, transfer := range transfers {
-		// Debit Operation
-		operations[2*i] = Operation{
-			OperationIdentifier: OperationIdentifier{
-				Index: int64(2 * i),
-				// NetworkIndex: ,
-			},
-			Amount: Amount{
-				Value: new(big.Int).Neg(transfer.Value).String(),
-			},
-			Account: AccountIdentifier{
-				Address: transfer.From.Hex(),
-			},
-			Status: "succeed",
-			Type:   "transfer",
-		}
-
-		// Credit Operation
-		operations[2*i+1] = Operation{
-			OperationIdentifier: OperationIdentifier{
-				Index: int64(2*i + 1),
-				// NetworkIndex: ,
-			},
-			Amount: Amount{
-				Value: transfer.Value.String(),
-			},
-			Account: AccountIdentifier{
-				Address: transfer.To.Hex(),
-			},
-			Status: "succeed",
-			Type:   "transfer",
-		}
-	}
-
-	return operations
 }

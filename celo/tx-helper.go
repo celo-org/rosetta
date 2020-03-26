@@ -176,6 +176,10 @@ type Transfer struct {
 }
 
 func (tc *TxExplorer) TransferDetail() ([]Transfer, error) {
+	if tc.receipt.Status == types.ReceiptStatusFailed {
+		return nil, nil
+	}
+
 	internalTransfers, err := tc.celoClient.Debug.TransactionTransfers(tc.ctx, tc.tx.Hash())
 	if err != nil {
 		return nil, err

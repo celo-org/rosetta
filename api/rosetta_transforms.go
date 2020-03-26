@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/celo-org/rosetta/celo"
 	"github.com/celo-org/rosetta/celo/client/txpool"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -87,4 +88,64 @@ func MapTxHashesToTransaction(txHashes []common.Hash) []Transaction {
 		}
 	}
 	return transactions
+}
+
+func NewAccountIdentifier(addr common.Address) AccountIdentifier {
+	return AccountIdentifier{
+		Address: addr.Hex(),
+	}
+}
+
+func NewOperationIdentifier(index int64) OperationIdentifier {
+	return OperationIdentifier{
+		Index: index,
+	}
+}
+func NewAmount(value *big.Int) Amount {
+	return Amount{Value: value.String()}
+}
+
+func GasDetailsToOperations(gasDetails map[common.Address]*big.Int) []Operation {
+	var operations []Operation
+	opIndex := int64(0)
+	for address, value := range gasDetails {
+		var relatedOps []OperationIdentifier
+		if opIndex > 0 {
+			relatedOps := make([]OperationIdentifier, opIndex)
+			for i := int64(0); i < opIndex; i++ {
+				relatedOps[i] = NewOperationIdentifier(i)
+			}
+		}
+
+		operations = append(operations, Operation{
+			OperationIdentifier: NewOperationIdentifier(opIndex),
+			Account:             NewAccountIdentifier(address),
+			Amount:              NewAmount(value),
+			Status:              OperationSuccess.String(),
+			Type:                OpKindFee.String(),
+			RelatedOperations:   relatedOps,
+		})
+		opIndex += 1
+	}
+
+	return operations
+}
+
+func TransferToOperations(baseIndex int64, transfer *celo.Transfer) []Operation {
+	return []Operation{
+		Operation{
+			OperationIdentifier: NewOperationIdentifier(baseIndex),
+			Account:             NewAccountIdentifier(transfer.From.Address),
+			Amount:              NewAmount(new(big.Int).Neg(transfer.Value)),
+			Status:              OperationSuccess.String(),
+			Type:                OpKindTransfer.String(),
+		},
+		Operation{
+			OperationIdentifier: NewOperationIdentifier(baseIndex + 1),
+			Account:             NewAccountIdentifier(transfer.To.Address),
+			Amount:              NewAmount(transfer.Value),
+			Status:              OperationSuccess.String(),
+			Type:                OpKindTransfer.String(),
+		},
+	}
 }
