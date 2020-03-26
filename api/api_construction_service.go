@@ -15,11 +15,9 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/celo-org/rosetta/celo"
 	"github.com/celo-org/rosetta/celo/client"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/params"
 )
 
 // ConstructionApiService is a service that implents the logic for the ConstructionApiServicer
@@ -44,15 +42,17 @@ func (s *ConstructionApiService) getTxdata(ctx context.Context, address common.A
 		return nil, err
 	}
 
-	registry, err := celo.GetRegistry(s.celoClient.Eth)
-	if err != nil {
-		return nil, err
-	}
+	// registry, err := celo.GetRegistry(s.celoClient.Eth)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	*txData.FeeCurrency, err = registry.GetAddressFor(nil, params.GoldTokenRegistryId)
-	if err != nil {
-		return nil, err
-	}
+	// feecurrency, err := registry.GetAddressFor(nil, params.GoldTokenRegistryId)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// txData.FeeCurrency = &feecurrency
+	// txData.FeeCurrency = nil
 
 	txData.GatewayFeeRecipient, err = s.celoClient.Eth.Coinbase(ctx)
 	if err != nil {
@@ -79,15 +79,15 @@ func (s *ConstructionApiService) TransactionConstruction(txConstructionRequest T
 	}
 	address := common.HexToAddress(txConstructionRequest.AccountIdentifier.Address)
 
-	var metadata map[string]interface{}
+	metadata := make(map[string]interface{})
 	switch txConstructionRequest.Method {
 	case TransferMethod:
 		metadata["balance"], err = s.celoClient.Eth.BalanceAt(ctx, address, nil) // nil == latest
+		if err != nil {
+			return BuildErrorResponse(2, err), nil
+		}
 	default:
-		err = fmt.Errorf("Method not supported: %s", txConstructionRequest.Method)
-	}
-	if err != nil {
-		return BuildErrorResponse(2, err), nil
+		return BuildErrorResponse(3, fmt.Errorf("Method not supported: %s", txConstructionRequest.Method)), nil
 	}
 
 	metadata["txdata"], err = s.getTxdata(ctx, address)
