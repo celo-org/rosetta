@@ -14,6 +14,7 @@ require (
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/sirupsen/logrus v1.5.0 // indirect
+	github.com/spf13/viper v1.6.2
 )
 
 replace github.com/celo-org/bls-zexe/go => ./external/bls-zexe/go
