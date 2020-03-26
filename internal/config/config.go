@@ -23,6 +23,8 @@ var HttpServer HttpServerConfig
 func ReadConfig() {
 
 	viper.SetDefault("httpServer.requestTimeout", "25s")
+	viper.SetDefault("httpServer.port", "8080")
+	viper.SetDefault("httpServer.interface", "")
 
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")

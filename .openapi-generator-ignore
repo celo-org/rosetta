@@ -5,7 +5,11 @@
 # The patterns follow closely to .gitignore or .dockerignore.
 
 api/api_*_service.go
+
+# Changed by Use
 main.go
+# Removed
+api/logger.go
 
 # Modified for optional Fields
 api/model_partial_block_identifier.go

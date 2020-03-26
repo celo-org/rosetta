@@ -10,54 +10,28 @@
 package main
 
 import (
-	"log"
-	"net/http"
+	"os"
 
-	api "github.com/celo-org/rosetta/api"
+	"github.com/celo-org/rosetta/api"
 	"github.com/celo-org/rosetta/celo/client"
 	"github.com/celo-org/rosetta/internal/config"
+	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/rpc"
-	"github.com/gorilla/mux"
 )
 
 func main() {
-	log.Printf("Server started")
+	log.Root().SetHandler(log.LvlFilterHandler(log.LvlInfo, log.StreamHandler(os.Stderr, log.TerminalFormat(true))))
+
+	log.Info("Server started")
 
 	// Read Configuration Variables
 	config.ReadConfig()
 
 	rpcClient, err := rpc.Dial("https://alfajores-forno.celo-testnet.org/")
 	if err != nil {
-		log.Fatalf("Can't connect to node, %s", err)
+		log.Crit("Can't connect to node", "err", err)
 	}
 	celoClient := client.NewCeloClient(rpcClient)
 
-	StartHttpServer(celoClient)
-}
-
-func StartHttpServer(celoClient *client.CeloClient) {
-	router := CreateRouter(celoClient)
-
-	mainHandler := http.TimeoutHandler(router, config.HttpServer.RequestTimeout, "Request Timed out")
-	log.Fatal(http.ListenAndServe(config.HttpServer.ListenAddress(), mainHandler))
-}
-
-func CreateRouter(celoClient *client.CeloClient) *mux.Router {
-	AccountApiService := api.NewAccountApiService(celoClient)
-	AccountApiController := api.NewAccountApiController(AccountApiService)
-
-	BlockApiService := api.NewBlockApiService(celoClient)
-	BlockApiController := api.NewBlockApiController(BlockApiService)
-
-	ConstructionApiService := api.NewConstructionApiService(celoClient)
-	ConstructionApiController := api.NewConstructionApiController(ConstructionApiService)
-
-	MempoolApiService := api.NewMempoolApiService(celoClient)
-	MempoolApiController := api.NewMempoolApiController(MempoolApiService)
-
-	NetworkApiService := api.NewNetworkApiService(celoClient)
-	NetworkApiController := api.NewNetworkApiController(NetworkApiService)
-
-	router := api.NewRouter(AccountApiController, BlockApiController, ConstructionApiController, MempoolApiController, NetworkApiController)
-	return router
+	api.StartHttpServer(celoClient)
 }
