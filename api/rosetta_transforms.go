@@ -101,8 +101,11 @@ func NewOperationIdentifier(index int64) OperationIdentifier {
 		Index: index,
 	}
 }
-func NewAmount(value *big.Int) Amount {
-	return Amount{Value: value.String()}
+func NewAmount(value *big.Int, currency Currency) Amount {
+	return Amount{
+		Value:    value.String(),
+		Currency: currency,
+	}
 }
 
 func GasDetailsToOperations(gasDetails map[common.Address]*big.Int) []Operation {
@@ -120,7 +123,7 @@ func GasDetailsToOperations(gasDetails map[common.Address]*big.Int) []Operation 
 		operations = append(operations, Operation{
 			OperationIdentifier: NewOperationIdentifier(opIndex),
 			Account:             NewAccountIdentifier(address),
-			Amount:              NewAmount(value),
+			Amount:              NewAmount(value, CeloGold),
 			Status:              OperationSuccess.String(),
 			Type:                OpKindFee.String(),
 			RelatedOperations:   relatedOps,
@@ -136,14 +139,14 @@ func TransferToOperations(baseIndex int64, transfer *celo.Transfer) []Operation 
 		Operation{
 			OperationIdentifier: NewOperationIdentifier(baseIndex),
 			Account:             NewAccountIdentifier(transfer.From.Address),
-			Amount:              NewAmount(new(big.Int).Neg(transfer.Value)),
+			Amount:              NewAmount(new(big.Int).Neg(transfer.Value), CeloGold),
 			Status:              OperationSuccess.String(),
 			Type:                OpKindTransfer.String(),
 		},
 		Operation{
 			OperationIdentifier: NewOperationIdentifier(baseIndex + 1),
 			Account:             NewAccountIdentifier(transfer.To.Address),
-			Amount:              NewAmount(transfer.Value),
+			Amount:              NewAmount(transfer.Value, CeloGold),
 			Status:              OperationSuccess.String(),
 			Type:                OpKindTransfer.String(),
 		},

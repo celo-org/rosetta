@@ -10,6 +10,7 @@ require (
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/ethereum/go-ethereum v1.9.8
 	github.com/gorilla/mux v1.7.3
+	github.com/onsi/gomega v1.7.1
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/sirupsen/logrus v1.5.0 // indirect
