@@ -42,18 +42,6 @@ func (s *ConstructionApiService) getTxdata(ctx context.Context, address common.A
 		return nil, err
 	}
 
-	// registry, err := celo.GetRegistry(s.celoClient.Eth)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// feecurrency, err := registry.GetAddressFor(nil, params.GoldTokenRegistryId)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// txData.FeeCurrency = &feecurrency
-	// txData.FeeCurrency = nil
-
 	txData.GatewayFeeRecipient, err = s.celoClient.Eth.Coinbase(ctx)
 	if err != nil {
 		return nil, err
@@ -64,6 +52,7 @@ func (s *ConstructionApiService) getTxdata(ctx context.Context, address common.A
 		return nil, err
 	}
 
+	// TODO: consider fetching from node
 	txData.GatewayFee = big.NewInt(0)
 
 	return &txData, nil
@@ -77,23 +66,29 @@ func (s *ConstructionApiService) TransactionConstruction(ctx context.Context, tx
 	}
 	address := common.HexToAddress(txConstructionRequest.AccountIdentifier.Address)
 
-	metadata := make(map[string]interface{})
-	switch txConstructionRequest.Method {
-	case TransferMethod:
-		metadata["balance"], err = s.celoClient.Eth.BalanceAt(ctx, address, nil) // nil == latest
-		if err != nil {
-			return BuildErrorResponse(2, err), nil
-		}
-	default:
-		return BuildErrorResponse(3, fmt.Errorf("Method not supported: %s", txConstructionRequest.Method)), nil
+	var metadata = make(map[string]interface{})
+
+	txdata, err := s.getTxdata(ctx, address)
+	if err != nil {
+		return BuildErrorResponse(2, err), nil
 	}
 
-	metadata["txdata"], err = s.getTxdata(ctx, address)
-	if err != nil {
-		return BuildErrorResponse(3, err), nil
+	switch txConstructionRequest.Method {
+	case TransferMethod:
+		balance, err := s.celoClient.Eth.BalanceAt(ctx, address, nil) // nil == latest
+		if err != nil {
+			return BuildErrorResponse(3, err), nil
+		}
+		metadata[TransferMethod] = TransferMetadata{
+			Balance: balance,
+			Txdata:  txdata,
+		}
+	default:
+		return BuildErrorResponse(4, fmt.Errorf("Method not supported: %s", txConstructionRequest.Method)), nil
 	}
 
 	response := TransactionConstructionResponse{
+		// TODO: compute suggested fee with more sophistication
 		SuggestedFee: Amount{
 			Value:    GasUpperBound[txConstructionRequest.Method],
 			Currency: CeloGold,
