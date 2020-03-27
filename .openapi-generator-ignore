@@ -11,8 +11,9 @@ main.go
 # Removed
 api/logger.go
 
-# Modified for optional Fields
+# Modified Models
 api/model_partial_block_identifier.go
+model_transaction.go
 
 go.mod
 go.sum
