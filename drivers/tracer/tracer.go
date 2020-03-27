@@ -2,20 +2,21 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/celo-org/rosetta/celo/client"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/log"
-	"github.com/k0kubun/pp"
+	//"github.com/k0kubun/pp"
 )
 
 var ctx = context.Background()
 
 func main() {
 	log.Root().SetHandler(log.LvlFilterHandler(log.LvlInfo, log.StreamHandler(os.Stderr, log.TerminalFormat(true))))
-
 	DriveTracer()
+	fmt.Println("success")
 }
 
 func CeloClient() *client.CeloClient {
@@ -26,10 +27,23 @@ func CeloClient() *client.CeloClient {
 	return celo
 }
 
+func assertIntEqual(x int, y int) {
+	if x != y {
+		panic(fmt.Sprintf("%d != %d", x, y))
+	}
+}
+
+func assertAddressEqual(x common.Address, y common.Address) {
+	if x != y {
+		panic(x.Hex() + " != " + y.Hex())
+	}
+}
+
 func DriveTracer() {
 	cc := CeloClient()
-	//fromAddress := "0x5409ed021d9299bf6814279a6a1411a7e866a631"
-	//toAddress := "0xbBae99F0E1EE565404465638d40827b54D343638"
+	testContractAddress := common.HexToAddress("0x07f96aa816c1f244cbc6ef114bb2b023ba54a2eb")
+	fromAddress := common.HexToAddress("0x5409ed021d9299bf6814279a6a1411a7e866a631")
+	toAddress := common.HexToAddress("0xbBae99F0E1EE565404465638d40827b54D343638")
 
 	// TestContract.selfDestruct
 	txHash := common.HexToHash("0x3506ee7d435786e3630c0fcee80d08015c51221675ca72c349fc23f64c56cf20")
@@ -37,6 +51,10 @@ func DriveTracer() {
 	if err != nil {
 		panic(err)
 	}
+	assertIntEqual(len(transfers), 2)
+	assertAddressEqual(transfers[0].From, fromAddress)
+	assertAddressEqual(transfers[0].To, testContractAddress)
+	assertAddressEqual(transfers[1].From, testContractAddress)
+	assertAddressEqual(transfers[1].To, toAddress)
 
-	pp.Print(transfers)
 }

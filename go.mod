@@ -18,6 +18,7 @@ require (
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/sirupsen/logrus v1.5.0 // indirect
 	github.com/spf13/viper v1.6.2
+	github.com/stretchr/testify v1.4.0
 	golang.org/x/tools v0.0.0-20200327185809-c12078ef0834 // indirect
 )
 
