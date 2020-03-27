@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/celo-org/rosetta/celo/client"
 	"github.com/celo-org/rosetta/internal/config"
@@ -23,15 +24,30 @@ func addMiddlewares(handler http.Handler) http.Handler {
 	return handler
 }
 
-func StartHttpServer(celoClient *client.CeloClient) {
+func StartHttpServer(celoClient *client.CeloClient, done <-chan struct{}) {
 	var mainHandler http.Handler
 	mainHandler = CreateRouter(celoClient)
 	mainHandler = addMiddlewares(mainHandler)
 
-	log.Info("Starting server", "listen_address", config.HttpServer.ListenAddress())
+	log.Info("Starting httpServer", "listen_address", config.HttpServer.ListenAddress())
 
-	if err := http.ListenAndServe(config.HttpServer.ListenAddress(), mainHandler); err != nil {
-		log.Crit("Failed to start server", "err", err)
+	s := &http.Server{
+		Addr:         config.HttpServer.ListenAddress(),
+		Handler:      mainHandler,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		// TODO set ErrorLog: ,
+	}
+
+	go func() {
+		<-done
+		if err := s.Close(); err != nil {
+			log.Error("Error stoping httpServer", "err", err)
+		}
+	}()
+
+	if err := s.ListenAndServe(); err != nil {
+		log.Crit("Error starting httpServer", "err", err)
 	}
 }
 

@@ -11,6 +11,8 @@ package main
 
 import (
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/celo-org/rosetta/api"
 	"github.com/celo-org/rosetta/celo/client"
@@ -21,17 +23,39 @@ import (
 
 func main() {
 	log.Root().SetHandler(log.LvlFilterHandler(log.LvlInfo, log.StreamHandler(os.Stderr, log.TerminalFormat(true))))
-
-	log.Info("Server started")
+	done := make(chan struct{})
 
 	// Read Configuration Variables
 	config.ReadConfig()
 
-	rpcClient, err := rpc.Dial("https://alfajores-forno.celo-testnet.org/")
+	rpcClient, err := rpc.Dial(config.Node.Uri)
 	if err != nil {
 		log.Crit("Can't connect to node", "err", err)
 	}
+
 	celoClient := client.NewCeloClient(rpcClient)
 
-	api.StartHttpServer(celoClient)
+	go api.StartHttpServer(celoClient, done)
+
+	gotExitSignal := HandleSignals()
+
+	<-gotExitSignal
+	close(done)
+}
+
+func HandleSignals() <-chan bool {
+	sigs := make(chan os.Signal, 1)
+	done := make(chan bool, 1)
+
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	log.Info("Press CTRL-C to stop the process")
+	go func() {
+		sig := <-sigs
+		log.Info("Got Signal, Shutting down...", "signal", sig)
+		done <- true
+	}()
+
+	return done
+
 }
