@@ -7,8 +7,8 @@
 
 GO ?= latest
 BLS_RS_PATH ?= external/bls-zexe
-CELO_BLOCKCHAIN_PATH?=../blockchain
-CELO_MONOREPO_PATH?=../monorepo
+CELO_BLOCKCHAIN_PATH?=../celo-blockchain
+CELO_MONOREPO_PATH?=../celo-monorepo
 GITHUB_ORG?=celo-org
 GITHUB_REPO?=rosetta
 

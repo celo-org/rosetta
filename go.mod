@@ -11,16 +11,19 @@ require (
 	github.com/ethereum/go-ethereum v1.9.8
 	github.com/felixge/httpsnoop v1.0.1
 	github.com/gorilla/mux v1.7.3
+	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
+	github.com/k0kubun/pp v3.0.1+incompatible
 	github.com/onsi/gomega v1.7.1
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/sirupsen/logrus v1.5.0 // indirect
 	github.com/spf13/viper v1.6.2
+	golang.org/x/tools v0.0.0-20200327185809-c12078ef0834 // indirect
 )
 
 replace github.com/celo-org/bls-zexe/go => ./external/bls-zexe/go
 
-replace github.com/ethereum/go-ethereum => ../geth
+replace github.com/ethereum/go-ethereum => ../celo-blockchain
 
 // Use this to use external build
 // replace github.com/ethereum/go-ethereum => github.com/celo-org/celo-blockchain master
