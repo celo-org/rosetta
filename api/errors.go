@@ -5,6 +5,11 @@ import (
 	"fmt"
 )
 
+type CodedError interface {
+	error
+	ErrorCode() int
+}
+
 type ValidationError struct {
 	field string
 	err   error
@@ -19,6 +24,14 @@ func NewValidationError(field string, err error) *ValidationError {
 
 func (ve *ValidationError) Error() string {
 	return fmt.Sprintf("validation error: field: %s error: %s", ve.field, ve.err)
+}
+
+func (ve *ValidationError) Field() string {
+	return ve.field
+}
+
+func (ve *ValidationError) ErrorCode() int {
+	return 400
 }
 
 var (
