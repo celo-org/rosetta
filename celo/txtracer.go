@@ -15,7 +15,7 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 )
 
-type TxExplorer struct {
+type TxTracer struct {
 	blockHeader *types.Header
 	tx          *types.Transaction
 	receipt     *types.Receipt
@@ -25,15 +25,15 @@ type TxExplorer struct {
 	logger     log.Logger
 }
 
-func NewTxExplorer(
+func NewTxTracer(
 	ctx context.Context,
 	celoClient *client.CeloClient,
 	blockHeader *types.Header,
 	tx *types.Transaction,
 	receipt *types.Receipt,
-) *TxExplorer {
+) *TxTracer {
 	logger := log.New("context", "TxTracer", "txHash", tx.Hash().Hex(), "txIndex", receipt.TransactionIndex, "blockHash", blockHeader.Hash().Hex(), "blockNumber", blockHeader.Number)
-	return &TxExplorer{
+	return &TxTracer{
 		celoClient:  celoClient,
 		blockHeader: blockHeader,
 		tx:          tx,
@@ -43,7 +43,7 @@ func NewTxExplorer(
 	}
 }
 
-func (tc *TxExplorer) ObtainRegistryAddresses(identifiers ...[32]byte) (map[[32]byte]common.Address, error) {
+func (tc *TxTracer) ObtainRegistryAddresses(identifiers ...[32]byte) (map[[32]byte]common.Address, error) {
 	addresses := make(map[[32]byte]common.Address)
 	registry, err := wrapper.NewRegistry(tc.celoClient)
 	if err != nil {
@@ -80,7 +80,7 @@ func (tc *TxExplorer) ObtainRegistryAddresses(identifiers ...[32]byte) (map[[32]
 	return addresses, nil
 }
 
-func (tc *TxExplorer) GasPriceMinimum(gpmAddress common.Address) (*big.Int, error) {
+func (tc *TxTracer) GasPriceMinimum(gpmAddress common.Address) (*big.Int, error) {
 	gpm, err := contract.NewGasPriceMinimum(gpmAddress, tc.celoClient.Eth)
 	if err != nil {
 		return nil, err
@@ -102,7 +102,7 @@ func (tc *TxExplorer) GasPriceMinimum(gpmAddress common.Address) (*big.Int, erro
 	return gasPrice, nil
 }
 
-func (tc *TxExplorer) GasDetail() (map[common.Address]*big.Int, error) {
+func (tc *TxTracer) GasDetail() (map[common.Address]*big.Int, error) {
 	balanceChanges := make(map[common.Address]*big.Int)
 
 	registryAddresses, err := tc.ObtainRegistryAddresses(params.GasPriceMinimumRegistryId, params.GovernanceRegistryId)
@@ -146,7 +146,7 @@ func (tc *TxExplorer) GasDetail() (map[common.Address]*big.Int, error) {
 	if err != nil {
 		return balanceChanges, err
 	}
-	balanceChanges[from] = totalTxFee
+	balanceChanges[from] = new(big.Int).Neg(totalTxFee)
 
 	return balanceChanges, nil
 }
@@ -170,7 +170,7 @@ type Transfer struct {
 	Value *big.Int
 }
 
-func (tc *TxExplorer) TransferDetail() ([]Transfer, error) {
+func (tc *TxTracer) TransferDetail() ([]Transfer, error) {
 	if tc.receipt.Status == types.ReceiptStatusFailed {
 		return nil, nil
 	}
@@ -197,7 +197,7 @@ func (tc *TxExplorer) TransferDetail() ([]Transfer, error) {
 	return transfers, nil
 }
 
-func (tc *TxExplorer) LockedGoldTransferDetail() ([]Transfer, error) {
+func (tc *TxTracer) LockedGoldTransferDetail() ([]Transfer, error) {
 	registryAddresses, err := tc.ObtainRegistryAddresses(params.LockedGoldRegistryId, params.GovernanceRegistryId)
 
 	lockedGoldAddr, ok := registryAddresses[params.LockedGoldRegistryId]

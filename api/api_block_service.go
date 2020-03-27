@@ -117,16 +117,16 @@ func (s *BlockApiService) BlockTransaction(ctx context.Context, request BlockTra
 		return nil, ErrRpcError("TransactionReceipt", err)
 	}
 
-	txExplorer := celo.NewTxExplorer(ctx, s.celoClient, &blockHeader.Header, tx, receipt)
+	txTracer := celo.NewTxTracer(ctx, s.celoClient, &blockHeader.Header, tx, receipt)
 
-	gasDetails, err := txExplorer.GasDetail()
+	gasDetails, err := txTracer.GasDetail()
 	if err != nil {
 		return nil, err
 	}
 
 	operations := GasDetailsToOperations(gasDetails)
 
-	transfers, err := txExplorer.TransferDetail()
+	transfers, err := txTracer.TransferDetail()
 	opIndex := int64(len(operations))
 	for i, transfer := range transfers {
 		operations = append(operations, TransferToOperations(opIndex+int64(2*i), &transfer)...)
