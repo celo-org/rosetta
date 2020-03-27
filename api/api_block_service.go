@@ -11,18 +11,12 @@ package api
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"math/big"
 
 	"github.com/celo-org/rosetta/celo"
 	"github.com/celo-org/rosetta/celo/client"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-)
-
-var (
-	InvalidBlockIdentifier = errors.New("Invalid Block Identifier")
 )
 
 // BlockApiService is a service that implents the logic for the BlockApiServicer
@@ -47,23 +41,23 @@ func (b *BlockApiService) BlockHeader(ctx context.Context, blockIdentifier Parti
 		hash := common.HexToHash(*blockIdentifier.Hash)
 		blockHeader, err = b.celoClient.Eth.ExtendedHeaderByHash(ctx, hash)
 		if err != nil {
-			return nil, err
+			return nil, ErrCantFetchBlockHeader(err)
 		}
 
 		// If both were specified check the result matches
 		if blockIdentifier.Index != nil && blockHeader.Number.Cmp(big.NewInt(*blockIdentifier.Index)) != 0 {
-			return nil, InvalidBlockIdentifier
+			return nil, ErrCantFetchBlockHeader(ErrBadBlockIdentifier)
 		}
 
 	} else if blockIdentifier.Index != nil {
 		blockHeader, err = b.celoClient.Eth.ExtendedHeaderByNumber(ctx, big.NewInt(*blockIdentifier.Index))
 		if err != nil {
-			return nil, err
+			return nil, ErrCantFetchBlockHeader(err)
 		}
 	} else {
 		blockHeader, err = b.celoClient.Eth.ExtendedHeaderByNumber(ctx, nil)
 		if err != nil {
-			return nil, err
+			return nil, ErrCantFetchBlockHeader(err)
 		}
 	}
 
@@ -72,16 +66,16 @@ func (b *BlockApiService) BlockHeader(ctx context.Context, blockIdentifier Parti
 }
 
 // Block - Get a Block
-func (b *BlockApiService) Block(ctx context.Context, blockRequest BlockRequest) (interface{}, error) {
+func (b *BlockApiService) Block(ctx context.Context, request BlockRequest) (interface{}, error) {
 
-	err := ValidateNetworkId(&blockRequest.NetworkIdentifier, b.celoClient.Net, ctx)
+	err := ValidateNetworkId(&request.NetworkIdentifier, b.celoClient.Net, ctx)
 	if err != nil {
-		return BuildErrorResponse(1, err), nil
+		return nil, err
 	}
 
-	blockHeader, err := b.BlockHeader(ctx, blockRequest.BlockIdentifier)
+	blockHeader, err := b.BlockHeader(ctx, request.BlockIdentifier)
 	if err != nil {
-		return BuildErrorResponse(2, err), nil
+		return nil, err
 	}
 
 	return &BlockResponse{
@@ -98,28 +92,29 @@ func (b *BlockApiService) Block(ctx context.Context, blockRequest BlockRequest) 
 // BlockTransaction - Get a Block Transaction
 func (s *BlockApiService) BlockTransaction(ctx context.Context, request BlockTransactionRequest) (interface{}, error) {
 
-	txHash := common.HexToHash(request.TransactionIdentifier.Hash)
+	err := ValidateNetworkId(&request.NetworkIdentifier, s.celoClient.Net, ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	blockHeader, err := s.BlockHeader(ctx, FullToPartialBlockIdentifier(request.BlockIdentifier))
 	if err != nil {
 		return nil, err
 	}
+
+	txHash := common.HexToHash(request.TransactionIdentifier.Hash)
 	if !HeaderContainsTx(blockHeader, txHash) {
-		// TODO error handling
-		return BuildErrorResponse(1, fmt.Errorf("Some Error")), nil
+		return nil, ErrMissingTxInBlock
 	}
 
-	tx, pending, err := s.celoClient.Eth.TransactionByHash(ctx, txHash)
+	tx, _, err := s.celoClient.Eth.TransactionByHash(ctx, txHash)
 	if err != nil {
-		return nil, err
-	}
-
-	if pending {
-		return nil, fmt.Errorf("Pending Transaction")
+		return nil, ErrRpcError("TransactionByHash", err)
 	}
 
 	receipt, err := s.celoClient.Eth.TransactionReceipt(ctx, tx.Hash())
 	if err != nil {
-		return nil, err
+		return nil, ErrRpcError("TransactionReceipt", err)
 	}
 
 	txExplorer := celo.NewTxExplorer(ctx, s.celoClient, &blockHeader.Header, tx, receipt)

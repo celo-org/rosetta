@@ -9,17 +9,17 @@ import (
 
 func ValidateNetworkId(id *NetworkIdentifier, client *network.NetworkClient, ctx context.Context) error {
 	if id.Blockchain != BlockchainName {
-		return fmt.Errorf("Mismatched blockchain identifiers: %s != %s", id.Blockchain, BlockchainName)
+		return ErrBadNetworkIdentifier(fmt.Errorf("Mismatched blockchain identifiers: %s != %s", id.Blockchain, BlockchainName))
 	}
 
 	chainId, err := client.ChainId(ctx)
 	if err != nil {
-		return err
+		return ErrBadNetworkIdentifier(err)
 	}
 
 	networkName := NetworkNameFromId(chainId)
 	if networkName != id.Network {
-		return fmt.Errorf("Mismatched network identifiers: %s != %s", id.Network, networkName)
+		return ErrBadNetworkIdentifier(fmt.Errorf("Mismatched network identifiers: %s != %s", id.Network, networkName))
 	}
 	return nil
 }
