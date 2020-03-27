@@ -6,10 +6,12 @@ import (
 	"math/big"
 
 	"github.com/celo-org/rosetta/celo/client"
+	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/celo-org/rosetta/contract"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params"
 )
 
@@ -20,6 +22,7 @@ type TxExplorer struct {
 
 	celoClient *client.CeloClient
 	ctx        context.Context
+	logger     log.Logger
 }
 
 func NewTxExplorer(
@@ -29,18 +32,20 @@ func NewTxExplorer(
 	tx *types.Transaction,
 	receipt *types.Receipt,
 ) *TxExplorer {
+	logger := log.New("context", "TxTracer", "txHash", tx.Hash().Hex(), "txIndex", receipt.TransactionIndex, "blockHash", blockHeader.Hash().Hex(), "blockNumber", blockHeader.Number)
 	return &TxExplorer{
 		celoClient:  celoClient,
 		blockHeader: blockHeader,
 		tx:          tx,
 		receipt:     receipt,
 		ctx:         ctx,
+		logger:      logger,
 	}
 }
 
 func (tc *TxExplorer) ObtainRegistryAddresses(identifiers ...[32]byte) (map[[32]byte]common.Address, error) {
 	addresses := make(map[[32]byte]common.Address)
-	registry, err := GetRegistry(tc.celoClient.Eth)
+	registry, err := wrapper.NewRegistry(tc.celoClient)
 	if err != nil {
 		return addresses, err
 	}
@@ -53,34 +58,25 @@ func (tc *TxExplorer) ObtainRegistryAddresses(identifiers ...[32]byte) (map[[32]
 
 	for _, identifier := range identifiers {
 		address, err := registry.GetAddressFor(callOpts, identifier)
-		if err != nil {
-			return addresses, err
+		if err == client.ErrContractNotDeployed {
+			// Ignore this error. Attempt to obtain others
+			continue
+		} else if err != nil {
+			return nil, err
 		}
 		addresses[identifier] = address
 	}
 
 	// Check if address changed between last block and previous transaction
 	// on the same block
-	blockNumber := tc.blockHeader.Number.Uint64()
-	iter, err := registry.FilterRegistryUpdated(&bind.FilterOpts{
-		Start:   blockNumber,
-		End:     &blockNumber,
-		Context: tc.ctx,
-	}, identifiers)
+	updates, err := registry.GetUpdatesOnBlock(tc.ctx, tc.blockHeader.Number.Uint64(), &tc.receipt.TransactionIndex, identifiers)
 	if err != nil {
-		return addresses, err
+		return nil, err
+	}
+	for id, address := range updates {
+		addresses[id] = address
 	}
 
-	for iter.Next() {
-		if iter.Event.Raw.TxIndex >= tc.receipt.TransactionIndex {
-			break
-		}
-		addresses[iter.Event.IdentifierHash] = iter.Event.Addr
-	}
-	err = iter.Close()
-	if err != nil {
-		return addresses, err
-	}
 	return addresses, nil
 }
 
@@ -110,9 +106,8 @@ func (tc *TxExplorer) GasDetail() (map[common.Address]*big.Int, error) {
 	balanceChanges := make(map[common.Address]*big.Int)
 
 	registryAddresses, err := tc.ObtainRegistryAddresses(params.GasPriceMinimumRegistryId, params.GovernanceRegistryId)
-	// TODO - Deal with errors
 	if err != nil {
-		fmt.Println("Some addresses couldn't be found!")
+		return nil, err
 	}
 
 	var gasPriceMinimum *big.Int
