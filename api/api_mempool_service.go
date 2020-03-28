@@ -33,7 +33,7 @@ func NewMempoolApiService(celoClient *client.CeloClient) MempoolApiServicer {
 // Mempool - Get All Mempool Transactions
 func (m *MempoolApiService) Mempool(ctx context.Context, mempoolRequest MempoolRequest) (interface{}, error) {
 
-	err := ValidateNetworkId(&mempoolRequest.NetworkIdentifier, m.celoClient.Net, ctx)
+	err := ValidateNetworkId(&mempoolRequest.NetworkIdentifier)
 	if err != nil {
 		return BuildErrorResponse(1, err), nil
 	}

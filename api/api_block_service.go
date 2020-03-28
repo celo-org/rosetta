@@ -68,7 +68,7 @@ func (b *BlockApiService) BlockHeader(ctx context.Context, blockIdentifier Parti
 // Block - Get a Block
 func (b *BlockApiService) Block(ctx context.Context, request BlockRequest) (interface{}, error) {
 
-	err := ValidateNetworkId(&request.NetworkIdentifier, b.celoClient.Net, ctx)
+	err := ValidateNetworkId(&request.NetworkIdentifier)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func (b *BlockApiService) Block(ctx context.Context, request BlockRequest) (inte
 // BlockTransaction - Get a Block Transaction
 func (s *BlockApiService) BlockTransaction(ctx context.Context, request BlockTransactionRequest) (interface{}, error) {
 
-	err := ValidateNetworkId(&request.NetworkIdentifier, s.celoClient.Net, ctx)
+	err := ValidateNetworkId(&request.NetworkIdentifier)
 	if err != nil {
 		return nil, err
 	}

@@ -37,7 +37,7 @@ func NewAccountApiService(celoClient *client.CeloClient) AccountApiServicer {
 // AccountBalance - Get an Account Balance
 func (s *AccountApiService) AccountBalance(ctx context.Context, accountBalanceRequest AccountBalanceRequest) (interface{}, error) {
 
-	err := ValidateNetworkId(&accountBalanceRequest.NetworkIdentifier, s.celoClient.Net, ctx)
+	err := ValidateNetworkId(&accountBalanceRequest.NetworkIdentifier)
 	if err != nil {
 		return BuildErrorResponse(1, err), nil
 	}
