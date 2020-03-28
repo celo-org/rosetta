@@ -21,9 +21,11 @@ var (
 
 func NewRegistry(celoClient *client.CeloClient) (*RegistryWrapper, error) {
 	registry, err := contract.NewRegistry(params.RegistrySmartContractAddress, celoClient.Eth)
+	err = client.WrapRpcError(err)
 	if err != nil {
 		return nil, err
 	}
+
 	return &RegistryWrapper{
 		contract: registry,
 	}, nil
@@ -40,12 +42,10 @@ func (w *RegistryWrapper) GetAddressFor(opts *bind.CallOpts, identifierHash [32]
 	address, err := w.contract.GetAddressFor(opts, identifierHash)
 	err = client.WrapRpcError(err)
 
-	if err == client.ErrContractNotDeployed {
-		return common.ZeroAddress, ErrRegistryNotDeployed
-	}
-
 	if err != nil {
 		return common.ZeroAddress, err
+	} else if err == client.ErrContractNotDeployed {
+		return common.ZeroAddress, ErrRegistryNotDeployed
 	}
 
 	if address == common.ZeroAddress {

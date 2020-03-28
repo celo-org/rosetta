@@ -38,12 +38,13 @@ func (m *MempoolApiService) Mempool(ctx context.Context, mempoolRequest MempoolR
 
 	err := ValidateNetworkId(&mempoolRequest.NetworkIdentifier, m.chainParams)
 	if err != nil {
-		return BuildErrorResponse(1, err), nil
+		return nil, err
 	}
 
 	content, err := m.celoClient.TxPool.Content(ctx)
 	if err != nil {
-		return BuildErrorResponse(2, err), nil
+		err = client.WrapRpcError(err)
+		return nil, ErrRpcError("TxPoolContent", err)
 	}
 
 	allTransactionIds := append(TxIdsFromTxAccountMap((*content)["pending"]), TxIdsFromTxAccountMap((*content)["queued"])...)

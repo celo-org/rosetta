@@ -14,6 +14,7 @@ import (
 
 	"github.com/celo-org/rosetta/celo"
 	"github.com/celo-org/rosetta/celo/client"
+	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/celo-org/rosetta/contract"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -41,37 +42,38 @@ func (s *AccountApiService) AccountBalance(ctx context.Context, accountBalanceRe
 
 	err := ValidateNetworkId(&accountBalanceRequest.NetworkIdentifier, s.chainParams)
 	if err != nil {
-		return BuildErrorResponse(1, err), nil
+		return nil, err
 	}
 
 	address := common.HexToAddress(accountBalanceRequest.AccountIdentifier.Address)
 
 	latestHeader, err := s.celoClient.Eth.HeaderByNumber(ctx, nil) // nil == latest
 	if err != nil {
-		return BuildErrorResponse(2, err), nil
+		return nil, ErrRpcError("HeaderByNumber", err)
 	}
 
 	goldBalance, err := s.celoClient.Eth.BalanceAt(ctx, address, latestHeader.Number)
 	if err != nil {
-		return BuildErrorResponse(3, err), nil
+		return nil, ErrRpcError("BalanceAt", err)
 	}
 
-	registry, err := celo.GetRegistry(s.celoClient.Eth)
+	registryWrapper, err := wrapper.NewRegistry(s.celoClient)
 	if err != nil {
-		return BuildErrorResponse(4, err), nil
+		return nil, err
 	}
 
-	lockedGoldAddr, err := registry.GetAddressFor(&bind.CallOpts{
+	lockedGoldAddr, err := registryWrapper.GetAddressFor(&bind.CallOpts{
 		BlockNumber: latestHeader.Number,
 		Context:     ctx,
 	}, params.LockedGoldRegistryId)
 	if err != nil {
-		return BuildErrorResponse(5, err), nil
+		return nil, err
 	}
 
 	lockedGold, err := contract.NewLockedGold(lockedGoldAddr, s.celoClient.Eth)
 	if err != nil {
-		return BuildErrorResponse(6, err), nil
+		err = client.WrapRpcError(err)
+		return nil, ErrRpcError("NewLockedGold", err)
 	}
 
 	lockedGoldBalance, err := lockedGold.GetAccountTotalLockedGold(&bind.CallOpts{
@@ -79,7 +81,8 @@ func (s *AccountApiService) AccountBalance(ctx context.Context, accountBalanceRe
 		Context:     ctx,
 	}, address)
 	if err != nil {
-		return BuildErrorResponse(7, err), nil
+		err = client.WrapRpcError(err)
+		return nil, ErrRpcError("GetAccountTotalLockedGold", err)
 	}
 
 	response := AccountBalanceResponse{
@@ -92,10 +95,6 @@ func (s *AccountApiService) AccountBalance(ctx context.Context, accountBalanceRe
 						Value:    goldBalance.String(),
 						Currency: CeloGold,
 					},
-					// Amount{
-					// 	Value:    stableTokenBalance.String(),
-					// 	Currency: CeloDollar,
-					// },
 				},
 			},
 			Balance{

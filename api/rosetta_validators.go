@@ -11,8 +11,8 @@ func ValidateNetworkId(id *NetworkIdentifier, cp *celo.ChainParameters) error {
 		return ErrBadNetworkIdentifier(fmt.Errorf("Mismatched blockchain identifiers: %s != %s", id.Blockchain, BlockchainName))
 	}
 
-	if cp.NetworkName() != id.Network {
-		return ErrBadNetworkIdentifier(fmt.Errorf("Mismatched network identifiers: %s != %s", id.Network, cp.NetworkName()))
+	if cp.ChainId.String() != id.Network {
+		return ErrBadNetworkIdentifier(fmt.Errorf("Mismatched network identifiers: %s != %s", id.Network, cp.ChainId.String()))
 	}
 	return nil
 }

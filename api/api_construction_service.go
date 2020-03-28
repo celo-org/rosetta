@@ -11,8 +11,6 @@ package api
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"math/big"
 
 	"github.com/celo-org/rosetta/celo"
@@ -42,17 +40,17 @@ func (s *ConstructionApiService) getTxdata(ctx context.Context, address common.A
 	var err error
 	txData.AccountNonce, err = s.celoClient.Eth.NonceAt(ctx, address, nil) // nil == latest
 	if err != nil {
-		return nil, err
+		return nil, client.WrapRpcError(err)
 	}
 
 	txData.GatewayFeeRecipient, err = s.celoClient.Eth.Coinbase(ctx)
 	if err != nil {
-		return nil, err
+		return nil, client.WrapRpcError(err)
 	}
 
 	txData.Price, err = s.celoClient.Eth.SuggestGasPrice(ctx)
 	if err != nil {
-		return nil, err
+		return nil, client.WrapRpcError(err)
 	}
 
 	// TODO: consider fetching from node
@@ -65,7 +63,7 @@ func (s *ConstructionApiService) getTxdata(ctx context.Context, address common.A
 func (s *ConstructionApiService) TransactionConstruction(ctx context.Context, txConstructionRequest TransactionConstructionRequest) (interface{}, error) {
 	err := ValidateNetworkId(&txConstructionRequest.NetworkIdentifier, s.chainParams)
 	if err != nil {
-		return BuildErrorResponse(1, err), nil
+		return nil, err
 	}
 	address := common.HexToAddress(txConstructionRequest.AccountIdentifier.Address)
 
@@ -73,21 +71,21 @@ func (s *ConstructionApiService) TransactionConstruction(ctx context.Context, tx
 
 	txdata, err := s.getTxdata(ctx, address)
 	if err != nil {
-		return BuildErrorResponse(2, err), nil
+		return nil, WrapError("GetTxData", err)
 	}
 
 	switch txConstructionRequest.Method {
 	case TransferMethod:
 		balance, err := s.celoClient.Eth.BalanceAt(ctx, address, nil) // nil == latest
 		if err != nil {
-			return BuildErrorResponse(3, err), nil
+			return nil, WrapError("Transfer: BalanceAt", err)
 		}
 		metadata[TransferMethod] = TransferMetadata{
 			Balance: balance,
 			Txdata:  txdata,
 		}
 	default:
-		return BuildErrorResponse(4, fmt.Errorf("Method not supported: %s", txConstructionRequest.Method)), nil
+		return nil, WrapError("Unknown method", err)
 	}
 
 	response := TransactionConstructionResponse{
@@ -103,7 +101,18 @@ func (s *ConstructionApiService) TransactionConstruction(ctx context.Context, tx
 
 // TransactionSubmit - Submit a Signed Transaction
 func (s *ConstructionApiService) TransactionSubmit(ctx context.Context, transactionSubmitRequest TransactionSubmitRequest) (interface{}, error) {
-	// TODO - update TransactionSubmit with the required logic for this service method.
-	// Add api_construction_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-	return nil, errors.New("service method 'TransactionSubmit' not implemented")
+	err := s.celoClient.Eth.SendRawTransaction(ctx, []byte(transactionSubmitRequest.SignedTransaction))
+	if err != nil {
+		return nil, client.WrapRpcError(err)
+	}
+
+	// TODO: implement
+	response := TransactionSubmitResponse{
+		TransactionIdentifier: TransactionIdentifier{
+			Hash: "null",
+		},
+		Status:   "null",
+		Metadata: map[string]interface{}{},
+	}
+	return response, nil
 }

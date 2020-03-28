@@ -5,11 +5,6 @@ import (
 	"fmt"
 )
 
-type CodedError interface {
-	error
-	ErrorCode() int
-}
-
 type ValidationError struct {
 	field string
 	err   error

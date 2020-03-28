@@ -38,24 +38,25 @@ func (s *NetworkApiService) NetworkStatus(ctx context.Context, networkStatusRequ
 
 	latestHeader, err := s.celoClient.Eth.HeaderByNumber(ctx, nil) // nil == latest
 	if err != nil {
-		return BuildErrorResponse(2, err), nil
+		return nil, ErrRpcError("HeaderByNumber", err)
 	}
 
 	genesisHeader, err := s.celoClient.Eth.HeaderByNumber(ctx, big.NewInt(0)) // 0 == genesis
 	if err != nil {
-		return BuildErrorResponse(3, err), nil
+		err = client.WrapRpcError(err)
+		return nil, ErrRpcError("HeaderByNumber", err)
 	}
 
 	peersInfo, err := s.celoClient.Admin.Peers(ctx)
 	if err != nil {
-		return BuildErrorResponse(4, err), nil
+		return nil, ErrRpcError("AdminPeers", err)
 	}
 
 	response := NetworkStatusResponse{
 		NetworkStatus: NetworkStatus{
 			NetworkIdentifier: PartialNetworkIdentifier{
 				Blockchain: BlockchainName,
-				Network:    s.chainParams.NetworkName(),
+				Network:    s.chainParams.ChainId.String(),
 			},
 			NetworkInformation: NetworkInformation{
 				CurrentBlockIdentifier: *HeaderToBlockIdentifier(latestHeader),
