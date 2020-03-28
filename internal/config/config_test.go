@@ -10,5 +10,5 @@ func TestReadConfig(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	ReadConfig()
-	g.Expect(HttpServer.requestTimeout.String()).To(Equal("25s"))
+	g.Expect(HttpServer.RequestTimeout.String()).To(Equal("25s"))
 }

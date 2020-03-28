@@ -26,7 +26,10 @@ func main() {
 	done := make(chan struct{})
 
 	// Read Configuration Variables
+	config.SetupDatadir()
 	config.ReadConfig()
+
+	log.Info("Initializing Rosetta...", "chainId", config.Chain.ChainId, "epochSize", config.Chain.EpochSize)
 
 	rpcClient, err := rpc.Dial(config.Node.Uri)
 	if err != nil {

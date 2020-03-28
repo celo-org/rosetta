@@ -7,8 +7,8 @@
 
 GO ?= latest
 BLS_RS_PATH ?= external/bls-zexe
-CELO_BLOCKCHAIN_PATH?=../blockchain
-CELO_MONOREPO_PATH?=../monorepo
+CELO_BLOCKCHAIN_PATH?=../celo-blockchain
+CELO_MONOREPO_PATH?=../celo-monorepo
 GITHUB_ORG?=celo-org
 GITHUB_REPO?=rosetta
 
@@ -58,8 +58,8 @@ else
 	--enable-post-process-file
 endif
 
-test: all
-	build/env.sh go run build/ci.go test $(TEST_FLAGS)
+test: 
+	go test ./...
 
 lint: ## Run linters.
 ifeq ("$(GOLANGCI_exists)","")
@@ -75,3 +75,7 @@ clean-bls-zexe:
 	rm -rf $(BLS_RS_PATH)/target
 
 clean: clean-geth clean-bls-zexe
+
+rc0-env:
+	mkdir -p ./envs/rc0
+	curl 'https://storage.googleapis.com/genesis_blocks/rc0' > ./envs/rc0/genesis.json

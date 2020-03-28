@@ -19,3 +19,4 @@ go.mod
 go.sum
 
 Dockerfile
+README.md
