@@ -1,0 +1,15 @@
+
+/.openapi-generator
+/.vscode
+/envs/
+/scripts/
+README.md
+/templates/
+
+# testfiles
+**/*_test.go
+/examples/
+
+# Binary output
+/external/bls-zexe/target/release
+/rosetta

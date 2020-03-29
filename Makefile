@@ -30,7 +30,10 @@ else
 	OS = linux
 endif
 
-all: bls-zexe gen-contracts
+all: bls-zexe
+	go build ./...
+
+rosetta:
 	go build ./...
 
 bls-zexe: $(BLS_RS_PATH)/target/release/libepoch_snark.a
@@ -79,3 +82,10 @@ clean: clean-geth clean-bls-zexe
 rc0-env:
 	mkdir -p ./envs/rc0
 	curl 'https://storage.googleapis.com/genesis_blocks/rc0' > ./envs/rc0/genesis.json
+
+docker-publish: docker-build
+	docker push gcr.io/celo-testnet/rosetta:$COMMIT_SHA
+
+docker-build:
+	export COMMIT_SHA=$(git rev-parse HEAD)
+	docker build --build-arg COMMIT_SHA=$COMMIT_SHA -t gcr.io/celo-testnet/rosetta:$COMMIT_SHA .
