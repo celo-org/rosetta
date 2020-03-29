@@ -35,7 +35,7 @@ type NodeConfig struct {
 
 type ChainConfig struct {
 	ChainId   *big.Int
-	EpochSize *big.Int
+	EpochSize uint64
 }
 
 var HttpServer HttpServerConfig
@@ -120,7 +120,7 @@ func readGenesisBlock() {
 	}
 
 	Chain.ChainId = new(big.Int).SetUint64(genesis.Config.ChainId)
-	Chain.EpochSize = new(big.Int).SetUint64(genesis.Config.Isntabul.Epoch)
+	Chain.EpochSize = genesis.Config.Isntabul.Epoch
 }
 
 func configureDefaults() {

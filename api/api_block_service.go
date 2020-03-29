@@ -15,7 +15,9 @@ import (
 
 	"github.com/celo-org/rosetta/celo"
 	"github.com/celo-org/rosetta/celo/client"
+	"github.com/celo-org/rosetta/internal/config"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/consensus/istanbul"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
@@ -78,12 +80,23 @@ func (b *BlockApiService) Block(ctx context.Context, request BlockRequest) (inte
 		return nil, err
 	}
 
+	transactions := MapTxHashesToTransaction(blockHeader.Transactions)
+
+	// If it's the last block of the Epoch, add a transaction for the block Finalize()
+	if istanbul.IsLastBlockOfEpoch(blockHeader.Number.Uint64(), config.Chain.EpochSize) {
+		transactions = append(transactions, Transaction{
+			TransactionIdentifier: TransactionIdentifier{
+				Hash: blockHeader.Hash().Hex(),
+			},
+		})
+	}
+
 	return &BlockResponse{
 		Block: Block{
 			BlockIdentifier:       *HeaderToBlockIdentifier(&blockHeader.Header),
 			ParentBlockIdentifier: *HeaderToParentBlockIdentifier(&blockHeader.Header),
 			Timestamp:             int64(blockHeader.Time), // TODO unsafe casting from uint to int 64
-			Transactions:          MapTxHashesToTransaction(blockHeader.Transactions),
+			Transactions:          transactions,
 		},
 	}, nil
 
@@ -103,38 +116,53 @@ func (s *BlockApiService) BlockTransaction(ctx context.Context, request BlockTra
 	}
 
 	txHash := common.HexToHash(request.TransactionIdentifier.Hash)
-	if !HeaderContainsTx(blockHeader, txHash) {
-		return nil, ErrMissingTxInBlock
-	}
 
-	tx, _, err := s.celoClient.Eth.TransactionByHash(ctx, txHash)
-	if err != nil {
-		return nil, ErrRpcError("TransactionByHash", err)
-	}
+	var operations []Operation
+	// Check If it's block transaction (imaginary transaction)
+	if istanbul.IsLastBlockOfEpoch(blockHeader.Number.Uint64(), config.Chain.EpochSize) && txHash == blockHeader.Hash() {
+		rewards, err := celo.ComputeEpochRewards(ctx, s.celoClient, &blockHeader.Header)
+		if err != nil {
+			return nil, err
+		}
+		operations = RewardsToOperations(rewards)
+	} else {
+		if !HeaderContainsTx(blockHeader, txHash) {
+			return nil, ErrMissingTxInBlock
+		}
 
-	receipt, err := s.celoClient.Eth.TransactionReceipt(ctx, tx.Hash())
-	if err != nil {
-		return nil, ErrRpcError("TransactionReceipt", err)
-	}
+		tx, _, err := s.celoClient.Eth.TransactionByHash(ctx, txHash)
+		if err != nil {
+			return nil, ErrRpcError("TransactionByHash", err)
+		}
 
-	txTracer := celo.NewTxTracer(ctx, s.celoClient, &blockHeader.Header, tx, receipt)
+		receipt, err := s.celoClient.Eth.TransactionReceipt(ctx, tx.Hash())
+		if err != nil {
+			return nil, ErrRpcError("TransactionReceipt", err)
+		}
 
-	gasDetails, err := txTracer.GasDetail()
-	if err != nil {
-		return nil, err
-	}
+		txTracer := celo.NewTxTracer(ctx, s.celoClient, &blockHeader.Header, tx, receipt)
 
-	operations := GasDetailsToOperations(gasDetails)
+		gasDetails, err := txTracer.GasDetail()
+		if err != nil {
+			return nil, err
+		}
 
-	transfers, err := txTracer.TransferDetail()
-	opIndex := int64(len(operations))
-	for i, transfer := range transfers {
-		operations = append(operations, TransferToOperations(opIndex+int64(2*i), &transfer)...)
+		operations = GasDetailsToOperations(gasDetails)
+
+		transfers, err := txTracer.TransferDetail()
+		if err != nil {
+			return nil, err
+		}
+
+		opIndex := int64(len(operations))
+		for i, transfer := range transfers {
+			operations = append(operations, TransferToOperations(opIndex+int64(2*i), &transfer)...)
+		}
 	}
 
 	return &BlockTransactionResponse{
 		Transaction: Transaction{
-			TransactionIdentifier: TransactionIdentifier{Hash: tx.Hash().Hex()},
+			TransactionIdentifier: TransactionIdentifier{Hash: txHash.Hex()},
 			Operations:            operations,
 		},
 	}, nil

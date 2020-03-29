@@ -18,6 +18,9 @@ var contractsToGenerate = []string{
 	"Election",
 	"StableToken",
 	"GasPriceMinimum",
+	"Election",
+	"EpochRewards",
+	"Validators",
 }
 
 func main() {

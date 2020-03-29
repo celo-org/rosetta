@@ -108,6 +108,22 @@ func NewAmount(value *big.Int, currency Currency) Amount {
 	}
 }
 
+func RewardsToOperations(rewards map[common.Address]*big.Int) []Operation {
+	operations := make([]Operation, 0, len(rewards))
+	opIndex := int64(0)
+	for address, value := range rewards {
+		operations = append(operations, Operation{
+			OperationIdentifier: NewOperationIdentifier(opIndex),
+			Account:             NewAccountIdentifier(address),
+			Amount:              NewAmount(value, CeloGold),
+			Status:              OperationSuccess.String(),
+			Type:                OpKindMint.String(),
+		})
+		opIndex++
+	}
+	return operations
+}
+
 func GasDetailsToOperations(gasDetails map[common.Address]*big.Int) []Operation {
 	var operations []Operation
 	opIndex := int64(0)
