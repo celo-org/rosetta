@@ -3,10 +3,10 @@ package {{packageName}}
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
-	"os"
 	"strconv"
+
+	"github.com/ethereum/go-ethereum/log"
     {{#featureCORS}}
 	"github.com/gorilla/handlers"
     {{/featureCORS}}
@@ -51,38 +51,12 @@ func NewRouter(routers ...Router) *mux.Router {
 	return router
 }
 
-// EncodeJSONResponse uses the json encoder to write an interface to the http response with an optional status code
-func EncodeJSONResponse(i interface{}, status int, w http.ResponseWriter) error {
+// JSONResponse uses the json encoder to write an interface to the http response with an optional status code
+func JSONResponse(i interface{}, status int, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(status)
-	return json.NewEncoder(w).Encode(i)
-}
-
-// ReadFormFileToTempFile reads file data from a request form and writes it to a temporary file
-func ReadFormFileToTempFile(r *http.Request, key string) (*os.File, error) {
-	r.ParseForm()
-	formFile, _, err := r.FormFile(key)
-	if err != nil {
-		return nil, err
+	if err := json.NewEncoder(w).Encode(i); err != nil {
+		log.Error("Error encoding json response", "err", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-
-	defer formFile.Close()
-	file, err := ioutil.TempFile("tmp", key)
-	if err != nil {
-		return nil, err
-	}
-
-	defer file.Close()
-	fileBytes, err := ioutil.ReadAll(formFile)
-	if err != nil {
-		return nil, err
-	}
-
-	file.Write(fileBytes)
-	return file, nil
-}
-
-// parseIntParameter parses a sting parameter to an int64
-func parseIntParameter(param string) (int64, error) {
-	return strconv.ParseInt(param, 10, 64)
 }

@@ -12,7 +12,6 @@ linters:
   enable:
     # - deadcode
     - errcheck
-    - gosimple
     - govet
     - ineffassign
     - staticcheck
@@ -33,3 +32,10 @@ linters-settings:
   goconst:
     min-len: 3 # minimum length of string constant
     min-occurrences: 6 # minimum number of occurrences
+
+issues:
+  # Excluding configuration per-path, per-linter, per-text and per-source
+  exclude-rules:
+    - path: api/model.*\.go
+      linters:
+        - misspell

@@ -48,13 +48,16 @@ func ReadConfig() {
 	configureDefaults()
 
 	viper.SetEnvPrefix("ROSETTA")
-	viper.BindEnv("datadir")
+	err := viper.BindEnv("datadir")
+	if err != nil {
+		panic(fmt.Errorf("Error on ReadConfig: %s \n", err))
+	}
 
 	viper.SetConfigName("rosetta-cfg")
 	viper.AddConfigPath(DataDir)
 	viper.AddConfigPath(".")
 
-	err := viper.ReadInConfig() // Find and read the config file
+	err = viper.ReadInConfig() // Find and read the config file
 	if err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			log.Warn("No Config File, using defaults")

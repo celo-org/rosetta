@@ -59,7 +59,7 @@ func (c *ConstructionApiController) TransactionConstruction(w http.ResponseWrite
 		return
 	}
 
-	EncodeJSONResponse(result, http.StatusOK, w)
+	JSONResponse(result, http.StatusOK, w)
 }
 
 // TransactionSubmit - Submit a Signed Transaction
@@ -77,5 +77,5 @@ func (c *ConstructionApiController) TransactionSubmit(w http.ResponseWriter, r *
 		return
 	}
 
-	EncodeJSONResponse(result, http.StatusOK, w)
+	JSONResponse(result, http.StatusOK, w)
 }

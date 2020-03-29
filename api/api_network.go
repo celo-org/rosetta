@@ -53,5 +53,5 @@ func (c *NetworkApiController) NetworkStatus(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	EncodeJSONResponse(result, http.StatusOK, w)
+	JSONResponse(result, http.StatusOK, w)
 }

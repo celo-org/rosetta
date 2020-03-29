@@ -32,43 +32,7 @@ func (c *{{classname}}Controller) Routes() Routes {
 }{{#operations}}{{#operation}}
 
 // {{nickname}} - {{{summary}}}
-func (c *{{classname}}Controller) {{nickname}}(w http.ResponseWriter, r *http.Request) { {{#hasFormParams}}
-	err := r.ParseForm()
-	if err != nil {
-		BadRequest(w, NewValidationError("form", err))
-		return
-	}
-	{{/hasFormParams}}{{#hasPathParams}}
-	params := mux.Vars(r){{/hasPathParams}}{{#hasQueryParams}}
-	query := r.URL.Query(){{/hasQueryParams}}{{#allParams}}{{#isPathParam}}{{#isLong}}
-	{{paramName}}, err := parseIntParameter(params["{{paramName}}"])
-	if err != nil {
-		BadRequest(w, NewValidationError("{{paramName}}", err))
-		return
-	}
-	{{/isLong}}{{^isLong}}
-	{{paramName}} := params["{{paramName}}"]{{/isLong}}{{/isPathParam}}{{#isQueryParam}}{{#isLong}}
-	{{paramName}}, err := parseIntParameter(query.Get("{{paramName}}"))
-	if err != nil {
-		BadRequest(w, NewValidationError("{{paramName}}", err))
-		return
-	}
-	{{/isLong}}{{^isLong}}
-	{{paramName}} := {{#isListContainer}}strings.Split({{/isListContainer}}query.Get("{{paramName}}"){{#isListContainer}}, ","){{/isListContainer}}{{/isLong}}{{/isQueryParam}}{{#isFormParam}}{{#isFile}}
-	{{paramName}}, err := ReadFormFileToTempFile(r, "{{paramName}}")
-	if err != nil {
-		BadRequest(w, NewValidationError("{{paramName}}", err))
-		return
-	}
-	{{/isFile}}{{#isLong}}
-	{{paramName}}, err := parseIntParameter( r.FormValue("{{paramName}}"))
-	if err != nil {
-		BadRequest(w, NewValidationError("{{paramName}}", err))
-		return
-	}
-	{{/isLong}}{{^isFile}}{{^isLong}}
-	{{paramName}} := r.FormValue("{{paramName}}"){{/isLong}}{{/isFile}}{{/isFormParam}}{{#isHeaderParam}}
-	{{paramName}} := r.Header.Get("{{paramName}}"){{/isHeaderParam}}{{#isBodyParam}}
+func (c *{{classname}}Controller) {{nickname}}(w http.ResponseWriter, r *http.Request) { {{#allParams}}{{#isBodyParam}}
 	{{paramName}} := &{{dataType}}{}
 	if err := json.NewDecoder(r.Body).Decode(&{{paramName}}); err != nil {
 		BadRequest(w, NewValidationError("{{paramName}}", err))
@@ -82,5 +46,5 @@ func (c *{{classname}}Controller) {{nickname}}(w http.ResponseWriter, r *http.Re
 		return
 	}
 	
-	EncodeJSONResponse(result, http.StatusOK, w)
+	JSONResponse(result, http.StatusOK, w)
 }{{/operation}}{{/operations}}

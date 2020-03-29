@@ -75,7 +75,5 @@ func CreateRouter(celoClient *client.CeloClient) *mux.Router {
 // It does not otherwise end the request; the caller should ensure no further
 func BadRequest(w http.ResponseWriter, err error) {
 	payload := BuildErrorResponse(int32(http.StatusBadRequest), err)
-	if err = EncodeJSONResponse(payload, http.StatusBadRequest, w); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	JSONResponse(payload, http.StatusBadRequest, w)
 }

@@ -59,7 +59,7 @@ func (c *BlockApiController) Block(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	EncodeJSONResponse(result, http.StatusOK, w)
+	JSONResponse(result, http.StatusOK, w)
 }
 
 // BlockTransaction - Get a Block Transaction
@@ -77,5 +77,5 @@ func (c *BlockApiController) BlockTransaction(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	EncodeJSONResponse(result, http.StatusOK, w)
+	JSONResponse(result, http.StatusOK, w)
 }

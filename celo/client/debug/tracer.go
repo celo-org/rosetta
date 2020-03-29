@@ -55,7 +55,7 @@ var transferTracer = `
 
     if (this.callStack.length - 1 == depth) {
       const successfulCall = this.callStack.pop();
-      // Propogate transfers made during the successful call.
+      // Propagate transfers made during the successful call.
       this.pushTransfers(this.topCall().transfers, successfulCall, this.statusSuccess);
     }
 

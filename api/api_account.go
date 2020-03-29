@@ -53,5 +53,5 @@ func (c *AccountApiController) AccountBalance(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	EncodeJSONResponse(result, http.StatusOK, w)
+	JSONResponse(result, http.StatusOK, w)
 }

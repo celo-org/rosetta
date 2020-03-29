@@ -155,8 +155,8 @@ type SubAccount string
 
 const (
 	Main              SubAccount = "Main"
-	LockedGoldLocked             = "LockedGoldLocked"
-	LockedGoldPending            = "LockedGoldPending"
+	LockedGoldLocked  SubAccount = "LockedGoldLocked"
+	LockedGoldPending SubAccount = "LockedGoldPending"
 )
 
 type Account struct {
@@ -199,7 +199,9 @@ func (tc *TxTracer) TransferDetail() ([]Transfer, error) {
 
 func (tc *TxTracer) LockedGoldTransferDetail() ([]Transfer, error) {
 	registryAddresses, err := tc.ObtainRegistryAddresses(params.LockedGoldRegistryId, params.GovernanceRegistryId)
-
+	if err != nil {
+		return nil, err
+	}
 	lockedGoldAddr, ok := registryAddresses[params.LockedGoldRegistryId]
 
 	// TODO deal with Error

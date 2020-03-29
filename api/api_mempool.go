@@ -59,7 +59,7 @@ func (c *MempoolApiController) Mempool(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	EncodeJSONResponse(result, http.StatusOK, w)
+	JSONResponse(result, http.StatusOK, w)
 }
 
 // MempoolTransaction - Get a Mempool Transaction
@@ -77,5 +77,5 @@ func (c *MempoolApiController) MempoolTransaction(w http.ResponseWriter, r *http
 		return
 	}
 
-	EncodeJSONResponse(result, http.StatusOK, w)
+	JSONResponse(result, http.StatusOK, w)
 }
