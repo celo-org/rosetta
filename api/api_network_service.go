@@ -13,6 +13,7 @@ import (
 	"context"
 	"math/big"
 
+	"github.com/celo-org/rosetta/celo"
 	"github.com/celo-org/rosetta/celo/client"
 )
 
@@ -20,23 +21,20 @@ import (
 // This service should implement the business logic for every endpoint for the NetworkApi API.
 // Include any external packages or services that will be required by this service.
 type NetworkApiService struct {
-	celoClient *client.CeloClient
+	celoClient  *client.CeloClient
+	chainParams *celo.ChainParameters
 }
 
 // NewNetworkApiService creates a default api service
-func NewNetworkApiService(celoClient *client.CeloClient) NetworkApiServicer {
+func NewNetworkApiService(celoClient *client.CeloClient, chainParams *celo.ChainParameters) NetworkApiServicer {
 	return &NetworkApiService{
-		celoClient: celoClient,
+		celoClient:  celoClient,
+		chainParams: chainParams,
 	}
 }
 
 // NetworkStatus - Get Network Status
 func (s *NetworkApiService) NetworkStatus(ctx context.Context, networkStatusRequest NetworkStatusRequest) (interface{}, error) {
-
-	chainId, err := s.celoClient.Net.ChainId(ctx)
-	if err != nil {
-		return BuildErrorResponse(1, err), nil
-	}
 
 	latestHeader, err := s.celoClient.Eth.HeaderByNumber(ctx, nil) // nil == latest
 	if err != nil {
@@ -57,7 +55,7 @@ func (s *NetworkApiService) NetworkStatus(ctx context.Context, networkStatusRequ
 		NetworkStatus: NetworkStatus{
 			NetworkIdentifier: PartialNetworkIdentifier{
 				Blockchain: BlockchainName,
-				Network:    NetworkNameFromId(chainId),
+				Network:    s.chainParams.NetworkName(),
 			},
 			NetworkInformation: NetworkInformation{
 				CurrentBlockIdentifier: *HeaderToBlockIdentifier(latestHeader),

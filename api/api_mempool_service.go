@@ -13,6 +13,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/celo-org/rosetta/celo"
 	"github.com/celo-org/rosetta/celo/client"
 )
 
@@ -20,20 +21,22 @@ import (
 // This service should implement the business logic for every endpoint for the MempoolApi API.
 // Include any external packages or services that will be required by this service.
 type MempoolApiService struct {
-	celoClient *client.CeloClient
+	celoClient  *client.CeloClient
+	chainParams *celo.ChainParameters
 }
 
 // NewMempoolApiService creates a default api service
-func NewMempoolApiService(celoClient *client.CeloClient) MempoolApiServicer {
+func NewMempoolApiService(celoClient *client.CeloClient, chainParams *celo.ChainParameters) MempoolApiServicer {
 	return &MempoolApiService{
-		celoClient: celoClient,
+		celoClient:  celoClient,
+		chainParams: chainParams,
 	}
 }
 
 // Mempool - Get All Mempool Transactions
 func (m *MempoolApiService) Mempool(ctx context.Context, mempoolRequest MempoolRequest) (interface{}, error) {
 
-	err := ValidateNetworkId(&mempoolRequest.NetworkIdentifier)
+	err := ValidateNetworkId(&mempoolRequest.NetworkIdentifier, m.chainParams)
 	if err != nil {
 		return BuildErrorResponse(1, err), nil
 	}

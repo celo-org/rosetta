@@ -1,15 +1,69 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/celo-org/rosetta/celo"
 	"github.com/celo-org/rosetta/celo/client"
-	"github.com/celo-org/rosetta/internal/config"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/felixge/httpsnoop"
 	"github.com/gorilla/mux"
 )
+
+type RosettaServerConfig struct {
+	Port           uint
+	Interface      string
+	RequestTimeout time.Duration
+}
+
+func (hs *RosettaServerConfig) ListenAddress() string {
+	return fmt.Sprintf("%s:%d", hs.Interface, hs.Port)
+}
+
+type RosettaServer struct {
+	cc          *client.CeloClient
+	cfg         *RosettaServerConfig
+	chainParams *celo.ChainParameters
+	server      *http.Server
+}
+
+func NewRosettaServer(cc *client.CeloClient, cfg *RosettaServerConfig, chainParams *celo.ChainParameters) *RosettaServer {
+	var mainHandler http.Handler
+	mainHandler = createRouter(cc, chainParams)
+	mainHandler = requestLogHandler(mainHandler)
+	mainHandler = http.TimeoutHandler(mainHandler, cfg.RequestTimeout, "Request Timed out")
+
+	server := &http.Server{
+		Addr:         cfg.ListenAddress(),
+		Handler:      mainHandler,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		// TODO set ErrorLog: ,
+	}
+
+	return &RosettaServer{
+		cc:          cc,
+		cfg:         cfg,
+		server:      server,
+		chainParams: chainParams,
+	}
+}
+
+func (rs *RosettaServer) Stop() {
+	if err := rs.server.Close(); err != nil {
+		log.Error("Error stoping httpServer", "err", err)
+	}
+}
+
+func (rs *RosettaServer) Start() {
+	log.Info("Starting httpServer", "listen_address", rs.cfg.ListenAddress())
+
+	if err := rs.server.ListenAndServe(); err != nil {
+		log.Crit("Error starting httpServer", "err", err)
+	}
+}
 
 func requestLogHandler(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -18,53 +72,20 @@ func requestLogHandler(handler http.Handler) http.Handler {
 	})
 }
 
-func addMiddlewares(handler http.Handler) http.Handler {
-	handler = requestLogHandler(handler)
-	handler = http.TimeoutHandler(handler, config.HttpServer.RequestTimeout, "Request Timed out")
-	return handler
-}
-
-func StartHttpServer(celoClient *client.CeloClient, done <-chan struct{}) {
-	var mainHandler http.Handler
-	mainHandler = CreateRouter(celoClient)
-	mainHandler = addMiddlewares(mainHandler)
-
-	log.Info("Starting httpServer", "listen_address", config.HttpServer.ListenAddress())
-
-	s := &http.Server{
-		Addr:         config.HttpServer.ListenAddress(),
-		Handler:      mainHandler,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		// TODO set ErrorLog: ,
-	}
-
-	go func() {
-		<-done
-		if err := s.Close(); err != nil {
-			log.Error("Error stoping httpServer", "err", err)
-		}
-	}()
-
-	if err := s.ListenAndServe(); err != nil {
-		log.Crit("Error starting httpServer", "err", err)
-	}
-}
-
-func CreateRouter(celoClient *client.CeloClient) *mux.Router {
-	AccountApiService := NewAccountApiService(celoClient)
+func createRouter(celoClient *client.CeloClient, chainParams *celo.ChainParameters) *mux.Router {
+	AccountApiService := NewAccountApiService(celoClient, chainParams)
 	AccountApiController := NewAccountApiController(AccountApiService)
 
-	BlockApiService := NewBlockApiService(celoClient)
+	BlockApiService := NewBlockApiService(celoClient, chainParams)
 	BlockApiController := NewBlockApiController(BlockApiService)
 
-	ConstructionApiService := NewConstructionApiService(celoClient)
+	ConstructionApiService := NewConstructionApiService(celoClient, chainParams)
 	ConstructionApiController := NewConstructionApiController(ConstructionApiService)
 
-	MempoolApiService := NewMempoolApiService(celoClient)
+	MempoolApiService := NewMempoolApiService(celoClient, chainParams)
 	MempoolApiController := NewMempoolApiController(MempoolApiService)
 
-	NetworkApiService := NewNetworkApiService(celoClient)
+	NetworkApiService := NewNetworkApiService(celoClient, chainParams)
 	NetworkApiController := NewNetworkApiController(NetworkApiService)
 
 	router := NewRouter(AccountApiController, BlockApiController, ConstructionApiController, MempoolApiController, NetworkApiController)

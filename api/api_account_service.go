@@ -24,20 +24,22 @@ import (
 // This service should implement the business logic for every endpoint for the AccountApi API.
 // Include any external packages or services that will be required by this service.
 type AccountApiService struct {
-	celoClient *client.CeloClient
+	celoClient  *client.CeloClient
+	chainParams *celo.ChainParameters
 }
 
 // NewAccountApiService creates a default api service
-func NewAccountApiService(celoClient *client.CeloClient) AccountApiServicer {
+func NewAccountApiService(celoClient *client.CeloClient, chainParams *celo.ChainParameters) AccountApiServicer {
 	return &AccountApiService{
-		celoClient: celoClient,
+		celoClient:  celoClient,
+		chainParams: chainParams,
 	}
 }
 
 // AccountBalance - Get an Account Balance
 func (s *AccountApiService) AccountBalance(ctx context.Context, accountBalanceRequest AccountBalanceRequest) (interface{}, error) {
 
-	err := ValidateNetworkId(&accountBalanceRequest.NetworkIdentifier)
+	err := ValidateNetworkId(&accountBalanceRequest.NetworkIdentifier, s.chainParams)
 	if err != nil {
 		return BuildErrorResponse(1, err), nil
 	}

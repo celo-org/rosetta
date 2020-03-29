@@ -11,10 +11,5 @@ const (
 )
 
 var (
-	NodeVersion      = params.Version
-	ChainIdToNetwork = map[uint64]string{
-		44786:  "alfajores",
-		200110: "baklava",
-		200312: "rc0",
-	}
+	NodeVersion = params.Version
 )

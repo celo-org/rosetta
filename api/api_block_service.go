@@ -15,9 +15,7 @@ import (
 
 	"github.com/celo-org/rosetta/celo"
 	"github.com/celo-org/rosetta/celo/client"
-	"github.com/celo-org/rosetta/internal/config"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/consensus/istanbul"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
@@ -25,13 +23,15 @@ import (
 // This service should implement the business logic for every endpoint for the BlockApi API.
 // Include any external packages or services that will be required by this service.
 type BlockApiService struct {
-	celoClient *client.CeloClient
+	celoClient  *client.CeloClient
+	chainParams *celo.ChainParameters
 }
 
 // NewBlockApiService creates a default api service
-func NewBlockApiService(celoClient *client.CeloClient) BlockApiServicer {
+func NewBlockApiService(celoClient *client.CeloClient, cp *celo.ChainParameters) BlockApiServicer {
 	return &BlockApiService{
-		celoClient: celoClient,
+		celoClient:  celoClient,
+		chainParams: cp,
 	}
 }
 
@@ -70,7 +70,7 @@ func (b *BlockApiService) BlockHeader(ctx context.Context, blockIdentifier Parti
 // Block - Get a Block
 func (b *BlockApiService) Block(ctx context.Context, request BlockRequest) (interface{}, error) {
 
-	err := ValidateNetworkId(&request.NetworkIdentifier)
+	err := ValidateNetworkId(&request.NetworkIdentifier, b.chainParams)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func (b *BlockApiService) Block(ctx context.Context, request BlockRequest) (inte
 	transactions := MapTxHashesToTransaction(blockHeader.Transactions)
 
 	// If it's the last block of the Epoch, add a transaction for the block Finalize()
-	if istanbul.IsLastBlockOfEpoch(blockHeader.Number.Uint64(), config.Chain.EpochSize) {
+	if b.chainParams.IsLastBlockOfEpoch(blockHeader.Number.Uint64()) {
 		transactions = append(transactions, Transaction{
 			TransactionIdentifier: TransactionIdentifier{
 				Hash: blockHeader.Hash().Hex(),
@@ -105,7 +105,7 @@ func (b *BlockApiService) Block(ctx context.Context, request BlockRequest) (inte
 // BlockTransaction - Get a Block Transaction
 func (s *BlockApiService) BlockTransaction(ctx context.Context, request BlockTransactionRequest) (interface{}, error) {
 
-	err := ValidateNetworkId(&request.NetworkIdentifier)
+	err := ValidateNetworkId(&request.NetworkIdentifier, s.chainParams)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +119,7 @@ func (s *BlockApiService) BlockTransaction(ctx context.Context, request BlockTra
 
 	var operations []Operation
 	// Check If it's block transaction (imaginary transaction)
-	if istanbul.IsLastBlockOfEpoch(blockHeader.Number.Uint64(), config.Chain.EpochSize) && txHash == blockHeader.Hash() {
+	if s.chainParams.IsLastBlockOfEpoch(blockHeader.Number.Uint64()) && txHash == blockHeader.Hash() {
 		rewards, err := celo.ComputeEpochRewards(ctx, s.celoClient, &blockHeader.Header)
 		if err != nil {
 			return nil, err

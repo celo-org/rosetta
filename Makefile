@@ -46,7 +46,7 @@ else
 endif
 
 gen-contracts:
-	go run cmd/gen-contracts/main.go -gcelo $(CELO_BLOCKCHAIN_PATH) -monorepo $(CELO_MONOREPO_PATH)
+	go run scripts/gen-contracts.go -gcelo $(CELO_BLOCKCHAIN_PATH) -monorepo $(CELO_MONOREPO_PATH)
 
 gen-rpc:
 ifeq ("$(OPENAPIGEN_exists)","")

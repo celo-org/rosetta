@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"math/big"
 
 	"github.com/celo-org/rosetta/celo"
@@ -12,14 +11,6 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/p2p"
 )
-
-func NetworkNameFromId(id *big.Int) string {
-	uid := id.Uint64()
-	if name, ok := ChainIdToNetwork[uid]; ok {
-		return name
-	}
-	return fmt.Sprintf("unknown %d", uid)
-}
 
 func PeersFromInfo(peersInfo *[]p2p.PeerInfo) []Peer {
 	peers := make([]Peer, len(*peersInfo))

@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/celo-org/rosetta/celo"
 	"github.com/celo-org/rosetta/celo/client"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -24,13 +25,15 @@ import (
 // This service should implement the business logic for every endpoint for the ConstructionApi API.
 // Include any external packages or services that will be required by this service.
 type ConstructionApiService struct {
-	celoClient *client.CeloClient
+	celoClient  *client.CeloClient
+	chainParams *celo.ChainParameters
 }
 
 // NewConstructionApiService creates a default api service
-func NewConstructionApiService(celoClient *client.CeloClient) ConstructionApiServicer {
+func NewConstructionApiService(celoClient *client.CeloClient, chainParams *celo.ChainParameters) ConstructionApiServicer {
 	return &ConstructionApiService{
-		celoClient: celoClient,
+		celoClient:  celoClient,
+		chainParams: chainParams,
 	}
 }
 
@@ -60,7 +63,7 @@ func (s *ConstructionApiService) getTxdata(ctx context.Context, address common.A
 
 // TransactionConstruction - Get Transaction Construction Metadata
 func (s *ConstructionApiService) TransactionConstruction(ctx context.Context, txConstructionRequest TransactionConstructionRequest) (interface{}, error) {
-	err := ValidateNetworkId(&txConstructionRequest.NetworkIdentifier)
+	err := ValidateNetworkId(&txConstructionRequest.NetworkIdentifier, s.chainParams)
 	if err != nil {
 		return BuildErrorResponse(1, err), nil
 	}
