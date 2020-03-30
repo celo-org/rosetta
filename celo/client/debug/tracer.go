@@ -191,21 +191,23 @@ var transferTracer = `
 }`
 
 type transferTracerResponse struct {
-	Transfers []Transfer `json:"tranfers"`
+	Transfers []Transfer `json:"transfers"`
 }
 
 type Transfer struct {
-	From  common.Address `json:"from"`
-	To    common.Address `json:"to"`
-	Value *big.Int       `json:"value"`
+	From   common.Address `json:"from"`
+	To     common.Address `json:"to"`
+	Value  *big.Int       `json:"value"`
+	Status string         `json:"status"`
 }
 
 // UnmarshalJSON unmarshals from JSON.
 func (t *Transfer) UnmarshalJSON(input []byte) error {
 	type Transfer struct {
-		From  common.Address `json:"from"`
-		To    common.Address `json:"to"`
-		Value *hexutil.Big   `json:"value"`
+		From   common.Address `json:"from"`
+		To     common.Address `json:"to"`
+		Value  *hexutil.Big   `json:"value"`
+		Status string         `json:"status"`
 	}
 	var dec Transfer
 	if err := json.Unmarshal(input, &dec); err != nil {
@@ -215,6 +217,7 @@ func (t *Transfer) UnmarshalJSON(input []byte) error {
 	t.From = dec.From
 	t.To = dec.To
 	t.Value = (*big.Int)(dec.Value)
+	t.Status = dec.Status
 	if dec.Value == nil {
 		return errors.New("missing required field 'value' for Transfer")
 	}
