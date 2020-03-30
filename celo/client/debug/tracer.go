@@ -188,8 +188,7 @@ var transferTracer = `
       transfers: transfers,
     };
   },
-}
-`
+}`
 
 type transferTracerResponse struct {
 	Transfers []Transfer `json:"transfers"`
