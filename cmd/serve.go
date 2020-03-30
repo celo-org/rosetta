@@ -36,7 +36,11 @@ var serveCmd = &cobra.Command{
 var httpPort uint
 var httpAddress string
 var requestTimeout time.Duration
-var datadir string
+
+type ConfigPaths string
+
+var _datadir string
+var datadir ConfigPaths
 
 func init() {
 	rootCmd.AddCommand(serveCmd)
@@ -45,7 +49,7 @@ func init() {
 	serveCmd.PersistentFlags().StringVar(&httpAddress, "address", "", "Listening address for http server")
 	serveCmd.PersistentFlags().DurationVar(&requestTimeout, "reqTimeout", 25*time.Second, "Timeout when serving a request")
 
-	serveCmd.PersistentFlags().StringVar(&datadir, "datadir", "", "datadir to use")
+	serveCmd.PersistentFlags().StringVar(&_datadir, "datadir", "", "datadir to use")
 	exitOnError(serveCmd.MarkPersistentFlagDirname("datadir"))
 	exitOnError(serveCmd.MarkPersistentFlagRequired("datadir"))
 }
@@ -59,9 +63,9 @@ func getRosettaServerConfig() *api.RosettaServerConfig {
 }
 
 func validateDatadir(cmd *cobra.Command, args []string) {
-	absDatadir, err := filepath.Abs(datadir)
+	absDatadir, err := filepath.Abs(_datadir)
 	if err != nil {
-		log.Crit("Can't resolve datadir path", "datadir", absDatadir)
+		log.Crit("Can't resolve datadir path", "datadir", absDatadir, "err", err)
 	}
 
 	stat, err := os.Stat(absDatadir)
@@ -71,6 +75,26 @@ func validateDatadir(cmd *cobra.Command, args []string) {
 	case !stat.IsDir():
 		log.Crit("Datadir is not a directory", "datadir", absDatadir)
 	}
-	datadir = absDatadir
+	datadir = ConfigPaths(absDatadir)
 	log.Info("DataDir Configured", "datadir", datadir)
+}
+
+func (g ConfigPaths) Datadir() string {
+	return string(g)
+}
+
+func (g ConfigPaths) GethDatadir() string {
+	return filepath.Join(string(g), "celo")
+}
+
+func (g ConfigPaths) GethInitializedFile() string {
+	return filepath.Join(string(g), ".geth-initialized")
+}
+
+func (g ConfigPaths) GethLogFile() string {
+	return filepath.Join(g.GethDatadir(), "celo.log")
+}
+
+func (g ConfigPaths) GethIpcFile() string {
+	return filepath.Join(g.GethDatadir(), "geth.ipc")
 }

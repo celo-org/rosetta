@@ -70,8 +70,8 @@ RUN apk add --no-cache ca-certificates
 COPY --from=builder /rosetta/rosetta /usr/local/bin/
 RUN echo $COMMIT_SHA > /version.txt
 RUN mkdir /data
-ENV ROSETTA_DATADIR=/data
-EXPOSE 8080/tcp 8545 8546 30303 30303/udp
-ENTRYPOINT ["/usr/local/bin/rosetta", "--geth", "/usr/local/bin/geth"]
+EXPOSE 8080/tcp
+ENTRYPOINT ["/usr/local/bin/rosetta"]
+CMD ["serve", "local", "--geth", "/usr/local/bin/geth", "--datadir", "/data", "--genesis","/data/genesis.json"]
 
 

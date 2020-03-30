@@ -22,7 +22,8 @@ import (
 	"math/big"
 	"os"
 	"os/exec"
-	"path/filepath"
+	"syscall"
+	"time"
 
 	"github.com/celo-org/rosetta/api"
 	"github.com/celo-org/rosetta/celo"
@@ -43,7 +44,6 @@ var localCmd = &cobra.Command{
 
 var genesisPath string
 var gethBinary string
-var gethDatadir string
 
 func init() {
 	serveCmd.AddCommand(localCmd)
@@ -61,23 +61,45 @@ func runLocalCmd(cmd *cobra.Command, args []string) {
 	// Read Genesis to get chain parameters
 	chainParams := chainParamsFromGenesisFile()
 
-	gethDatadir = filepath.Join(datadir, "celo")
-	if err := os.MkdirAll(gethDatadir, os.ModePerm); err != nil {
+	if err := os.MkdirAll(datadir.GethDatadir(), os.ModePerm); err != nil {
 		log.Crit("Can't create celo-blockchain datadir")
 	}
 
 	ensureGethInit()
 
+	log.Info("Starting local geth")
+	gethCmd := startGeth(chainParams, "enode://33ac194052ccd10ce54101c8340dbbe7831de02a3e7dcbca7fd35832ff8c53a72fd75e57ce8c8e73a0ace650dc2c2ec1e36f0440e904bc20a3cf5927f2323e85@34.83.199.225:30303")
+	cmdExit := make(chan struct{})
+	go func() {
+		err := gethCmd.Wait()
+		if err != nil {
+			log.Error("Error runnin geth", "err", err)
+			close(cmdExit)
+		}
+
+	}()
+	// give geth some time to start
+	time.Sleep(10 * time.Second)
+
 	log.Info("Initializing Rosetta In Local Mode..", "chainId", chainParams.ChainId, "epochSize", chainParams.EpochSize)
-	var cc *client.CeloClient
+	cc, err := client.Dial(datadir.GethIpcFile())
+	if err != nil {
+		log.Crit("Error on client connection to geth", "err", err)
+	}
+
 	rosettaServer := api.NewRosettaServer(cc, getRosettaServerConfig(), chainParams)
 
-	// go rosettaServer.Start()
-	// defer rosettaServer.Stop()
+	go rosettaServer.Start()
+	defer rosettaServer.Stop()
 
-	_ = rosettaServer
 	gotExitSignal := signals.WatchForExitSignals()
-	<-gotExitSignal
+	select {
+	case <-gotExitSignal:
+		if err := gethCmd.Process.Signal(os.Interrupt); err != nil {
+			log.Crit("Error sending kil signal to geth", "err", err)
+		}
+	case <-cmdExit:
+	}
 }
 
 func chainParamsFromGenesisFile() *celo.ChainParameters {
@@ -107,13 +129,13 @@ func chainParamsFromGenesisFile() *celo.ChainParameters {
 }
 
 func gethCmd(args ...string) *exec.Cmd {
-	fullArgs := append([]string{"--datadir", gethDatadir}, args...)
+	fullArgs := append([]string{"--datadir", datadir.GethDatadir()}, args...)
 	return exec.Command(gethBinary, fullArgs...)
 }
 
 func ensureGethInit() {
 	// Check if geth is initialized already
-	flagFile := filepath.Join(datadir, ".geth-initialized")
+	flagFile := datadir.GethInitializedFile()
 
 	if fileutils.FileExists(flagFile) {
 		log.Info("Geth Already initialized... skipping init")
@@ -130,4 +152,39 @@ func ensureGethInit() {
 			log.Crit("Error creating marker file", "err", err)
 		}
 	}
+}
+
+func startGeth(chainParams *celo.ChainParameters, bootnodes string) *exec.Cmd {
+	gethArgs := []string{
+		"--verbosity", "4",
+		"--syncmode", "full",
+		"--networkid", chainParams.ChainId.String(),
+		"--rpc",
+		"--rpcaddr", "127.0.0.1",
+		"--rpcapi", "eth,net,web3,debug,admin,personal",
+		"--light.serve", "0",
+		"--light.maxpeers", "0",
+		"--maxpeers", "1100",
+		"--gcmode", "archive",
+		"--bootnodes", bootnodes,
+		"--consoleformat", "term",
+		"--consoleoutput", "split",
+	}
+
+	f, err := os.OpenFile(datadir.GethLogFile(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Crit("Can't open geth logfile", "err", err)
+	}
+	defer f.Close()
+
+	cmd := gethCmd(gethArgs...)
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
+	cmd.Stdout = f
+	cmd.Stderr = os.Stdout
+
+	if err = cmd.Start(); err != nil {
+		log.Crit("Error starting geth", "err", err)
+	}
+
+	return cmd
 }
