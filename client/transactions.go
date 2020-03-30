@@ -43,8 +43,7 @@ func ParseSignedTransaction(transaction *types.Transaction, signer *types.EIP155
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	to := transaction.To()
-	return &from, to, transaction.Value(), nil
+	return &from, transaction.To(), transaction.Value(), nil
 }
 
 func HashTransaction(transaction *types.Transaction) common.Hash {

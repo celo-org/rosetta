@@ -101,16 +101,16 @@ func (s *ConstructionApiService) TransactionConstruction(ctx context.Context, tx
 
 // TransactionSubmit - Submit a Signed Transaction
 func (s *ConstructionApiService) TransactionSubmit(ctx context.Context, transactionSubmitRequest TransactionSubmitRequest) (interface{}, error) {
-	err := s.celoClient.Eth.SendRawTransaction(ctx, []byte(transactionSubmitRequest.SignedTransaction))
+	txhash, err := s.celoClient.Eth.SendRawTransaction(ctx, []byte(transactionSubmitRequest.SignedTransaction))
 	if err != nil {
 		return nil, client.WrapRpcError(err)
 	}
 
-	// TODO: implement
 	response := TransactionSubmitResponse{
 		TransactionIdentifier: TransactionIdentifier{
-			Hash: "null",
+			Hash: txhash.String(),
 		},
+		// TODO: implement
 		Status:   "null",
 		Metadata: map[string]interface{}{},
 	}
