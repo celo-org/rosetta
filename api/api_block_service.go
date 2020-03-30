@@ -43,6 +43,7 @@ func (b *BlockApiService) BlockHeader(ctx context.Context, blockIdentifier Parti
 		hash := common.HexToHash(*blockIdentifier.Hash)
 		blockHeader, err = b.celoClient.Eth.ExtendedHeaderByHash(ctx, hash)
 		if err != nil {
+			err = client.WrapRpcError(err)
 			return nil, ErrCantFetchBlockHeader(err)
 		}
 
@@ -54,11 +55,13 @@ func (b *BlockApiService) BlockHeader(ctx context.Context, blockIdentifier Parti
 	} else if blockIdentifier.Index != nil {
 		blockHeader, err = b.celoClient.Eth.ExtendedHeaderByNumber(ctx, big.NewInt(*blockIdentifier.Index))
 		if err != nil {
+			err = client.WrapRpcError(err)
 			return nil, ErrCantFetchBlockHeader(err)
 		}
 	} else {
 		blockHeader, err = b.celoClient.Eth.ExtendedHeaderByNumber(ctx, nil)
 		if err != nil {
+			err = client.WrapRpcError(err)
 			return nil, ErrCantFetchBlockHeader(err)
 		}
 	}
@@ -126,6 +129,8 @@ func (s *BlockApiService) BlockTransaction(ctx context.Context, request BlockTra
 		}
 		operations = RewardsToOperations(rewards)
 	} else {
+		// Normal transaction
+
 		if !HeaderContainsTx(blockHeader, txHash) {
 			return nil, ErrMissingTxInBlock
 		}
