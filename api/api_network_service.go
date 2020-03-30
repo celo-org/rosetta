@@ -38,6 +38,7 @@ func (s *NetworkApiService) NetworkStatus(ctx context.Context, networkStatusRequ
 
 	latestHeader, err := s.celoClient.Eth.HeaderByNumber(ctx, nil) // nil == latest
 	if err != nil {
+		err = client.WrapRpcError(err)
 		return nil, ErrRpcError("HeaderByNumber", err)
 	}
 
@@ -49,6 +50,7 @@ func (s *NetworkApiService) NetworkStatus(ctx context.Context, networkStatusRequ
 
 	peersInfo, err := s.celoClient.Admin.Peers(ctx)
 	if err != nil {
+		err = client.WrapRpcError(err)
 		return nil, ErrRpcError("AdminPeers", err)
 	}
 
@@ -71,11 +73,17 @@ func (s *NetworkApiService) NetworkStatus(ctx context.Context, networkStatusRequ
 			NodeVersion:       NodeVersion,
 			MiddlewareVersion: MiddlewareVersion,
 		},
-		// TODO: implement
 		Options: Options{
-			Methods:           []string{TransferMethod},
-			OperationStatuses: []OperationStatus{},
-			OperationTypes:    []string{},
+			Methods: []string{TransferMethod},
+			OperationStatuses: []OperationStatus{
+				OperationFailed.ToOperationStatus(),
+				OperationSuccess.ToOperationStatus(),
+			},
+			OperationTypes: []string{
+				OpKindTransfer.String(),
+				OpKindFee.String(),
+				OpKindMint.String(),
+			},
 		},
 		Metadata: map[string]interface{}{},
 	}

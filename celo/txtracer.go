@@ -151,25 +151,6 @@ func (tc *TxTracer) GasDetail() (map[common.Address]*big.Int, error) {
 	return balanceChanges, nil
 }
 
-type SubAccount string
-
-const (
-	Main              SubAccount = "Main"
-	LockedGoldLocked  SubAccount = "LockedGoldLocked"
-	LockedGoldPending SubAccount = "LockedGoldPending"
-)
-
-type Account struct {
-	Address    common.Address
-	SubAccount SubAccount
-}
-
-type Transfer struct {
-	From  Account
-	To    Account
-	Value *big.Int
-}
-
 func (tc *TxTracer) TransferDetail() ([]Transfer, error) {
 	if tc.receipt.Status == types.ReceiptStatusFailed {
 		return nil, nil
