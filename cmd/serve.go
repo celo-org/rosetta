@@ -98,3 +98,7 @@ func (g ConfigPaths) GethLogFile() string {
 func (g ConfigPaths) GethIpcFile() string {
 	return filepath.Join(g.GethDatadir(), "geth.ipc")
 }
+
+func (g ConfigPaths) GethStaticNodesFile() string {
+	return filepath.Join(g.GethDatadir(), "/Celo/static-nodes.json")
+}

@@ -22,6 +22,7 @@ import (
 	"math/big"
 	"os"
 	"os/exec"
+	"strings"
 	"syscall"
 	"time"
 
@@ -44,6 +45,7 @@ var localCmd = &cobra.Command{
 
 var genesisPath string
 var gethBinary string
+var staticNodes []string
 
 func init() {
 	serveCmd.AddCommand(localCmd)
@@ -55,6 +57,9 @@ func init() {
 	localCmd.Flags().StringVar(&genesisPath, "genesis", "", "path to the genesis.json")
 	exitOnError(localCmd.MarkFlagRequired("genesis"))
 	exitOnError(localCmd.MarkFlagFilename("genesis", "json"))
+
+	localCmd.Flags().StringArrayVar(&staticNodes, "staticNode", []string{}, "StaticNode to use (can be repeated many times")
+	exitOnError(localCmd.MarkFlagRequired("staticNode"))
 }
 
 func runLocalCmd(cmd *cobra.Command, args []string) {
@@ -65,10 +70,25 @@ func runLocalCmd(cmd *cobra.Command, args []string) {
 		log.Crit("Can't create celo-blockchain datadir")
 	}
 
+	staticNodesRaw, err := json.Marshal(staticNodes)
+	if err != nil {
+		log.Crit("Can't serialize static nodes", "err", err)
+	}
+	err = ioutil.WriteFile(datadir.GethStaticNodesFile(), staticNodesRaw, 0644)
+	if err != nil {
+		log.Crit("Can't serialize static nodes", "err", err)
+	}
+
+	if len(staticNodes) == 0 {
+		cmd.PrintErrln(cmd.UsageString())
+		cmd.PrintErrln(cmd.UsageString())
+
+	}
+
 	ensureGethInit()
 
 	log.Info("Starting local geth")
-	gethCmd := startGeth(chainParams, "enode://33ac194052ccd10ce54101c8340dbbe7831de02a3e7dcbca7fd35832ff8c53a72fd75e57ce8c8e73a0ace650dc2c2ec1e36f0440e904bc20a3cf5927f2323e85@34.83.199.225:30303")
+	gethCmd := startGeth(chainParams)
 	cmdExit := make(chan struct{})
 	go func() {
 		err := gethCmd.Wait()
@@ -79,7 +99,7 @@ func runLocalCmd(cmd *cobra.Command, args []string) {
 
 	}()
 	// give geth some time to start
-	time.Sleep(10 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	log.Info("Initializing Rosetta In Local Mode..", "chainId", chainParams.ChainId, "epochSize", chainParams.EpochSize)
 	cc, err := client.Dial(datadir.GethIpcFile())
@@ -154,9 +174,9 @@ func ensureGethInit() {
 	}
 }
 
-func startGeth(chainParams *celo.ChainParameters, bootnodes string) *exec.Cmd {
+func startGeth(chainParams *celo.ChainParameters) *exec.Cmd {
 	gethArgs := []string{
-		"--verbosity", "4",
+		"--verbosity", "3",
 		"--syncmode", "full",
 		"--networkid", chainParams.ChainId.String(),
 		"--rpc",
@@ -166,11 +186,11 @@ func startGeth(chainParams *celo.ChainParameters, bootnodes string) *exec.Cmd {
 		"--light.maxpeers", "0",
 		"--maxpeers", "1100",
 		"--gcmode", "archive",
-		"--bootnodes", bootnodes,
 		"--consoleformat", "term",
 		"--consoleoutput", "split",
 	}
 
+	fmt.Println("geth", strings.Join(gethArgs, " "))
 	f, err := os.OpenFile(datadir.GethLogFile(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Crit("Can't open geth logfile", "err", err)
