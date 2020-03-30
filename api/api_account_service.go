@@ -14,11 +14,7 @@ import (
 
 	"github.com/celo-org/rosetta/celo"
 	"github.com/celo-org/rosetta/celo/client"
-	"github.com/celo-org/rosetta/celo/wrapper"
-	"github.com/celo-org/rosetta/contract"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/params"
 )
 
 // AccountApiService is a service that implents the logic for the AccountApiServicer
@@ -49,41 +45,44 @@ func (s *AccountApiService) AccountBalance(ctx context.Context, accountBalanceRe
 
 	latestHeader, err := s.celoClient.Eth.HeaderByNumber(ctx, nil) // nil == latest
 	if err != nil {
+		err = client.WrapRpcError(err)
 		return nil, ErrRpcError("HeaderByNumber", err)
 	}
 
 	goldBalance, err := s.celoClient.Eth.BalanceAt(ctx, address, latestHeader.Number)
 	if err != nil {
+		err = client.WrapRpcError(err)
 		return nil, ErrRpcError("BalanceAt", err)
 	}
 
-	registryWrapper, err := wrapper.NewRegistry(s.celoClient)
-	if err != nil {
-		return nil, err
-	}
+	// TODO Not Supported for now
+	// registryWrapper, err := wrapper.NewRegistry(s.celoClient)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	lockedGoldAddr, err := registryWrapper.GetAddressFor(&bind.CallOpts{
-		BlockNumber: latestHeader.Number,
-		Context:     ctx,
-	}, params.LockedGoldRegistryId)
-	if err != nil {
-		return nil, err
-	}
+	// lockedGoldAddr, err := registryWrapper.GetAddressFor(&bind.CallOpts{
+	// 	BlockNumber: latestHeader.Number,
+	// 	Context:     ctx,
+	// }, params.LockedGoldRegistryId)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	lockedGold, err := contract.NewLockedGold(lockedGoldAddr, s.celoClient.Eth)
-	if err != nil {
-		err = client.WrapRpcError(err)
-		return nil, ErrRpcError("NewLockedGold", err)
-	}
+	// lockedGold, err := contract.NewLockedGold(lockedGoldAddr, s.celoClient.Eth)
+	// if err != nil {
+	// 	err = client.WrapRpcError(err)
+	// 	return nil, ErrRpcError("NewLockedGold", err)
+	// }
 
-	lockedGoldBalance, err := lockedGold.GetAccountTotalLockedGold(&bind.CallOpts{
-		BlockNumber: latestHeader.Number,
-		Context:     ctx,
-	}, address)
-	if err != nil {
-		err = client.WrapRpcError(err)
-		return nil, ErrRpcError("GetAccountTotalLockedGold", err)
-	}
+	// lockedGoldBalance, err := lockedGold.GetAccountTotalLockedGold(&bind.CallOpts{
+	// 	BlockNumber: latestHeader.Number,
+	// 	Context:     ctx,
+	// }, address)
+	// if err != nil {
+	// 	err = client.WrapRpcError(err)
+	// 	return nil, ErrRpcError("GetAccountTotalLockedGold", err)
+	// }
 
 	response := AccountBalanceResponse{
 		BlockIdentifier: *HeaderToBlockIdentifier(latestHeader),
@@ -97,20 +96,20 @@ func (s *AccountApiService) AccountBalance(ctx context.Context, accountBalanceRe
 					},
 				},
 			},
-			Balance{
-				AccountIdentifier: AccountIdentifier{
-					Address: accountBalanceRequest.AccountIdentifier.Address,
-					SubAccount: SubAccountIdentifier{
-						SubAccount: "LockedGold",
-					},
-				},
-				Amounts: []Amount{
-					Amount{
-						Value:    lockedGoldBalance.String(),
-						Currency: CeloGold,
-					},
-				},
-			},
+			// Balance{
+			// 	AccountIdentifier: AccountIdentifier{
+			// 		Address: accountBalanceRequest.AccountIdentifier.Address,
+			// 		SubAccount: SubAccountIdentifier{
+			// 			SubAccount: "LockedGold",
+			// 		},
+			// 	},
+			// 	Amounts: []Amount{
+			// 		Amount{
+			// 			Value:    lockedGoldBalance.String(),
+			// 			Currency: CeloGold,
+			// 		},
+			// 	},
+			// },
 		},
 	}
 	return response, nil
