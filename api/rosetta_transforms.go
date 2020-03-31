@@ -121,7 +121,7 @@ func GasDetailsToOperations(gasDetails map[common.Address]*big.Int) []Operation 
 	for address, value := range gasDetails {
 		var relatedOps []OperationIdentifier
 		if opIndex > 0 {
-			relatedOps := make([]OperationIdentifier, opIndex)
+			relatedOps = make([]OperationIdentifier, opIndex)
 			for i := int64(0); i < opIndex; i++ {
 				relatedOps[i] = NewOperationIdentifier(i)
 			}
@@ -156,6 +156,7 @@ func TransferToOperations(baseIndex int64, transfer *celo.Transfer) []Operation 
 			Amount:              NewAmount(transfer.Value, CeloGold),
 			Status:              OperationSuccess.String(),
 			Type:                OpKindTransfer.String(),
+			RelatedOperations:   []OperationIdentifier{{Index: baseIndex}},
 		},
 	}
 }

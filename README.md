@@ -38,7 +38,7 @@ Docker image is configured by default to:
 
 To run the docker image do:
 ```bash 
-docker run -v "${PWD}/envs/rc0:/data" --name rosetta gcr.io/celo-testnet/rosetta:0.1 serve local \
+docker run -v "${PWD}/envs/rc0:/data" -p 8080:8080--name rosetta gcr.io/celo-testnet/rosetta:0.1 serve local \
   --staticNode "enode://33ac194052ccd10ce54101c8340dbbe7831de02a3e7dcbca7fd35832ff8c53a72fd75e57ce8c8e73a0ace650dc2c2ec1e36f0440e904bc20a3cf5927f2323e85@34.83.199.225:30303"
 ```
 
@@ -47,22 +47,7 @@ docker run -v "${PWD}/envs/rc0:/data" --name rosetta gcr.io/celo-testnet/rosetta
 
 To run on development, you need to call `go run main.go`
 
-
-
-
-## Running the Server (dev)
-
-* To run the server, we require to set `ROSETTA_DATADIR` which targets to the datadir that will be used by rosetta and celo-blockchain
-* Datadir **must contain** the `genesis.json` for the node.
-* Datadir **can contain** a configuration file: `rosetta-cfg.yaml` (other extensions work. Check vyper library)
 * Run `make rc0-env` to initialize RC0 datadir with the genesis.json on `./envs/rc0`
-
-To run the server while developing do:
-
-```shell
-ROSETTA_DATADIR="envs/rc0" go run main.go
-```
-
 
 ## Dev Guide
 
@@ -85,7 +70,7 @@ if you need to change it **DON'T COMMIT IT**
 
 Important commands:
 
-* `make all`: Builds project (generates contract wrappers, compiles go project, compiles bls-zexe)
+* `make all`: Builds project (compiles go project, compiles bls-zexe)
 * `make gen-contracts`: Regenerates contract wrappers
 * `make gen-rpc`: Regenerates server scaffold based on `swagger.json` spec
 * `make test` or `go test ./...` to run unit tests
@@ -101,7 +86,7 @@ Important commands:
 
 Rosetta requires a few Celo Core Contracts
 
-* The list of required contracts is defined on `cmd/gen-contracts/main.go` file
+* The list of required contracts is defined on `scripts/gen-contracts.go` file
 * Generation requires acces to `celo-blockchain` & `celo-monorepo`.
 * Generation assumes both projects are **already properly built**
 * To run generator do `make gen-contracts`
