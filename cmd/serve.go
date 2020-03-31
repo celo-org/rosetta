@@ -23,6 +23,7 @@ import (
 	"github.com/celo-org/rosetta/api"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // serveCmd represents the serve command
@@ -39,7 +40,7 @@ var requestTimeout time.Duration
 
 type ConfigPaths string
 
-var _datadir string
+// var _datadir string
 var datadir ConfigPaths
 
 func init() {
@@ -49,9 +50,9 @@ func init() {
 	serveCmd.PersistentFlags().StringVar(&httpAddress, "address", "", "Listening address for http server")
 	serveCmd.PersistentFlags().DurationVar(&requestTimeout, "reqTimeout", 25*time.Second, "Timeout when serving a request")
 
-	serveCmd.PersistentFlags().StringVar(&_datadir, "datadir", "", "datadir to use")
+	serveCmd.PersistentFlags().String("datadir", "", "datadir to use")
+	exitOnError(viper.BindPFlag("datadir", serveCmd.PersistentFlags().Lookup("datadir")))
 	exitOnError(serveCmd.MarkPersistentFlagDirname("datadir"))
-	exitOnError(serveCmd.MarkPersistentFlagRequired("datadir"))
 }
 
 func getRosettaServerConfig() *api.RosettaServerConfig {
@@ -63,7 +64,9 @@ func getRosettaServerConfig() *api.RosettaServerConfig {
 }
 
 func validateDatadir(cmd *cobra.Command, args []string) {
-	absDatadir, err := filepath.Abs(_datadir)
+	exitOnMissingConfig(cmd, "datadir")
+
+	absDatadir, err := filepath.Abs(viper.GetString("datadir"))
 	if err != nil {
 		log.Crit("Can't resolve datadir path", "datadir", absDatadir, "err", err)
 	}

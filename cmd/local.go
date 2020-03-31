@@ -33,6 +33,7 @@ import (
 	"github.com/celo-org/rosetta/internal/signals"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // localCmd represents the local command
@@ -43,19 +44,18 @@ var localCmd = &cobra.Command{
 	Run:   runLocalCmd,
 }
 
-var genesisPath string
 var gethBinary string
 var staticNodes []string
 
 func init() {
 	serveCmd.AddCommand(localCmd)
 
-	localCmd.Flags().StringVar(&gethBinary, "geth", "", "Path to the celo-blockchain binary")
-	exitOnError(localCmd.MarkFlagRequired("geth"))
+	localCmd.Flags().String("geth", "", "Path to the celo-blockchain binary")
+	exitOnError(viper.BindPFlag("geth", localCmd.Flags().Lookup("geth")))
 	exitOnError(localCmd.MarkFlagFilename("geth"))
 
-	localCmd.Flags().StringVar(&genesisPath, "genesis", "", "path to the genesis.json")
-	exitOnError(localCmd.MarkFlagRequired("genesis"))
+	localCmd.Flags().String("genesis", "", "path to the genesis.json")
+	exitOnError(viper.BindPFlag("genesis", localCmd.Flags().Lookup("genesis")))
 	exitOnError(localCmd.MarkFlagFilename("genesis", "json"))
 
 	localCmd.Flags().StringArrayVar(&staticNodes, "staticNode", []string{}, "StaticNode to use (can be repeated many times")
@@ -63,8 +63,15 @@ func init() {
 }
 
 func runLocalCmd(cmd *cobra.Command, args []string) {
+	exitOnMissingConfig(cmd, "geth")
+	fmt.Println("RPSSFSDF")
+	exitOnMissingConfig(cmd, "genesis")
+
+	gethBinary = viper.GetString("geth")
+	genesisPath := viper.GetString("genesis")
+
 	// Read Genesis to get chain parameters
-	chainParams := chainParamsFromGenesisFile()
+	chainParams := chainParamsFromGenesisFile(genesisPath)
 
 	if err := os.MkdirAll(datadir.GethDatadir(), os.ModePerm); err != nil {
 		log.Crit("Can't create celo-blockchain datadir")
@@ -79,13 +86,7 @@ func runLocalCmd(cmd *cobra.Command, args []string) {
 		log.Crit("Can't serialize static nodes", "err", err)
 	}
 
-	if len(staticNodes) == 0 {
-		cmd.PrintErrln(cmd.UsageString())
-		cmd.PrintErrln(cmd.UsageString())
-
-	}
-
-	ensureGethInit()
+	ensureGethInit(genesisPath)
 
 	log.Info("Starting local geth")
 	gethCmd := startGeth(chainParams)
@@ -122,7 +123,7 @@ func runLocalCmd(cmd *cobra.Command, args []string) {
 	}
 }
 
-func chainParamsFromGenesisFile() *celo.ChainParameters {
+func chainParamsFromGenesisFile(genesisPath string) *celo.ChainParameters {
 	data, err := ioutil.ReadFile(genesisPath)
 	if err != nil {
 		log.Crit("Can't read genesis.json on DataDir", "genesisPath", genesisPath, "err", err)
@@ -153,7 +154,7 @@ func gethCmd(args ...string) *exec.Cmd {
 	return exec.Command(gethBinary, fullArgs...)
 }
 
-func ensureGethInit() {
+func ensureGethInit(genesisPath string) {
 	// Check if geth is initialized already
 	flagFile := datadir.GethInitializedFile()
 

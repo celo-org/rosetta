@@ -71,7 +71,10 @@ COPY --from=builder /rosetta/rosetta /usr/local/bin/
 RUN echo $COMMIT_SHA > /version.txt
 RUN mkdir /data
 EXPOSE 8080/tcp
+ENV ROSETTA_DATADIR="/data"
+ENV ROSETTA_GETH="/usr/local/bin/geth"
+ENV ROSETTA_GENESIS="/data/genesis.json"
 ENTRYPOINT ["/usr/local/bin/rosetta"]
-CMD ["serve", "local", "--geth", "/usr/local/bin/geth", "--datadir", "/data", "--genesis","/data/genesis.json"]
+CMD ["serve", "local"]
 
 

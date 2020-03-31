@@ -43,7 +43,11 @@ func Execute() {
 }
 
 func init() {
+	viper.SetEnvPrefix("ROSETTA")
+	viper.AutomaticEnv() // read in environment variables that match
+
 	log.Root().SetHandler(log.LvlFilterHandler(log.LvlInfo, log.StreamHandler(os.Stderr, log.TerminalFormat(true))))
+
 	cobra.OnInitialize(initConfig)
 
 	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.rosetta.yaml)")
@@ -62,13 +66,12 @@ func initConfig() {
 	// 		os.Exit(1)
 	// 	}
 
+	// fmt.Println("datadir=", viper.Get("datadir"))
+
 	// 	// Search config in home directory with name ".rosetta" (without extension).
 	// 	viper.AddConfigPath(home)
 	// 	viper.SetConfigName(".rosetta")
 	// }
-
-	viper.SetEnvPrefix("ROSETTA")
-	viper.AutomaticEnv() // read in environment variables that match
 
 	// // If a config file is found, read it in.
 	// if err := viper.ReadInConfig(); err == nil {
@@ -79,5 +82,13 @@ func initConfig() {
 func exitOnError(err error) {
 	if err != nil {
 		log.Crit("Unknown error", "err", err)
+	}
+}
+
+func exitOnMissingConfig(cmd *cobra.Command, configKey string) {
+	if !viper.IsSet(configKey) {
+		cmd.Println(cmd.UsageString())
+		cmd.Printf("Missing required config: %s\n", configKey)
+		os.Exit(1)
 	}
 }
