@@ -17,6 +17,22 @@ var (
 	}
 )
 
+type SubmissionResult string
+
+const (
+	SubmissionSuccess SubmissionResult = "pending"
+	SubmissionFailed  SubmissionResult = "rejected"
+)
+
+func (sr SubmissionResult) String() string { return string(sr) }
+
+func (sr SubmissionResult) ToSubmissionStatus() SubmissionStatus {
+	return SubmissionStatus{
+		Status:     sr.String(),
+		Successful: sr == SubmissionSuccess,
+	}
+}
+
 type OperationResult string
 
 const (

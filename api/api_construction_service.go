@@ -110,8 +110,7 @@ func (s *ConstructionApiService) TransactionSubmit(ctx context.Context, transact
 		TransactionIdentifier: TransactionIdentifier{
 			Hash: txhash.String(),
 		},
-		// TODO: implement
-		Status:   "null",
+		Status:   SubmissionSuccess.String(),
 		Metadata: map[string]interface{}{},
 	}
 	return response, nil

@@ -84,6 +84,10 @@ func (s *NetworkApiService) NetworkStatus(ctx context.Context, networkStatusRequ
 				OpKindFee.String(),
 				OpKindMint.String(),
 			},
+			SubmissionStatuses: []SubmissionStatus{
+				SubmissionSuccess.ToSubmissionStatus(),
+				SubmissionFailed.ToSubmissionStatus(),
+			},
 		},
 		Metadata: map[string]interface{}{},
 	}
