@@ -19,12 +19,18 @@ var transferTracer = `
 
 {
   callStack: [ { transfers: [] } ],
-  assertionFailed: false,
+  reverted: false,
   statusRevert: 'revert',
   statusSuccess: 'success',
 
   topCall() {
     return this.callStack[this.callStack.length - 1];
+  },
+
+  assertEqual(x, y) {
+    if (x != y) {
+      throw new Error("Expected " + x.toString() + "  == " + y.toString());
+    }
   },
 
   pushTransfers(transfers, call, transferStatus) {
@@ -40,13 +46,24 @@ var transferTracer = `
 
   // fault() is invoked when the actual execution of an opcode fails.
   fault(log, db) {
-    if (this.callStack.length != log.getDepth()) {
-      this.assertionFailed = true;
-    }
+    this.assertEqual(this.callStack.length, log.getDepth());
+    if (this.callStack.length > 1) {
+      // Nested call reverted.
+      const failedCall = this.callStack.pop();
 
-    const failedCall = this.callStack.pop();
-    // Revert all transfers that are descendents of the failed call.
-    this.pushTransfers(this.topCall().transfers, failedCall, this.statusRevert);
+      // Revert all transfers that are descendents of the failed call.
+      this.pushTransfers(this.topCall().transfers, failedCall, this.statusRevert);
+    } else {
+      // Outermost call reverted.
+      this.reverted = true
+      const call = this.callStack[0]
+
+      // Revert all transfers
+      for (var index in call.transfers) {
+        const transfer = call.transfers[index];
+        transfer.status = this.statusRevert;
+      }
+    }
   },
 
   // step() is invoked for every opcode that the VM executes.
@@ -55,13 +72,11 @@ var transferTracer = `
 
     if (this.callStack.length - 1 == depth) {
       const successfulCall = this.callStack.pop();
-      // Propagate transfers made during the successful call.
+      // Propogate transfers made during the successful call.
       this.pushTransfers(this.topCall().transfers, successfulCall, this.statusSuccess);
     }
 
-    if (this.callStack.length != depth) {
-      this.assertionFailed = true;
-    }
+    this.assertEqual(this.callStack.length, depth);
 
     // Capture any errors immediately.
     const error = log.getError();
@@ -152,27 +167,24 @@ var transferTracer = `
   // result() is invoked when all the opcodes have been iterated over and returns
   // the final result of the tracing.
   result(ctx, db) {
-    const transfers = []
+    this.assertEqual(this.callStack.length, 1);
+    const transfers = [];
 
-    if (this.callStack.length != 1) {
-      this.assertionFailed = true;
-    } else {
-      if (ctx.type == 'CALL') {
-        valueBigInt = bigInt(ctx.value.toString());
-        if (valueBigInt.gt(0)) {
-          transfers.push({
-            type: 'cGLD transfer',
-            from: toHex(ctx.from),
-            to: toHex(ctx.to),
-            value: '0x' + valueBigInt.toString(16),
-            status: this.statusSuccess,
-          });
-        }
+    if (ctx.type == 'CALL' || ctx.type == 'CREATE' || ctx.type == 'CREATE2') {
+      valueBigInt = bigInt(ctx.value.toString());
+      if (valueBigInt.gt(0)) {
+        transfers.push({
+          type: 'cGLD transfer',
+          from: toHex(ctx.from),
+          to: toHex(ctx.to),
+          value: '0x' + valueBigInt.toString(16),
+          status: this.reverted ? this.statusRevert : this.statusSuccess,
+        });
       }
-      this.pushTransfers(transfers, this.callStack.pop(), this.statusSuccess);
     }
+    this.pushTransfers(transfers, this.callStack.pop(), this.statusSuccess);
 
-    // Return in same format as callTracer: -calls, +transfers, +block, and +status.
+    // Return in same format as callTracer: -calls, +transfers, and +block.
     return {
       type:      ctx.type,
       from:      toHex(ctx.from),
@@ -184,7 +196,6 @@ var transferTracer = `
       output:    toHex(ctx.output),
       block:     ctx.block,
       time:      ctx.time,
-      status:    this.assertionFailed ? 'assertionFailed' : this.statusSuccess,
       transfers: transfers,
     };
   },

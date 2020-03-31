@@ -52,10 +52,10 @@ func DriveTracer() {
 	toAddress := common.HexToAddress("0xbBae99F0E1EE565404465638d40827b54D343638")
 
 	// https://github.com/celo-org/celo-monorepo/blob/jfoutts/test-custody/packages/celotool/src/e2e-tests/tracer_tests.ts#L25
-	testContractAddress := common.HexToAddress("0x07f96aa816c1f244cbc6ef114bb2b023ba54a2eb")
+	testContractAddress := common.HexToAddress("0xcFC18CEc799fBD1793B5C43E773C98D4d61Cc2dB")
 
 	// TestContract.selfDestruct
-	txHash := common.HexToHash("0x3506ee7d435786e3630c0fcee80d08015c51221675ca72c349fc23f64c56cf20")
+	txHash := common.HexToHash("0xb9d884ce000f39445c8db72abb9266e9b74023860f73a44f43f5eef451072298")
 	transfers, err := cc.Debug.TransactionTransfers(ctx, txHash)
 	if err != nil {
 		panic(err)
