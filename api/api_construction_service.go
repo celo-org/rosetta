@@ -80,18 +80,29 @@ func (s *ConstructionApiService) TransactionConstruction(ctx context.Context, tx
 		if err != nil {
 			return nil, WrapError("Transfer: BalanceAt", err)
 		}
+
+		msg := txMetadata.asMessage()
+		msg.Value = balance
+		msg.To = &DummyAddress
+		gasLimit, err := s.celoClient.Eth.EstimateGas(ctx, *msg)
+		if err != nil {
+			return nil, WrapError("Transfer: EstimateGas", err)
+		}
+
+		txMetadata.GasLimit = gasLimit
+
 		metadata[TransferMethod] = TransferMetadata{
 			Balance: balance,
 			Tx:      txMetadata,
 		}
+
 	default:
 		return nil, WrapError("Unknown method", err)
 	}
 
 	response := TransactionConstructionResponse{
-		// TODO: compute suggested fee with more sophistication
 		SuggestedFee: Amount{
-			Value:    GasUpperBound[txConstructionRequest.Method],
+			Value:    txMetadata.GasPrice.String(),
 			Currency: CeloGold,
 		},
 		Metadata: metadata,

@@ -3,6 +3,7 @@ package api
 import (
 	"math/big"
 
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -65,6 +66,10 @@ const (
 	TransferMethod Method = "transfer"
 )
 
+var (
+	DummyAddress = common.HexToAddress("abc")
+)
+
 //go:generate gencodec -type TransactionMetadata -out gen_transaction_metadata_json.go
 
 type TransactionMetadata struct {
@@ -75,15 +80,17 @@ type TransactionMetadata struct {
 	GatewayFee          *big.Int        `json:"gatewayFee" rlp:"nil"`          // nil means no gateway fee is paid
 }
 
+func (txm *TransactionMetadata) asMessage() *ethereum.CallMsg {
+	return &ethereum.CallMsg{
+		GasPrice:            txm.GasPrice,
+		GatewayFee:          txm.GatewayFee,
+		GatewayFeeRecipient: txm.GatewayFeeRecipient,
+	}
+}
+
 //go:generate gencodec -type TransferMetadata -out gen_transfer_json.go
 
 type TransferMetadata struct {
 	Balance *big.Int             `json:"balance" gencodec:"required"`
 	Tx      *TransactionMetadata `json:"tx"`
 }
-
-var (
-	GasUpperBound = map[Method]string{
-		TransferMethod: "40000",
-	}
-)
