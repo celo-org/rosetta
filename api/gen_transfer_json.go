@@ -6,27 +6,25 @@ import (
 	"encoding/json"
 	"errors"
 	"math/big"
-
-	"github.com/ethereum/go-ethereum/core/types"
 )
 
 // MarshalJSON marshals as JSON.
 func (t TransferMetadata) MarshalJSON() ([]byte, error) {
 	type TransferMetadata struct {
-		Balance *big.Int      `json:"balance" gencodec:"required"`
-		Txdata  *types.Txdata `json:"txdata"`
+		Balance *big.Int             `json:"balance" gencodec:"required"`
+		Tx      *TransactionMetadata `json:"tx"`
 	}
 	var enc TransferMetadata
 	enc.Balance = t.Balance
-	enc.Txdata = t.Txdata
+	enc.Tx = t.Tx
 	return json.Marshal(&enc)
 }
 
 // UnmarshalJSON unmarshals from JSON.
 func (t *TransferMetadata) UnmarshalJSON(input []byte) error {
 	type TransferMetadata struct {
-		Balance *big.Int      `json:"balance" gencodec:"required"`
-		Txdata  *types.Txdata `json:"txdata"`
+		Balance *big.Int             `json:"balance" gencodec:"required"`
+		Tx      *TransactionMetadata `json:"tx"`
 	}
 	var dec TransferMetadata
 	if err := json.Unmarshal(input, &dec); err != nil {
@@ -36,8 +34,8 @@ func (t *TransferMetadata) UnmarshalJSON(input []byte) error {
 		return errors.New("missing required field 'balance' for TransferMetadata")
 	}
 	t.Balance = dec.Balance
-	if dec.Txdata != nil {
-		t.Txdata = dec.Txdata
+	if dec.Tx != nil {
+		t.Tx = dec.Tx
 	}
 	return nil
 }

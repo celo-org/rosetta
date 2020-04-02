@@ -3,7 +3,7 @@ package api
 import (
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 var (
@@ -65,11 +65,21 @@ const (
 	TransferMethod Method = "transfer"
 )
 
+//go:generate gencodec -type TransactionMetadata -out gen_transaction_metadata_json.go
+
+type TransactionMetadata struct {
+	Nonce               uint64          `json:"nonce"    gencodec:"required"`
+	GasPrice            *big.Int        `json:"gasPrice" gencodec:"required"`
+	GasLimit            uint64          `json:"gasLimit"      gencodec:"required"`
+	GatewayFeeRecipient *common.Address `json:"gatewayFeeRecipient" rlp:"nil"` // nil means no gateway fee is paid
+	GatewayFee          *big.Int        `json:"gatewayFee" rlp:"nil"`          // nil means no gateway fee is paid
+}
+
 //go:generate gencodec -type TransferMetadata -out gen_transfer_json.go
 
 type TransferMetadata struct {
-	Balance *big.Int      `json:"balance" gencodec:"required"`
-	Txdata  *types.Txdata `json:"txdata"`
+	Balance *big.Int             `json:"balance" gencodec:"required"`
+	Tx      *TransactionMetadata `json:"tx"`
 }
 
 var (

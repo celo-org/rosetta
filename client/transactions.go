@@ -16,14 +16,14 @@ func ConstructTransferTransaction(from *common.Address, to *common.Address, amou
 	}
 
 	transaction := types.NewTransaction(
-		metadata.Txdata.AccountNonce,
+		metadata.Tx.Nonce,
 		*to,
 		amount,
-		metadata.Txdata.GasLimit,
-		metadata.Txdata.Price,
+		metadata.Tx.GasLimit,
+		metadata.Tx.GasPrice,
 		nil, // guarantee cGLD
-		metadata.Txdata.GatewayFeeRecipient,
-		metadata.Txdata.GatewayFee,
+		metadata.Tx.GatewayFeeRecipient,
+		metadata.Tx.GatewayFee,
 		[]byte{},
 	)
 

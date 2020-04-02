@@ -16,7 +16,6 @@ import (
 	"github.com/celo-org/rosetta/celo"
 	"github.com/celo-org/rosetta/celo/client"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 )
 
 // ConstructionApiService is a service that implents the logic for the ConstructionApiServicer
@@ -35,28 +34,29 @@ func NewConstructionApiService(celoClient *client.CeloClient, chainParams *celo.
 	}
 }
 
-func (s *ConstructionApiService) getTxdata(ctx context.Context, address common.Address) (*types.Txdata, error) {
-	var txData types.Txdata
+func (s *ConstructionApiService) getTxMetadata(ctx context.Context, address common.Address) (*TransactionMetadata, error) {
+	var txMetadata TransactionMetadata
 	var err error
-	txData.AccountNonce, err = s.celoClient.Eth.NonceAt(ctx, address, nil) // nil == latest
+
+	txMetadata.Nonce, err = s.celoClient.Eth.NonceAt(ctx, address, nil) // nil == latest
 	if err != nil {
 		return nil, client.WrapRpcError(err)
 	}
 
-	txData.GatewayFeeRecipient, err = s.celoClient.Eth.Coinbase(ctx)
+	txMetadata.GatewayFeeRecipient, err = s.celoClient.Eth.Coinbase(ctx)
 	if err != nil {
 		return nil, client.WrapRpcError(err)
 	}
 
-	txData.Price, err = s.celoClient.Eth.SuggestGasPrice(ctx)
+	txMetadata.GasPrice, err = s.celoClient.Eth.SuggestGasPrice(ctx)
 	if err != nil {
 		return nil, client.WrapRpcError(err)
 	}
 
 	// TODO: consider fetching from node
-	txData.GatewayFee = big.NewInt(0)
+	txMetadata.GatewayFee = big.NewInt(0)
 
-	return &txData, nil
+	return &txMetadata, nil
 }
 
 // TransactionConstruction - Get Transaction Construction Metadata
@@ -69,7 +69,7 @@ func (s *ConstructionApiService) TransactionConstruction(ctx context.Context, tx
 
 	var metadata = make(map[string]interface{})
 
-	txdata, err := s.getTxdata(ctx, address)
+	txMetadata, err := s.getTxMetadata(ctx, address)
 	if err != nil {
 		return nil, WrapError("GetTxData", err)
 	}
@@ -82,7 +82,7 @@ func (s *ConstructionApiService) TransactionConstruction(ctx context.Context, tx
 		}
 		metadata[TransferMethod] = TransferMetadata{
 			Balance: balance,
-			Txdata:  txdata,
+			Tx:      txMetadata,
 		}
 	default:
 		return nil, WrapError("Unknown method", err)
