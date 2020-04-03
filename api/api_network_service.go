@@ -74,7 +74,15 @@ func (s *NetworkApiService) NetworkStatus(ctx context.Context, networkStatusRequ
 			MiddlewareVersion: MiddlewareVersion,
 		},
 		Options: Options{
-			Methods: []string{TransferMethod},
+			Methods: []string{
+				"/account/balance",
+				"/block",
+				"/block/transaction",
+				"/construction/metadata",
+				"/construction/submit",
+				"/mempool",
+				"/network/status",
+			},
 			OperationStatuses: []OperationStatus{
 				OperationFailed.ToOperationStatus(),
 				OperationSuccess.ToOperationStatus(),
