@@ -35,13 +35,13 @@ func NewBlockApiService(celoClient *client.CeloClient, cp *celo.ChainParameters)
 	}
 }
 
-func (b *BlockApiService) BlockHeader(ctx context.Context, blockIdentifier PartialBlockIdentifier) (*ethclient.ExtendedHeader, error) {
+func (b *BlockApiService) BlockHeader(ctx context.Context, blockIdentifier PartialBlockIdentifier) (*ethclient.HeaderAndTxnHashes, error) {
 	var err error
-	var blockHeader *ethclient.ExtendedHeader
+	var blockHeader *ethclient.HeaderAndTxnHashes
 
 	if blockIdentifier.Hash != nil {
 		hash := common.HexToHash(*blockIdentifier.Hash)
-		blockHeader, err = b.celoClient.Eth.ExtendedHeaderByHash(ctx, hash)
+		blockHeader, err = b.celoClient.Eth.HeaderAndTxnHashesByHash(ctx, hash)
 		if err != nil {
 			err = client.WrapRpcError(err)
 			return nil, ErrCantFetchBlockHeader(err)
@@ -53,13 +53,13 @@ func (b *BlockApiService) BlockHeader(ctx context.Context, blockIdentifier Parti
 		}
 
 	} else if blockIdentifier.Index != nil {
-		blockHeader, err = b.celoClient.Eth.ExtendedHeaderByNumber(ctx, big.NewInt(*blockIdentifier.Index))
+		blockHeader, err = b.celoClient.Eth.HeaderAndTxnHashesByNumber(ctx, big.NewInt(*blockIdentifier.Index))
 		if err != nil {
 			err = client.WrapRpcError(err)
 			return nil, ErrCantFetchBlockHeader(err)
 		}
 	} else {
-		blockHeader, err = b.celoClient.Eth.ExtendedHeaderByNumber(ctx, nil)
+		blockHeader, err = b.celoClient.Eth.HeaderAndTxnHashesByNumber(ctx, nil)
 		if err != nil {
 			err = client.WrapRpcError(err)
 			return nil, ErrCantFetchBlockHeader(err)

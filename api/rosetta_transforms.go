@@ -39,7 +39,7 @@ func TxIdsFromTxAccountMap(txAccountMap txpool.TxAccountMap) []TransactionIdenti
 	return identifiers
 }
 
-func HeaderContainsTx(header *ethclient.ExtendedHeader, txHash common.Hash) bool {
+func HeaderContainsTx(header *ethclient.HeaderAndTxnHashes, txHash common.Hash) bool {
 	for _, tx := range header.Transactions {
 		if tx == txHash {
 			return true

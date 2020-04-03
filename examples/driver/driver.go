@@ -234,7 +234,7 @@ func CheckHeaderHash() {
 	block, err := celo.Eth.HeaderByHash(context.Background(), lastBlock.ParentHash)
 	PanicOnErr(err)
 
-	log.Info("Block", "num", block.Number, "hash", block.Hash().Hex(), "correctHash", lastBlock.ParentHash.Hex(), "mixDigest", lastBlock.MixDigest.Hex())
+	log.Info("Block", "num", block.Number, "hash", block.Hash().Hex(), "correctHash", lastBlock.ParentHash.Hex())
 }
 
 func FetchEveryXBlocksByHash() {
@@ -255,7 +255,7 @@ func FetchEveryXBlocksByHash() {
 		logger := log.New("num", nextNumber, "distance", new(big.Int).Sub(initial, nextNumber))
 
 		logger.Info("Fetching By Number")
-		block, err := celo.Eth.ExtendedHeaderByNumber(context.Background(), nextNumber)
+		block, err := celo.Eth.HeaderAndTxnHashesByNumber(context.Background(), nextNumber)
 		if err != nil {
 			logger.Info("Error Fetching By Number", "err", err)
 			os.Exit(1)
@@ -265,7 +265,7 @@ func FetchEveryXBlocksByHash() {
 		logger = logger.New("hash", blockHash.Hex())
 		logger.Info("Fetching By hash")
 
-		block, err = celo.Eth.ExtendedHeaderByHash(context.Background(), blockHash)
+		block, err = celo.Eth.HeaderAndTxnHashesByHash(context.Background(), blockHash)
 		if err != nil {
 			logger.Info("Error Fetching By Hash", "err", err)
 			os.Exit(1)
@@ -290,7 +290,7 @@ func FetchAllBlockByHash() {
 		parentBlock, err := celo.Eth.HeaderByHash(context.Background(), currBlock.ParentHash)
 		if err != nil {
 			log.Info("Error Fetching", "num", currBlock.Number.Int64()-1, "hash", currBlock.ParentHash.Hex(), "err", err)
-			block, err := celo.Eth.ExtendedHeaderByNumber(context.Background(), new(big.Int).Sub(currBlock.Number, big.NewInt(1)))
+			block, err := celo.Eth.HeaderAndTxnHashesByNumber(context.Background(), new(big.Int).Sub(currBlock.Number, big.NewInt(1)))
 			if err != nil {
 				panic(err)
 			}
@@ -305,7 +305,7 @@ func FetchAllBlockByHash() {
 //885363
 //885671
 
-func MustPPHeader(block *ethclient.ExtendedHeader) {
+func MustPPHeader(block *ethclient.HeaderAndTxnHashes) {
 	str, err := json.MarshalIndent(block, "  ", "  ")
 	PanicOnErr(err)
 	fmt.Println(string(str))
