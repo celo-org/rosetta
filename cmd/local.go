@@ -77,6 +77,8 @@ func runLocalCmd(cmd *cobra.Command, args []string) {
 		log.Crit("Can't create celo-blockchain datadir")
 	}
 
+	ensureGethInit(genesisPath)
+
 	staticNodesRaw, err := json.Marshal(staticNodes)
 	if err != nil {
 		log.Crit("Can't serialize static nodes", "err", err)
@@ -85,8 +87,6 @@ func runLocalCmd(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Crit("Can't serialize static nodes", "err", err)
 	}
-
-	ensureGethInit(genesisPath)
 
 	log.Info("Starting local geth")
 	gethCmd := startGeth(chainParams)
