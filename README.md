@@ -16,7 +16,7 @@ Rosetta has 2 operations modes:
 
 Run on RC0 using forno node
 ```bash
-rosetta serve remote --datadir ./rosetta --nodeUri https://rc0-forno.celo-testnet.org/ --epochSize 17280
+rosetta serve remote --datadir ./rosetta --nodeUri https://rc0-forno.celo-testnet.org/ --epoch 17280
 ```
 
 Run with a local node
