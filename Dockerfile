@@ -66,7 +66,7 @@ RUN go build -o rosetta .
 #---------------------------------------------------------------------
 
 # e0be402d3b146682cfa1827b97b1833e7dc913e9 is celo-blockchain commit for RC0
-FROM gcr.io/celo-testnet/geth:e0be402d3b146682cfa1827b97b1833e7dc913e9
+FROM us.gcr.io/celo-testnet/geth:e0be402d3b146682cfa1827b97b1833e7dc913e9
 ARG COMMIT_SHA
 
 RUN apk add --no-cache ca-certificates
