@@ -58,6 +58,7 @@ github.com/btcsuite/goleveldb v0.0.0-20160330041536-7834afc9e8cd/go.mod h1:F+uVa
 github.com/btcsuite/snappy-go v0.0.0-20151229074030-0bdef8d06723/go.mod h1:8woku9dyThutzjeg+3xrA5iCpBRH8XEEg3lh6TiUghc=
 github.com/btcsuite/websocket v0.0.0-20150119174127-31079b680792/go.mod h1:ghJtEyQwv5/p4Mg4C0fgbePVuGr935/5ddU9Z3TmDRY=
 github.com/btcsuite/winsvc v1.0.0/go.mod h1:jsenWakMcC0zFBFurPLEAyrnc/teJEM1O46fmI40EZs=
+github.com/celo-org/bls-zexe v0.0.0-20200403142907-bed84e409a0d h1:ByTyJVeGeEqNFCJgflMsfwB/nx3/H/oINZHaGS/6U5E=
 github.com/celo-org/celo-blockchain v0.0.0-20200330175510-6890b4f48e11 h1:NoDODpTno7FDf1yYz2Fv97aGHLlNTfqveXqloRFQ2bc=
 github.com/celo-org/celo-blockchain v0.0.0-20200330175510-6890b4f48e11/go.mod h1:fjbKeebYSb0akEY16ozvWV9kKOTr1LpVIzjqrNidz44=
 github.com/celo-org/celo-blockchain v0.0.0-20200331022123-e0c603293732 h1:YeW8RBn+J5hiCvwQrxaAwtgwGrGNq7LxmP/NVMkvgQA=
