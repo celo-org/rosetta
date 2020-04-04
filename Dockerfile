@@ -47,11 +47,10 @@ COPY external ./external
 RUN mkdir -p external/bls-zexe/target/release/
 COPY --from=rustbuilder /bls-zexe/target/x86_64-unknown-linux-musl/release/libepoch_snark.a external/bls-zexe/target/release/
 
-# Downnload dependencies
-# We use strategy depicted here: https://github.com/golang/go/wiki/Modules#how-do-i-download-modules-needed-to-build-specific-packages-or-tests
+# Downnload dependencies & cache them in docker layer
 COPY go.mod .
 COPY go.sum .
-RUN go list ./...
+RUN go mod download
 
 # Build project
 #  (this saves to redownload everything when go.mod/sum didn't change)
