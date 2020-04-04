@@ -69,14 +69,10 @@ func HeaderToParentBlockIdentifier(header *types.Header) *BlockIdentifier {
 	}
 }
 
-func MapTxHashesToTransaction(txHashes []common.Hash) []Transaction {
-	transactions := make([]Transaction, len(txHashes))
+func MapTxHashesToTransaction(txHashes []common.Hash) []TransactionIdentifier {
+	transactions := make([]TransactionIdentifier, len(txHashes))
 	for i, tx := range txHashes {
-		transactions[i] = Transaction{
-			TransactionIdentifier: TransactionIdentifier{
-				Hash: tx.Hex(),
-			},
-		}
+		transactions[i] = TransactionIdentifier{Hash: tx.Hex()}
 	}
 	return transactions
 }
@@ -92,6 +88,7 @@ func NewOperationIdentifier(index int64) OperationIdentifier {
 		Index: index,
 	}
 }
+
 func NewAmount(value *big.Int, currency Currency) Amount {
 	return Amount{
 		Value:    value.String(),

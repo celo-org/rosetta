@@ -87,11 +87,7 @@ func (b *BlockApiService) Block(ctx context.Context, request BlockRequest) (inte
 
 	// If it's the last block of the Epoch, add a transaction for the block Finalize()
 	if b.chainParams.IsLastBlockOfEpoch(blockHeader.Number.Uint64()) {
-		transactions = append(transactions, Transaction{
-			TransactionIdentifier: TransactionIdentifier{
-				Hash: blockHeader.Hash().Hex(),
-			},
-		})
+		transactions = append(transactions, TransactionIdentifier{Hash: blockHeader.Hash().Hex()})
 	}
 
 	return &BlockResponse{
@@ -99,8 +95,8 @@ func (b *BlockApiService) Block(ctx context.Context, request BlockRequest) (inte
 			BlockIdentifier:       *HeaderToBlockIdentifier(&blockHeader.Header),
 			ParentBlockIdentifier: *HeaderToParentBlockIdentifier(&blockHeader.Header),
 			Timestamp:             int64(blockHeader.Time), // TODO unsafe casting from uint to int 64
-			Transactions:          transactions,
 		},
+		OtherTransactions: transactions,
 	}, nil
 
 }

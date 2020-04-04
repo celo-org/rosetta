@@ -13,6 +13,7 @@ api/logger.go
 
 # Modified Models
 api/model_partial_block_identifier.go
+api/model_block.go
 model_transaction.go
 
 go.mod
