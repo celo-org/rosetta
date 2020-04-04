@@ -64,7 +64,7 @@ func HeaderToBlockIdentifier(header *types.Header) *BlockIdentifier {
 
 func HeaderToParentBlockIdentifier(header *types.Header) *BlockIdentifier {
 	return &BlockIdentifier{
-		Hash:  header.Hash().Hex(),
+		Hash:  header.ParentHash.Hex(),
 		Index: new(big.Int).Sub(header.Number, big.NewInt(1)).Int64(),
 	}
 }
