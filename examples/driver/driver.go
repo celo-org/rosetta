@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"time"
 
 	"github.com/celo-org/rosetta/celo"
 	"github.com/celo-org/rosetta/celo/client"
@@ -51,7 +52,9 @@ func main() {
 	// DriverRegistryErrors()
 	// DriverEpochLogs()
 	// DriverEpochRewards()
-	DriverEpochRewards2()
+	// DriverEpochRewards2()
+	// DriverSubscribe()
+	DriverMonitor()
 }
 
 func PanicOnErr(err error) {
@@ -92,6 +95,18 @@ func DriverEpochRewards() {
 
 		}
 	}
+}
+
+func DriverMonitor() {
+	cc := CeloClientWithUri("./envs/rc0/celo/geth.ipc")
+
+	monitor, err := celo.NewMonitor(cc, big.NewInt(200000))
+	//monitor, err := celo.NewMonitor(cc, big.NewInt(0))
+	PanicOnErr(err)
+
+	pp.Print(monitor)
+
+	time.Sleep(5000 * time.Second)
 }
 
 type LogParser interface {
@@ -311,10 +326,14 @@ func MustPPHeader(block *ethclient.HeaderAndTxnHashes) {
 	fmt.Println(string(str))
 }
 
-func CeloClient() *client.CeloClient {
-	celo, err := client.Dial(config.FornoRC0Url)
+func CeloClientWithUri(uri string) *client.CeloClient {
+	celo, err := client.Dial(uri)
 	PanicOnErr(err)
 	return celo
+}
+
+func CeloClient() *client.CeloClient {
+	return CeloClientWithUri(config.FornoRC0Url)
 }
 
 func BinarySearch(low uint, right uint, test func(n uint) bool) uint {
