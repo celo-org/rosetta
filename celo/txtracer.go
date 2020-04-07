@@ -110,7 +110,7 @@ func (tc *TxTracer) GasDetail() (map[common.Address]*big.Int, error) {
 		return nil, err
 	}
 
-	var gasPriceMinimum *big.Int
+	gasPriceMinimum := big.NewInt(0) // Fallback gas price minimum
 	if gpmAddress, ok := registryAddresses[params.GasPriceMinimumRegistryId]; ok {
 		gasPriceMinimum, err = tc.GasPriceMinimum(gpmAddress)
 		// TODO - What happens when there's no gasPrice Minimun
