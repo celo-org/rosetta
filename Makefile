@@ -17,6 +17,8 @@ LSB_exists := $(shell command -v lsb_release 2> /dev/null)
 GOLANGCI_exists := $(shell command -v golangci-lint 2> /dev/null)
 OPENAPIGEN_exists := $(shell command -v openapi-generator 2> /dev/null)
 
+COMMIT_SHA=$(shell git rev-parse HEAD)
+
 .PHONY:
 	gen-rpc 
 	ifdef CARGO_exists
@@ -84,10 +86,8 @@ rc0-env:
 	curl 'https://storage.googleapis.com/genesis_blocks/rc0' > ./envs/rc0/genesis.json
 
 docker-publish: docker-build
-	COMMIT_SHA=$(git rev-parse HEAD)
-	docker push gcr.io/celo-testnet/rosetta:${COMMIT_SHA}
+	docker push gcr.io/celo-testnet/rosetta:$(COMMIT_SHA)
 
 docker-build:
-	COMMIT_SHA=$(git rev-parse HEAD)
-	echo "Creating docker image with commit: ${COMMIT_SHA}"
-	docker build --build-arg COMMIT_SHA=${COMMIT_SHA} -t us.gcr.io/celo-testnet/rosetta:${COMMIT_SHA} .
+	echo "Creating docker image with commit: $(COMMIT_SHA)"
+	docker build --build-arg COMMIT_SHA=$(COMMIT_SHA) -t us.gcr.io/celo-testnet/rosetta:$(COMMIT_SHA) .
