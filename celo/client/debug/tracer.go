@@ -204,11 +204,20 @@ type transferTracerResponse struct {
 	Transfers []Transfer `json:"transfers"`
 }
 
+type TransferStatus string
+
+const (
+	TransferStatusSuccess TransferStatus = "success"
+	TransferStatusRevert  TransferStatus = "revert"
+)
+
+func (ts TransferStatus) String() string { return string(ts) }
+
 type Transfer struct {
 	From   common.Address `json:"from"`
 	To     common.Address `json:"to"`
 	Value  *big.Int       `json:"value"`
-	Status string         `json:"status"`
+	Status TransferStatus `json:"status"`
 }
 
 // UnmarshalJSON unmarshals from JSON.
@@ -217,7 +226,7 @@ func (t *Transfer) UnmarshalJSON(input []byte) error {
 		From   common.Address `json:"from"`
 		To     common.Address `json:"to"`
 		Value  *hexutil.Big   `json:"value"`
-		Status string         `json:"status"`
+		Status TransferStatus `json:"status"`
 	}
 	var dec Transfer
 	if err := json.Unmarshal(input, &dec); err != nil {

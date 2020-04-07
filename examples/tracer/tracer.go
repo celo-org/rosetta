@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/celo-org/rosetta/celo/client"
+	"github.com/celo-org/rosetta/celo/client/debug"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/log"
 	//"github.com/k0kubun/pp"
@@ -63,8 +64,8 @@ func DriveTracer() {
 	assertIntEqual(len(transfers), 2)
 	assertAddressEqual(transfers[0].From, fromAddress)
 	assertAddressEqual(transfers[0].To, testContractAddress)
-	assertStringEqual(transfers[0].Status, "success")
+	assertStringEqual(transfers[0].Status.String(), debug.TransferStatusSuccess.String())
 	assertAddressEqual(transfers[1].From, testContractAddress)
 	assertAddressEqual(transfers[1].To, toAddress)
-	assertStringEqual(transfers[1].Status, "success")
+	assertStringEqual(transfers[1].Status.String(), debug.TransferStatusSuccess.String())
 }
