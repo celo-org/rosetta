@@ -30,7 +30,8 @@ type Account struct {
 }
 
 type Transfer struct {
-	From  Account
-	To    Account
-	Value *big.Int
+	From   Account
+	To     Account
+	Value  *big.Int
+	Status string
 }

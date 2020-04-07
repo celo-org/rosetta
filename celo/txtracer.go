@@ -172,7 +172,8 @@ func (tc *TxTracer) TransferDetail() ([]Transfer, error) {
 				Address:    it.To,
 				SubAccount: Main,
 			},
-			Value: it.Value,
+			Value:  it.Value,
+			Status: it.Status,
 		}
 	}
 	return transfers, nil
