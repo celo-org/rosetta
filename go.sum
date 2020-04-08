@@ -61,6 +61,10 @@ github.com/btcsuite/winsvc v1.0.0/go.mod h1:jsenWakMcC0zFBFurPLEAyrnc/teJEM1O46f
 github.com/celo-org/bls-zexe v0.0.0-20200403142907-bed84e409a0d h1:ByTyJVeGeEqNFCJgflMsfwB/nx3/H/oINZHaGS/6U5E=
 github.com/celo-org/celo-blockchain v0.0.0-20200404162424-58437ecc7d8c h1:TC1IBPjTcJReTX985meV5iP4z6gE3MWEE6OnBV8XTqA=
 github.com/celo-org/celo-blockchain v0.0.0-20200404162424-58437ecc7d8c/go.mod h1:fjbKeebYSb0akEY16ozvWV9kKOTr1LpVIzjqrNidz44=
+github.com/celo-org/celo-blockchain v0.0.0-20200408040223-7eb9ee81ad88 h1:Q23cHG6l0wLLqboMeGDuj7uA/+v42roGPyBJLXFtoyA=
+github.com/celo-org/celo-blockchain v0.0.0-20200408040223-7eb9ee81ad88/go.mod h1:fjbKeebYSb0akEY16ozvWV9kKOTr1LpVIzjqrNidz44=
+github.com/celo-org/celo-blockchain v0.0.0-20200408223849-d021a14a4676 h1:yfcubyleqI/EyM5UxLB2WiTcRgGDanNycexiNRqH5Js=
+github.com/celo-org/celo-blockchain v0.0.0-20200408223849-d021a14a4676/go.mod h1:fjbKeebYSb0akEY16ozvWV9kKOTr1LpVIzjqrNidz44=
 github.com/cespare/cp v0.1.0 h1:SE+dxFebS7Iik5LK0tsi1k9ZCxEaFX4AjQmoyA+1dJk=
 github.com/cespare/cp v0.1.0/go.mod h1:SOGHArjBr4JWaSDEVpWpo/hNg6RoKrls6Oh40hiwW+s=
 github.com/cespare/xxhash v1.1.0 h1:a6HrQnmkObjyL+Gs60czilIUGqrzKutQD6XZog3p+ko=

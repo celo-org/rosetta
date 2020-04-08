@@ -86,7 +86,7 @@ rc0-env:
 	curl 'https://storage.googleapis.com/genesis_blocks/rc0' > ./envs/rc0/genesis.json
 
 docker-publish: docker-build
-	docker push gcr.io/celo-testnet/rosetta:$(COMMIT_SHA)
+	docker push us.gcr.io/celo-testnet/rosetta:$(COMMIT_SHA)
 
 docker-build:
 	echo "Creating docker image with commit: $(COMMIT_SHA)"

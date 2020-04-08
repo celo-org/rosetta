@@ -64,8 +64,8 @@ RUN go build -o rosetta .
 # Outputs: rosetta & geth binaries on /usr/loca/bin
 #---------------------------------------------------------------------
 
-# e0be402d3b146682cfa1827b97b1833e7dc913e9 is celo-blockchain commit for RC0
-FROM us.gcr.io/celo-testnet/geth:e0be402d3b146682cfa1827b97b1833e7dc913e9
+# 7eb9ee81ad888cbe9b781dbf4e2288cc8684e6ad is celo-blockchain commit for RC0
+FROM us.gcr.io/celo-testnet/geth:7eb9ee81ad888cbe9b781dbf4e2288cc8684e6ad
 ARG COMMIT_SHA
 
 RUN apk add --no-cache ca-certificates

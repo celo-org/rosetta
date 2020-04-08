@@ -22,4 +22,4 @@ replace github.com/celo-org/bls-zexe/go => ./external/bls-zexe/go
 // replace github.com/ethereum/go-ethereum => ../celo-blockchain
 
 // Use this to use external build
-replace github.com/ethereum/go-ethereum => github.com/celo-org/celo-blockchain v0.0.0-20200404162424-58437ecc7d8c
+replace github.com/ethereum/go-ethereum => github.com/celo-org/celo-blockchain v0.0.0-20200408223849-d021a14a4676
