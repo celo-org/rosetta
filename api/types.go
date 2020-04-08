@@ -50,6 +50,14 @@ func (or OperationResult) ToOperationStatus() OperationStatus {
 	}
 }
 
+func GetOperationStatus(success bool) OperationResult {
+	if success {
+		return OperationSuccess
+	} else {
+		return OperationFailed
+	}
+}
+
 type OperationKind string
 
 const (
