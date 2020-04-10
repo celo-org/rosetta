@@ -80,7 +80,7 @@ func electionActiveVotesBalance(election *contract.Election, accountAddr common.
 		return nil, ErrRpcError("GetActiveVotesForGroupsByAccount", err)
 	}
 
-	return makeCeloGoldBalance(accountAddr.String(), "ElectionPendingVotes", activeAmt.String(), &map[string]interface{}{"group": groupAddr.String()}), nil
+	return makeCeloGoldBalance(accountAddr.String(), "ElectionActiveVotes", activeAmt.String(), &map[string]interface{}{"group": groupAddr.String()}), nil
 }
 
 // AccountBalance - Get an Account Balance
