@@ -14,7 +14,11 @@ import (
 
 	"github.com/celo-org/rosetta/celo"
 	"github.com/celo-org/rosetta/celo/client"
+	"github.com/celo-org/rosetta/celo/wrapper"
+	"github.com/celo-org/rosetta/contract"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/params"
 )
 
 // AccountApiService is a service that implents the logic for the AccountApiServicer
@@ -41,76 +45,145 @@ func (s *AccountApiService) AccountBalance(ctx context.Context, accountBalanceRe
 		return nil, err
 	}
 
-	address := common.HexToAddress(accountBalanceRequest.AccountIdentifier.Address)
+	accountAddr := common.HexToAddress(accountBalanceRequest.AccountIdentifier.Address)
 
 	latestHeader, err := s.celoClient.Eth.HeaderByNumber(ctx, nil) // nil == latest
 	if err != nil {
 		err = client.WrapRpcError(err)
 		return nil, ErrRpcError("HeaderByNumber", err)
 	}
+	latestBlockOpt := bind.CallOpts{
+		BlockNumber: latestHeader.Number,
+		Context:     ctx,
+	}
 
-	goldBalance, err := s.celoClient.Eth.BalanceAt(ctx, address, latestHeader.Number)
+	goldAmt, err := s.celoClient.Eth.BalanceAt(ctx, accountAddr, latestHeader.Number)
 	if err != nil {
 		err = client.WrapRpcError(err)
 		return nil, ErrRpcError("BalanceAt", err)
 	}
 
-	// TODO Not Supported for now
-	// registryWrapper, err := wrapper.NewRegistry(s.celoClient)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	goldBalance := Balance{
+		AccountIdentifier: accountBalanceRequest.AccountIdentifier,
+		Amounts: []Amount{
+			{
+				Value:    goldAmt.String(),
+				Currency: CeloGold,
+			},
+		},
+	}
 
-	// lockedGoldAddr, err := registryWrapper.GetAddressFor(&bind.CallOpts{
-	// 	BlockNumber: latestHeader.Number,
-	// 	Context:     ctx,
-	// }, params.LockedGoldRegistryId)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	registryWrapper, err := wrapper.NewRegistry(s.celoClient)
+	if err != nil {
+		return nil, err
+	}
 
-	// lockedGold, err := contract.NewLockedGold(lockedGoldAddr, s.celoClient.Eth)
-	// if err != nil {
-	// 	err = client.WrapRpcError(err)
-	// 	return nil, ErrRpcError("NewLockedGold", err)
-	// }
+	lockedGoldAddr, err := registryWrapper.GetAddressFor(
+		&latestBlockOpt,
+		params.LockedGoldRegistryId,
+	)
+	if err != nil {
+		return nil, err
+	}
 
-	// lockedGoldBalance, err := lockedGold.GetAccountTotalLockedGold(&bind.CallOpts{
-	// 	BlockNumber: latestHeader.Number,
-	// 	Context:     ctx,
-	// }, address)
-	// if err != nil {
-	// 	err = client.WrapRpcError(err)
-	// 	return nil, ErrRpcError("GetAccountTotalLockedGold", err)
-	// }
+	lockedGold, err := contract.NewLockedGold(lockedGoldAddr, s.celoClient.Eth)
+	if err != nil {
+		err = client.WrapRpcError(err)
+		return nil, ErrRpcError("NewLockedGold", err)
+	}
+
+	lockedGoldNonVotingAmt, err := lockedGold.GetAccountNonvotingLockedGold(
+		&latestBlockOpt,
+		accountAddr,
+	)
+	if err != nil {
+		err = client.WrapRpcError(err)
+		return nil, ErrRpcError("GetAccountTotalLockedGold", err)
+	}
+
+	lockedGoldNonVotingBalance := Balance{
+		AccountIdentifier: AccountIdentifier{
+			Address: accountBalanceRequest.AccountIdentifier.Address,
+			SubAccount: SubAccountIdentifier{
+				SubAccount: "LockedGoldNonVoting",
+			},
+		},
+		Amounts: []Amount{
+			{
+				Value:    lockedGoldNonVotingAmt.String(),
+				Currency: CeloGold,
+			},
+		},
+	}
+
+	electionAddr, err := registryWrapper.GetAddressFor(
+		&latestBlockOpt,
+		params.ElectionRegistryId,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	election, err := contract.NewElection(electionAddr, s.celoClient.Eth)
+	if err != nil {
+		err = client.WrapRpcError(err)
+		return nil, ErrRpcError("NewLockedGold", err)
+	}
+
+	groups, err := election.GetGroupsVotedForByAccount(&latestBlockOpt, accountAddr)
+	if err != nil {
+		err = client.WrapRpcError(err)
+		return nil, ErrRpcError("GetGroupsVotedForByAccount", err)
+	}
+
+	lockedGoldPendingVotingBalances := make([]Balance, len(groups))
+	lockedGoldActiveVotingBalances := make([]Balance, len(groups))
+	for idx, groupAddr := range groups {
+		// TODO(yorke): dedup pending and active votes logic
+		currPendingBalance := &lockedGoldPendingVotingBalances[idx]
+		currPendingBalance.AccountIdentifier.Address = accountAddr.String()
+		currPendingBalance.AccountIdentifier.SubAccount.SubAccount = "LockedGoldPending"
+		currPendingBalance.AccountIdentifier.SubAccount.Metadata["group"] = groupAddr
+		pendingAmt, err := election.GetPendingVotesForGroupByAccount(
+			&latestBlockOpt,
+			groupAddr,
+			accountAddr,
+		)
+		if err != nil {
+			err = client.WrapRpcError(err)
+			return nil, ErrRpcError("GetPendingVotesForGroupsByAccount", err)
+		}
+		currPendingBalance.Amounts = []Amount{{
+			Value:    pendingAmt.String(),
+			Currency: CeloGold,
+		}}
+
+		currActiveBalance := &lockedGoldActiveVotingBalances[idx]
+		currActiveBalance.AccountIdentifier.Address = accountAddr.String()
+		currActiveBalance.AccountIdentifier.SubAccount.SubAccount = "LockedGoldActive"
+		currActiveBalance.AccountIdentifier.SubAccount.Metadata["group"] = groupAddr
+		activeAmt, err := election.GetActiveVotesForGroupByAccount(
+			&latestBlockOpt,
+			groupAddr,
+			accountAddr,
+		)
+		if err != nil {
+			err = client.WrapRpcError(err)
+			return nil, ErrRpcError("GetActiveVotesForGroupsByAccount", err)
+		}
+		currActiveBalance.Amounts = []Amount{{
+			Value:    activeAmt.String(),
+			Currency: CeloGold,
+		}}
+	}
+
+	balances := []Balance{goldBalance, lockedGoldNonVotingBalance}
+	balances = append(balances, lockedGoldPendingVotingBalances...)
+	balances = append(balances, lockedGoldActiveVotingBalances...)
 
 	response := AccountBalanceResponse{
 		BlockIdentifier: *HeaderToBlockIdentifier(latestHeader),
-		Balances: []Balance{
-			Balance{
-				AccountIdentifier: accountBalanceRequest.AccountIdentifier,
-				Amounts: []Amount{
-					Amount{
-						Value:    goldBalance.String(),
-						Currency: CeloGold,
-					},
-				},
-			},
-			// Balance{
-			// 	AccountIdentifier: AccountIdentifier{
-			// 		Address: accountBalanceRequest.AccountIdentifier.Address,
-			// 		SubAccount: SubAccountIdentifier{
-			// 			SubAccount: "LockedGold",
-			// 		},
-			// 	},
-			// 	Amounts: []Amount{
-			// 		Amount{
-			// 			Value:    lockedGoldBalance.String(),
-			// 			Currency: CeloGold,
-			// 		},
-			// 	},
-			// },
-		},
+		Balances:        balances,
 	}
 	return response, nil
 }

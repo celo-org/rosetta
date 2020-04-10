@@ -143,14 +143,14 @@ func GasDetailsToOperations(gasDetails map[common.Address]*big.Int) []Operation 
 
 func TransferToOperations(baseIndex int64, transfer *celo.Transfer) []Operation {
 	return []Operation{
-		Operation{
+		{
 			OperationIdentifier: NewOperationIdentifier(baseIndex),
 			Account:             NewAccountIdentifier(transfer.From.Address),
 			Amount:              NewAmount(new(big.Int).Neg(transfer.Value), CeloGold),
 			Status:              GetOperationStatus(transfer.Status).String(),
 			Type:                OpKindTransfer.String(),
 		},
-		Operation{
+		{
 			OperationIdentifier: NewOperationIdentifier(baseIndex + 1),
 			Account:             NewAccountIdentifier(transfer.To.Address),
 			Amount:              NewAmount(transfer.Value, CeloGold),
