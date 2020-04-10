@@ -102,3 +102,10 @@ type TransferMetadata struct {
 	Balance *big.Int             `json:"balance" gencodec:"required"`
 	Tx      *TransactionMetadata `json:"tx"`
 }
+
+//go:generate gencodec -type CreateAccountMetadata -out gen_create_account_json.go
+
+type CreateAccountMetadata struct {
+	ContractAddress *common.Address      `json:"address" gencodec:"required"`
+	Tx              *TransactionMetadata `json:"tx"`
+}

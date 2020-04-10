@@ -21,6 +21,7 @@ var contractsToGenerate = []string{
 	"Election",
 	"EpochRewards",
 	"Validators",
+	"Accounts",
 }
 
 func main() {
