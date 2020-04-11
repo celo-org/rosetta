@@ -11,10 +11,14 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 
 	"github.com/celo-org/rosetta/celo"
 	"github.com/celo-org/rosetta/celo/client"
+	"github.com/celo-org/rosetta/celo/wrapper"
+	"github.com/celo-org/rosetta/contract"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -34,9 +38,41 @@ func NewConstructionApiService(celoClient *client.CeloClient, chainParams *celo.
 	}
 }
 
-func (s *ConstructionApiService) getTxMetadata(ctx context.Context, address common.Address) (*TransactionMetadata, error) {
+func (s *ConstructionApiService) getContractMethodAndAddress(ctx context.Context, methodName Method) (*abi.Method, *common.Address, error) {
+	wrapperRegistry, err := wrapper.NewRegistry(s.celoClient)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var contractAbi *abi.ABI
+	var addr common.Address
+	switch methodName {
+	case TransferMethod:
+		return nil, nil, nil
+	case CreateAccountMethod:
+		addr, err = wrapperRegistry.GetAddressForString(nil, "Accounts")
+		contractAbi, err = contract.ParseAccountsABI()
+		if err != nil {
+			return nil, nil, err
+		}
+	default:
+		return nil, nil, fmt.Errorf("Unknown method %s", methodName)
+	}
+	if abiMethod, ok := contractAbi.Methods[methodName]; ok {
+		return &abiMethod, &addr, nil
+	} else {
+		return nil, &addr, fmt.Errorf("Method %s not found on abi", methodName)
+	}
+}
+
+func (s *ConstructionApiService) getTxMetadata(ctx context.Context, address common.Address, methodName Method) (*TransactionMetadata, error) {
 	var txMetadata TransactionMetadata
 	var err error
+
+	txMetadata.ABIMethod, txMetadata.To, err = s.getContractMethodAndAddress(ctx, methodName)
+	if err != nil {
+		return nil, err
+	}
 
 	txMetadata.Nonce, err = s.celoClient.Eth.NonceAt(ctx, address, nil) // nil == latest
 	if err != nil {
@@ -67,37 +103,9 @@ func (s *ConstructionApiService) TransactionConstruction(ctx context.Context, tx
 	}
 	address := common.HexToAddress(txConstructionRequest.AccountIdentifier.Address)
 
-	var metadata = make(map[string]interface{})
-
-	txMetadata, err := s.getTxMetadata(ctx, address)
+	txMetadata, err := s.getTxMetadata(ctx, address, txConstructionRequest.Method)
 	if err != nil {
 		return nil, WrapError("GetTxData", err)
-	}
-
-	switch txConstructionRequest.Method {
-	case TransferMethod:
-		balance, err := s.celoClient.Eth.BalanceAt(ctx, address, nil) // nil == latest
-		if err != nil {
-			return nil, WrapError("Transfer: BalanceAt", err)
-		}
-
-		msg := txMetadata.asMessage()
-		msg.Value = balance
-		msg.To = &DummyAddress
-		gasLimit, err := s.celoClient.Eth.EstimateGas(ctx, *msg)
-		if err != nil {
-			return nil, WrapError("Transfer: EstimateGas", err)
-		}
-
-		txMetadata.GasLimit = gasLimit
-
-		metadata[TransferMethod] = TransferMetadata{
-			Balance: balance,
-			Tx:      txMetadata,
-		}
-
-	default:
-		return nil, WrapError("Unknown method", err)
 	}
 
 	response := TransactionConstructionResponse{
@@ -105,7 +113,7 @@ func (s *ConstructionApiService) TransactionConstruction(ctx context.Context, tx
 			Value:    txMetadata.GasPrice.String(),
 			Currency: CeloGold,
 		},
-		Metadata: metadata,
+		Metadata: map[string]interface{}{txConstructionRequest.Method: txMetadata},
 	}
 	return response, nil
 }

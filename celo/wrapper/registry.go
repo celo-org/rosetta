@@ -82,7 +82,7 @@ func (w *RegistryWrapper) GetUpdatesOnBlock(ctx context.Context, blockNumber uin
 		Start:   blockNumber,
 		End:     &blockNumber,
 		Context: ctx,
-	}, identifiers)
+	}, identifiers, nil) // TODO: nil addresses?
 
 	if err != nil {
 		return nil, err

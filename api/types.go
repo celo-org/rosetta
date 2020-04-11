@@ -4,6 +4,7 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -70,8 +71,10 @@ func (ok OperationKind) String() string { return string(ok) }
 
 type Method = string
 
+// TODO: source constants from ABI
 const (
-	TransferMethod Method = "transfer"
+	TransferMethod      Method = "transfer"
+	CreateAccountMethod Method = "createAccount"
 )
 
 var (
@@ -81,6 +84,8 @@ var (
 //go:generate gencodec -type TransactionMetadata -out gen_transaction_metadata_json.go
 
 type TransactionMetadata struct {
+	ABIMethod           *abi.Method     `json:"abiMethod,omitempty"`    // nil means value transfer only
+	To                  *common.Address `json:"to,omitempty" rlp:"nil"` // nil means contract creation
 	Nonce               uint64          `json:"nonce"    gencodec:"required"`
 	GasPrice            *big.Int        `json:"gasPrice" gencodec:"required"`
 	GasLimit            uint64          `json:"gasLimit"      gencodec:"required"`
@@ -93,19 +98,6 @@ func (txm *TransactionMetadata) asMessage() *ethereum.CallMsg {
 		GasPrice:            txm.GasPrice,
 		GatewayFee:          txm.GatewayFee,
 		GatewayFeeRecipient: txm.GatewayFeeRecipient,
+		To:                  txm.To,
 	}
-}
-
-//go:generate gencodec -type TransferMetadata -out gen_transfer_json.go
-
-type TransferMetadata struct {
-	Balance *big.Int             `json:"balance" gencodec:"required"`
-	Tx      *TransactionMetadata `json:"tx"`
-}
-
-//go:generate gencodec -type CreateAccountMetadata -out gen_create_account_json.go
-
-type CreateAccountMetadata struct {
-	ContractAddress *common.Address      `json:"address" gencodec:"required"`
-	Tx              *TransactionMetadata `json:"tx"`
 }
