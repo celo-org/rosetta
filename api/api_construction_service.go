@@ -46,18 +46,24 @@ func (s *ConstructionApiService) getContractMethodAndAddress(ctx context.Context
 
 	var contractAbi *abi.ABI
 	var addr common.Address
+
+	// TODO: replace switch case with map
 	switch methodName {
 	case TransferMethod:
 		return nil, nil, nil
 	case CreateAccountMethod:
 		addr, err = wrapperRegistry.GetAddressForString(nil, "Accounts")
-		contractAbi, err = contract.ParseAccountsABI()
 		if err != nil {
 			return nil, nil, err
+		}
+		contractAbi, err = contract.ParseAccountsABI()
+		if err != nil {
+			return nil, &addr, err
 		}
 	default:
 		return nil, nil, fmt.Errorf("Unknown method %s", methodName)
 	}
+
 	if abiMethod, ok := contractAbi.Methods[methodName]; ok {
 		return &abiMethod, &addr, nil
 	} else {
