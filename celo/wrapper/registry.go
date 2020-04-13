@@ -19,6 +19,8 @@ var (
 	ErrRegistryNotDeployed = errors.New("Registry Not Deployed")
 )
 
+const AccountsId = "Accounts"
+
 func NewRegistry(celoClient *client.CeloClient) (*RegistryWrapper, error) {
 	registry, err := contract.NewRegistry(params.RegistrySmartContractAddress, celoClient.Eth)
 	err = client.WrapRpcError(err)

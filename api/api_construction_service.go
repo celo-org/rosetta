@@ -12,6 +12,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"log"
 	"math/big"
 
 	"github.com/celo-org/rosetta/celo"
@@ -22,24 +23,35 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
+type ParsedAbiCache = map[string]*abi.ABI
+
 // ConstructionApiService is a service that implents the logic for the ConstructionApiServicer
 // This service should implement the business logic for every endpoint for the ConstructionApi API.
 // Include any external packages or services that will be required by this service.
 type ConstructionApiService struct {
 	celoClient  *client.CeloClient
 	chainParams *celo.ChainParameters
+	abiCache    ParsedAbiCache
 }
 
 // NewConstructionApiService creates a default api service
 func NewConstructionApiService(celoClient *client.CeloClient, chainParams *celo.ChainParameters) ConstructionApiServicer {
+	accountsAbi, err := contract.ParseAccountsABI()
+	if err != nil {
+		log.Fatalf("Failed to parse Accounts ABI")
+	}
+
 	return &ConstructionApiService{
 		celoClient:  celoClient,
 		chainParams: chainParams,
+		abiCache: ParsedAbiCache{
+			wrapper.AccountsId: accountsAbi,
+		},
 	}
 }
 
 func (s *ConstructionApiService) getContractMethodAndAddress(ctx context.Context, methodName Method) (*abi.Method, *common.Address, error) {
-	wrapperRegistry, err := wrapper.NewRegistry(s.celoClient)
+	registry, err := wrapper.NewRegistry(s.celoClient)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -52,14 +64,11 @@ func (s *ConstructionApiService) getContractMethodAndAddress(ctx context.Context
 	case TransferMethod:
 		return nil, nil, nil
 	case CreateAccountMethod:
-		addr, err = wrapperRegistry.GetAddressForString(nil, "Accounts")
+		addr, err = registry.GetAddressForString(nil, wrapper.AccountsId)
 		if err != nil {
 			return nil, nil, err
 		}
-		contractAbi, err = contract.ParseAccountsABI()
-		if err != nil {
-			return nil, &addr, err
-		}
+		contractAbi = s.abiCache[wrapper.AccountsId]
 	default:
 		return nil, nil, fmt.Errorf("Unknown method %s", methodName)
 	}
