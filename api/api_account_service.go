@@ -11,14 +11,13 @@ package api
 
 import (
 	"context"
+	"math/big"
 
 	"github.com/celo-org/rosetta/celo"
 	"github.com/celo-org/rosetta/celo/client"
 	"github.com/celo-org/rosetta/celo/wrapper"
-	"github.com/celo-org/rosetta/contract"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/params"
 )
 
 // AccountApiService is a service that implents the logic for the AccountApiServicer
@@ -37,50 +36,63 @@ func NewAccountApiService(celoClient *client.CeloClient, chainParams *celo.Chain
 	}
 }
 
-func makeCeloGoldBalance(account string, subaccount string, amount string, metadata *map[string]interface{}) *Balance {
-	return &Balance{
-		AccountIdentifier: AccountIdentifier{
-			Address: account,
-			SubAccount: SubAccountIdentifier{
-				SubAccount: subaccount,
-				Metadata:   *metadata,
-			},
-		},
-		Amounts: []Amount{{
-			Value:    amount,
-			Currency: CeloGold,
-		}},
-	}
+type VotesByGroup = map[common.Address]*big.Int
+type ElectionVotes = struct {
+	active  VotesByGroup
+	pending VotesByGroup
 }
 
-func accountLockedGoldNonVotingBalance(lockedGold *contract.LockedGold, accountAddr common.Address, callOpts *bind.CallOpts) (*Balance, error) {
-	lockedGoldNonVotingAmt, err := lockedGold.GetAccountNonvotingLockedGold(callOpts, accountAddr)
+func (s *AccountApiService) GetAccountElectionVotes(account common.Address, opts *bind.CallOpts) (*ElectionVotes, error) {
+	registryWrapper, err := wrapper.NewRegistry(s.celoClient)
 	if err != nil {
-		err = client.WrapRpcError(err)
-		return nil, ErrRpcError("GetAccountTotalLockedGold", err)
+		return nil, err
 	}
 
-	return makeCeloGoldBalance(accountAddr.String(), "LockedGoldNonVoting", lockedGoldNonVotingAmt.String(), nil), nil
+	election, err := registryWrapper.GetElection(opts, s.celoClient.Eth)
+	if err != nil {
+		return nil, err
+	}
+
+	groups, err := election.GetGroupsVotedForByAccount(opts, account)
+	if err != nil {
+		return nil, err
+	}
+
+	var votes *ElectionVotes
+	for _, groupAddr := range groups {
+		pendingAmt, err := election.GetPendingVotesForGroupByAccount(opts, groupAddr, account)
+		if err != nil {
+			return nil, err
+		}
+		votes.pending[groupAddr] = pendingAmt
+
+		activeAmt, err := election.GetActiveVotesForGroupByAccount(opts, groupAddr, account)
+		if err != nil {
+			return nil, err
+		}
+		votes.active[groupAddr] = activeAmt
+	}
+
+	return votes, nil
 }
 
-func electionPendingVotesBalance(election *contract.Election, accountAddr common.Address, groupAddr common.Address, callOpts *bind.CallOpts) (*Balance, error) {
-	pendingAmt, err := election.GetPendingVotesForGroupByAccount(callOpts, groupAddr, accountAddr)
+func (s *AccountApiService) GetAccountLockedGold(account common.Address, opts *bind.CallOpts) (*big.Int, error) {
+	registryWrapper, err := wrapper.NewRegistry(s.celoClient)
 	if err != nil {
-		err = client.WrapRpcError(err)
-		return nil, ErrRpcError("GetPendingVotesForGroupsByAccount", err)
+		return nil, err
 	}
 
-	return makeCeloGoldBalance(accountAddr.String(), "ElectionPendingVotes", pendingAmt.String(), &map[string]interface{}{"group": groupAddr.String()}), nil
-}
-
-func electionActiveVotesBalance(election *contract.Election, accountAddr common.Address, groupAddr common.Address, callOpts *bind.CallOpts) (*Balance, error) {
-	activeAmt, err := election.GetActiveVotesForGroupByAccount(callOpts, groupAddr, accountAddr)
+	lockedGold, err := registryWrapper.GetLockedGold(opts, s.celoClient.Eth)
 	if err != nil {
-		err = client.WrapRpcError(err)
-		return nil, ErrRpcError("GetActiveVotesForGroupsByAccount", err)
+		return nil, err
 	}
 
-	return makeCeloGoldBalance(accountAddr.String(), "ElectionActiveVotes", activeAmt.String(), &map[string]interface{}{"group": groupAddr.String()}), nil
+	lockedGoldNonVotingAmt, err := lockedGold.GetAccountNonvotingLockedGold(opts, account)
+	if err != nil {
+		return nil, err
+	}
+
+	return lockedGoldNonVotingAmt, nil
 }
 
 // AccountBalance - Get an Account Balance
@@ -95,81 +107,50 @@ func (s *AccountApiService) AccountBalance(ctx context.Context, accountBalanceRe
 
 	latestHeader, err := s.celoClient.Eth.HeaderByNumber(ctx, nil) // nil == latest
 	if err != nil {
-		err = client.WrapRpcError(err)
-		return nil, ErrRpcError("HeaderByNumber", err)
+		return nil, err
 	}
-	latestBlockOpt := &bind.CallOpts{
+	latestBlockOpts := &bind.CallOpts{
 		BlockNumber: latestHeader.Number,
 		Context:     ctx,
 	}
 
+	// fetch amounts
 	goldAmt, err := s.celoClient.Eth.BalanceAt(ctx, accountAddr, latestHeader.Number)
 	if err != nil {
-		err = client.WrapRpcError(err)
-		return nil, ErrRpcError("BalanceAt", err)
+		return nil, err
 	}
 
-	goldBalance := Balance{
-		AccountIdentifier: accountBalanceRequest.AccountIdentifier,
-		Amounts: []Amount{{
-			Value:    goldAmt.String(),
-			Currency: CeloGold,
-		}},
-	}
-
-	registryWrapper, err := wrapper.NewRegistry(s.celoClient)
+	lockedGoldAmt, err := s.GetAccountLockedGold(accountAddr, latestBlockOpts)
 	if err != nil {
 		return nil, err
 	}
 
-	lockedGoldAddr, err := registryWrapper.GetAddressFor(latestBlockOpt, params.LockedGoldRegistryId)
+	electionVotes, err := s.GetAccountElectionVotes(accountAddr, latestBlockOpts)
 	if err != nil {
 		return nil, err
 	}
 
-	lockedGold, err := contract.NewLockedGold(lockedGoldAddr, s.celoClient.Eth)
-	if err != nil {
-		err = client.WrapRpcError(err)
-		return nil, ErrRpcError("NewLockedGold", err)
+	// construct balances
+	balances := make([]Balance, 0, 2+len(electionVotes.active)+len(electionVotes.pending))
+
+	goldBalance := NewCeloGoldBalance(accountAddr, goldAmt, nil)
+	lockedGoldBalance := NewCeloGoldBalance(accountAddr, lockedGoldAmt, NewSubAccountIdentifier("LockedGoldNonVoting", "", ""))
+
+	balances = append(balances, *goldBalance, *lockedGoldBalance)
+
+	for groupAddr, activeAmt := range electionVotes.active {
+		activeGroupSubAccount := NewSubAccountIdentifier("ElectionActiveVotes", "group", groupAddr.String())
+		activeVotesForGroupBalance := NewCeloGoldBalance(accountAddr, activeAmt, activeGroupSubAccount)
+		balances = append(balances, *activeVotesForGroupBalance)
 	}
 
-	lockedGoldNonVotingBalance, err := accountLockedGoldNonVotingBalance(lockedGold, accountAddr, latestBlockOpt)
-	if err != nil {
-		return nil, err
+	for groupAddr, pendingAmt := range electionVotes.pending {
+		pendingGroupSubAccount := NewSubAccountIdentifier("ElectionPendingVotes", "group", groupAddr.String())
+		pendingVotesForGroupbalance := NewCeloGoldBalance(accountAddr, pendingAmt, pendingGroupSubAccount)
+		balances = append(balances, *pendingVotesForGroupbalance)
 	}
 
-	electionAddr, err := registryWrapper.GetAddressFor(latestBlockOpt, params.ElectionRegistryId)
-	if err != nil {
-		return nil, err
-	}
-
-	election, err := contract.NewElection(electionAddr, s.celoClient.Eth)
-	if err != nil {
-		err = client.WrapRpcError(err)
-		return nil, ErrRpcError("NewLockedGold", err)
-	}
-
-	groups, err := election.GetGroupsVotedForByAccount(latestBlockOpt, accountAddr)
-	if err != nil {
-		err = client.WrapRpcError(err)
-		return nil, ErrRpcError("GetGroupsVotedForByAccount", err)
-	}
-
-	balances := []Balance{goldBalance, *lockedGoldNonVotingBalance}
-	for _, groupAddr := range groups {
-		pendingBal, err := electionPendingVotesBalance(election, accountAddr, groupAddr, latestBlockOpt)
-		if err != nil {
-			return nil, err
-		}
-
-		activeBal, err := electionActiveVotesBalance(election, accountAddr, groupAddr, latestBlockOpt)
-		if err != nil {
-			return nil, err
-		}
-
-		balances = append(balances, *pendingBal, *activeBal)
-	}
-
+	// return balance response
 	response := AccountBalanceResponse{
 		BlockIdentifier: *HeaderToBlockIdentifier(latestHeader),
 		Balances:        balances,

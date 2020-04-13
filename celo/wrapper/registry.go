@@ -74,6 +74,34 @@ func (w *RegistryWrapper) GetAddressForString(opts *bind.CallOpts, identifier st
 	return address, nil
 }
 
+func (w *RegistryWrapper) GetLockedGold(opts *bind.CallOpts, backend bind.ContractBackend) (*contract.LockedGold, error) {
+	addr, err := w.GetAddressForString(opts, "LockedGold")
+	if err != nil {
+		return nil, err
+	}
+
+	lockedGold, err := contract.NewLockedGold(addr, backend)
+	if err != nil {
+		return nil, err
+	}
+
+	return lockedGold, nil
+}
+
+func (w *RegistryWrapper) GetElection(opts *bind.CallOpts, backend bind.ContractBackend) (*contract.Election, error) {
+	addr, err := w.GetAddressForString(opts, "Election")
+	if err != nil {
+		return nil, err
+	}
+
+	election, err := contract.NewElection(addr, backend)
+	if err != nil {
+		return nil, err
+	}
+
+	return election, nil
+}
+
 func (w *RegistryWrapper) GetUpdatesOnBlock(ctx context.Context, blockNumber uint64, maxTxIndex *uint, identifiers [][32]byte) (map[[32]byte]common.Address, error) {
 	addresses := make(map[[32]byte]common.Address)
 

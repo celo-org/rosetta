@@ -80,9 +80,17 @@ func MapTxHashesToTransaction(txHashes []common.Hash) []TransactionIdentifier {
 	return transactions
 }
 
-func NewAccountIdentifier(addr common.Address) AccountIdentifier {
+func NewAccountIdentifier(addr common.Address, subAccount *SubAccountIdentifier) AccountIdentifier {
 	return AccountIdentifier{
-		Address: addr.Hex(),
+		Address:    addr.Hex(),
+		SubAccount: subAccount,
+	}
+}
+
+func NewSubAccountIdentifier(name string, id string, value string) *SubAccountIdentifier {
+	return &SubAccountIdentifier{
+		SubAccount: name,
+		Metadata:   map[string]interface{}{id: value},
 	}
 }
 
@@ -99,13 +107,24 @@ func NewAmount(value *big.Int, currency Currency) Amount {
 	}
 }
 
+func NewBalance(account common.Address, subAccount *SubAccountIdentifier, amount Amount) *Balance {
+	return &Balance{
+		AccountIdentifier: NewAccountIdentifier(account, subAccount),
+		Amounts:           []Amount{amount},
+	}
+}
+
+func NewCeloGoldBalance(account common.Address, value *big.Int, subAccount *SubAccountIdentifier) *Balance {
+	return NewBalance(account, subAccount, NewAmount(value, CeloGold))
+}
+
 func RewardsToOperations(rewards map[common.Address]*big.Int) []Operation {
 	operations := make([]Operation, 0, len(rewards))
 	opIndex := int64(0)
 	for address, value := range rewards {
 		operations = append(operations, Operation{
 			OperationIdentifier: NewOperationIdentifier(opIndex),
-			Account:             NewAccountIdentifier(address),
+			Account:             NewAccountIdentifier(address, nil),
 			Amount:              NewAmount(value, CeloGold),
 			Status:              OperationSuccess.String(),
 			Type:                OpKindMint.String(),
@@ -129,7 +148,7 @@ func GasDetailsToOperations(gasDetails map[common.Address]*big.Int) []Operation 
 
 		operations = append(operations, Operation{
 			OperationIdentifier: NewOperationIdentifier(opIndex),
-			Account:             NewAccountIdentifier(address),
+			Account:             NewAccountIdentifier(address, nil),
 			Amount:              NewAmount(value, CeloGold),
 			Status:              OperationSuccess.String(),
 			Type:                OpKindFee.String(),
@@ -145,14 +164,14 @@ func TransferToOperations(baseIndex int64, transfer *celo.Transfer) []Operation 
 	return []Operation{
 		{
 			OperationIdentifier: NewOperationIdentifier(baseIndex),
-			Account:             NewAccountIdentifier(transfer.From.Address),
+			Account:             NewAccountIdentifier(transfer.From.Address, nil),
 			Amount:              NewAmount(new(big.Int).Neg(transfer.Value), CeloGold),
 			Status:              GetOperationStatus(transfer.Status).String(),
 			Type:                OpKindTransfer.String(),
 		},
 		{
 			OperationIdentifier: NewOperationIdentifier(baseIndex + 1),
-			Account:             NewAccountIdentifier(transfer.To.Address),
+			Account:             NewAccountIdentifier(transfer.To.Address, nil),
 			Amount:              NewAmount(transfer.Value, CeloGold),
 			Status:              GetOperationStatus(transfer.Status).String(),
 			Type:                OpKindTransfer.String(),
