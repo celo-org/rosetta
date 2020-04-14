@@ -5,6 +5,8 @@ import (
 	"math/big"
 	"sync"
 
+	"github.com/ethereum/go-ethereum"
+
 	"github.com/celo-org/rosetta/celo/client"
 	"github.com/celo-org/rosetta/service"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -15,17 +17,29 @@ import (
 func HeaderListener(ctx context.Context, headers chan<- *types.Header, cc *client.CeloClient, logger log.Logger, startBlock *big.Int) error {
 	logger = logger.New("pipe", "header_listener")
 
-	newHeaders := make(chan *types.Header, 2000) // Subscriptions also have a built in buffer/queue of size 2000
+	// Subscriptions also have a built in buffer/queue of size 2000.
+	// So, 3000 new headers can be produced while we're fetching old
+	// blocks before the subscription overflows.
+	newHeaders := make(chan *types.Header, 1000)
 	defer close(newHeaders)
 
-overflowLoop:
-	for {
-		sub, err := cc.Eth.SubscribeNewHead(ctx, newHeaders)
-		if err != nil {
-			return err
+	syncMode := func(sub ethereum.Subscription) error {
+		for {
+			select {
+			case err := <-sub.Err():
+				return err
+			case <-ctx.Done():
+				return ctx.Err()
+			case h := <-newHeaders:
+				logger.Info("New Header", "block", h.Number.Int64())
+				if err := sendToProcessor(ctx, headers, h); err != nil {
+					return err
+				}
+			}
 		}
-		defer sub.Unsubscribe()
+	}
 
+	catchUpMode := func() error {
 		lastBlock, err := lastNodeBlockNumber(ctx, cc)
 		if err != nil {
 			return err
@@ -38,37 +52,47 @@ overflowLoop:
 			}
 			logger.Info("Finished fetching old blocks", "start", startBlock, "end", lastBlock, "new", len(newHeaders))
 		}
+		return nil
+	}
 
-		var h *types.Header
+	for {
+		sub, err := cc.Eth.SubscribeNewHead(ctx, newHeaders)
+		if err != nil {
+			return err
+		}
+		defer sub.Unsubscribe()
 
-		for {
-			select {
-			case err := <-sub.Err():
-				if err == rpc.ErrSubscriptionQueueOverflow {
-					logger.Error("Subscription Queue Overflowed", "Headers in buffer", len(newHeaders))
+		if err := catchUpMode(); err != nil {
+			return err
+		}
+
+		if err := syncMode(sub); err != nil {
+			if err == rpc.ErrSubscriptionQueueOverflow {
+				logger.Error("Subscription Queue Overflowed", "New headers in buffer", len(newHeaders))
+				if len(newHeaders) > 0 {
+					var h *types.Header
 					for h = range newHeaders {
-						select {
-						case <-ctx.Done():
-							return ctx.Err()
-						case headers <- h:
+						if err := sendToProcessor(ctx, headers, h); err != nil {
+							return err
 						}
 					}
 					startBlock = new(big.Int).Add(h.Number, big.NewInt(1))
-					continue overflowLoop
 				}
-				return err
-			case <-ctx.Done():
-				return ctx.Err()
-			case h = <-newHeaders:
-				select {
-				case <-ctx.Done():
-					return ctx.Err()
-				case headers <- h:
-					logger.Info("New Header", "block", h.Number.Int64())
-				}
+				continue
 			}
+			return err
 		}
+		return nil
 	}
+}
+
+func sendToProcessor(ctx context.Context, headers chan<- *types.Header, h *types.Header) error {
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case headers <- h:
+	}
+	return nil
 }
 
 func fetchHeaderRange(ctx context.Context, headers chan<- *types.Header, cc *client.CeloClient, logger log.Logger, startBlock, endBlock *big.Int) error {
@@ -78,7 +102,7 @@ func fetchHeaderRange(ctx context.Context, headers chan<- *types.Header, cc *cli
 
 	count := 0
 
-	for i := new(big.Int).Set(startBlock); i.Cmp(endBlock) <= 0; i.Add(i, big.NewInt(int64(batchSize))) { // TODO: think through indexing
+	for i := new(big.Int).Set(startBlock); i.Cmp(endBlock) <= 0; i.Add(i, big.NewInt(int64(batchSize))) {
 		remaining := new(big.Int).Add(new(big.Int).Sub(endBlock, i), big.NewInt(1))
 		if remaining.Cmp(big.NewInt(int64(batchSize))) < 0 {
 			batchSize = int(remaining.Int64())
@@ -106,16 +130,14 @@ func fetchHeaderRange(ctx context.Context, headers chan<- *types.Header, cc *cli
 		}
 
 		for _, h := range batch {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case headers <- h:
-				logger.Trace("Block Fetched", "block", h.Number)
-				count++
-				if count == 10000 {
-					logger.Info("Fetched 10000 Blocks", "from", new(big.Int).Sub(h.Number, big.NewInt(int64(count-1))), "to", h.Number)
-					count = 0
-				}
+			if err := sendToProcessor(ctx, headers, h); err != nil {
+				return err
+			}
+			logger.Trace("Block Fetched", "block", h.Number)
+			count++
+			if count == 10000 {
+				logger.Info("Fetched 10000 Blocks", "from", new(big.Int).Sub(h.Number, big.NewInt(int64(count-1))), "to", h.Number)
+				count = 0
 			}
 		}
 	}
