@@ -7,21 +7,25 @@ A monitoring server for celo-blockchain
 
 ## Starting rosetta
 
-Rosetta has 2 operations modes:
-  * local: Rosetta will launch it's own instance of celo-blockchain 
-  * remote: Rosetta will rely on an external instance of celo-blockchain
-
-
-### Examples of runs:
-
-Run on RC0 using forno node
-```bash
-rosetta serve remote --datadir ./rosetta --nodeUri https://rc0-forno.celo-testnet.org/ --epoch 17280
+To run rosetta do:
+```
+    rosetta run [options]
 ```
 
-Run with a local node
+Where rosetta is the binary. 
+
+  * If on development you can replace rosetta by `go run main.go`
+
+### Example for RC0:
+
+Prerequisites:
+  * Run `make rc0-env` to create an empty datadir with the genesis block
+  * Download & build `celo-blockchain` use `mc/rosetta-rc0` to connect to RC0
+
+This assumes `celo-blockchain` can be found ad `../celo-blockchain`
+
 ```bash
-rosetta serve local \
+rosetta run \
   --genesis ./envs/rc0/genesis.json \
   --geth ../celo-blockchain/build/bin/geth \
   --staticNode "enode://33ac194052ccd10ce54101c8340dbbe7831de02a3e7dcbca7fd35832ff8c53a72fd75e57ce8c8e73a0ace650dc2c2ec1e36f0440e904bc20a3cf5927f2323e85@34.83.199.225:30303" \
@@ -38,16 +42,9 @@ Docker image is configured by default to:
 
 To run the docker image do:
 ```bash 
-docker run -v "${PWD}/envs/rc0:/data" -p 8080:8080--name rosetta gcr.io/celo-testnet/rosetta:0.1 serve local \
+docker run -v "${PWD}/envs/rc0:/data" -p 8080:8080--name rosetta gcr.io/celo-testnet/rosetta:0.1 run \
   --staticNode "enode://33ac194052ccd10ce54101c8340dbbe7831de02a3e7dcbca7fd35832ff8c53a72fd75e57ce8c8e73a0ace650dc2c2ec1e36f0440e904bc20a3cf5927f2323e85@34.83.199.225:30303"
 ```
-
-
-## Running on development
-
-To run on development, you need to call `go run main.go`
-
-* Run `make rc0-env` to initialize RC0 datadir with the genesis.json on `./envs/rc0`
 
 ## Dev Guide
 
@@ -93,10 +90,7 @@ Rosetta requires a few Celo Core Contracts
 
 ## How to build Docker Image
 
-To build the docker image:
-```bash
-export COMMIT_SHA=$(git rev-parse HEAD)
-docker build --build-arg COMMIT_SHA=$COMMIT_SHA -t gcr.io/celo-testnet/rosetta:$COMMIT_SHA .
-docker push gcr.io/celo-testnet/rosetta:$COMMIT_SHA
-```
+Commands:
+  * `make docker-build`
+  * `makde docker-publish`
 

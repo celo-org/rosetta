@@ -49,8 +49,6 @@ func init() {
 	log.Root().SetHandler(log.LvlFilterHandler(log.LvlInfo, log.StreamHandler(os.Stderr, log.TerminalFormat(true))))
 
 	cobra.OnInitialize(initConfig)
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.rosetta.yaml)")
 }
 
 // initConfig reads in config file and ENV variables if set.
