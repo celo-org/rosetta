@@ -5,8 +5,8 @@ import (
 	"math/big"
 
 	"github.com/celo-org/rosetta/celo/client"
+	"github.com/celo-org/rosetta/celo/contract"
 	"github.com/celo-org/rosetta/celo/wrapper"
-	"github.com/celo-org/rosetta/contract"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"

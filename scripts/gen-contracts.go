@@ -10,7 +10,7 @@ import (
 	"github.com/celo-org/rosetta/internal/build"
 )
 
-const contractsPath = "contract"
+const contractsPath = "celo/contract"
 
 var contractsToGenerate = []string{
 	"Registry",
