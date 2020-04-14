@@ -24,6 +24,7 @@ func HeaderListener(ctx context.Context, headers chan<- *types.Header, cc *clien
 	defer close(newHeaders)
 
 	syncMode := func(sub ethereum.Subscription) error {
+		logger.Info("Starting Sync Mode")
 		for {
 			select {
 			case err := <-sub.Err():
@@ -40,6 +41,7 @@ func HeaderListener(ctx context.Context, headers chan<- *types.Header, cc *clien
 	}
 
 	catchUpMode := func() error {
+		logger.Info("Starting Catch-Up Mode")
 		lastBlock, err := lastNodeBlockNumber(ctx, cc)
 		if err != nil {
 			return err
@@ -52,6 +54,7 @@ func HeaderListener(ctx context.Context, headers chan<- *types.Header, cc *clien
 			}
 			logger.Info("Finished fetching old blocks", "start", startBlock, "end", lastBlock, "new", len(newHeaders))
 		}
+		logger.Info("Ending Catch-Up Mode", "blocks fetched", new(big.Int).Sub(lastBlock, startBlock))
 		return nil
 	}
 
@@ -78,6 +81,7 @@ func HeaderListener(ctx context.Context, headers chan<- *types.Header, cc *clien
 					}
 					startBlock = new(big.Int).Add(h.Number, big.NewInt(1))
 				}
+				logger.Info("Restarting Listener In Catch Up Mode")
 				continue
 			}
 			return err
