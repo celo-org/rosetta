@@ -26,7 +26,7 @@ func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes c
 		return err
 	}
 	gpmAddress, err := db_.RegistryAddressOn(ctx, lastProcessedBlock, 0, "GasPriceMinimum")
-	if err != nil {
+	if err != nil && err != db.ErrContractNotFound {
 		return err
 	}
 	gpmPrev, err := db_.GasPriceMinimumOn(ctx, lastProcessedBlock)
@@ -77,15 +77,17 @@ func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes c
 
 		bcs.RegistryChanges = registryChanges
 
-		gpm, err := getGasPriceMinimumFromEthCall(ctx, cc, gpmAddress, h.Number)
-		if err != nil {
-			return err
+		if gpmAddress != common.ZeroAddress {
+			gpm, err := getGasPriceMinimumFromEthCall(ctx, cc, gpmAddress, h.Number)
+			if err != nil {
+				return err
+			}
+			// We only add GasPriceMinimum to bcs if there's a change.
+			if gpmPrev.Cmp(gpm) != 0 {
+				bcs.GasPriceMinimum = gpm
+			}
+			gpmPrev = gpm
 		}
-		// We only add GasPriceMinimum to bcs if there's a change.
-		if gpmPrev.Cmp(gpm) != 0 {
-			bcs.GasPriceMinimum = gpm
-		}
-		gpmPrev = gpm
 
 		// TODO(Alec): add rc1 implementation (leave commented for now)
 
