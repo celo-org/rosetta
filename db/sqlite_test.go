@@ -183,4 +183,4 @@ func TestGasPriceMinimum_VeryLargeNumber(t *testing.T) {
 	Ω(gpm.String()).Should(Equal(value.String()))
 }
 
-//TODO(Alec, Next): Add more tests
+//TODO(Alec): Add more tests

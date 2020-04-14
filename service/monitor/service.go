@@ -64,7 +64,7 @@ func (ms *monitorService) Start(ctx context.Context) error {
 	var wg sync.WaitGroup
 	var errorCollector service.ErrorCollector
 
-	headerCh := make(chan *types.Header)
+	headerCh := make(chan *types.Header, 10)
 	changeSetsCh := make(chan *db.BlockChangeSet)
 
 	wg.Add(3)

@@ -16,7 +16,6 @@ import (
 
 // Configuration Parameters
 var (
-	//gethBinary  = "/Users/alec/celo/go/src/github.com/ethereum/go-ethereum/build/bin/geth"
 	gethBinary  = os.ExpandEnv("${CELO_BLOCKCHAIN_PATH}/build/bin/geth")
 	genesis     = "./envs/rc0/genesis.json"
 	datadir     = "./envs/rc0/celo"

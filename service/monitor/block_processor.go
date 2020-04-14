@@ -2,7 +2,6 @@ package monitor
 
 import (
 	"context"
-	"errors"
 	"math/big"
 
 	"github.com/celo-org/rosetta/celo/client"
@@ -15,10 +14,6 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 )
 
-var (
-	ErrBlockProcessor = errors.New("Error In Block Processor")
-)
-
 func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes chan<- *db.BlockChangeSet, cc *client.CeloClient, db_ db.RosettaDBReader, logger log.Logger) error {
 	logger = logger.New("pipe", "processor")
 
@@ -26,8 +21,6 @@ func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes c
 	if err != nil {
 		return err
 	}
-
-	cache := make(map[string]*types.Header)
 
 	lastProcessedBlock, err := db_.LastPersistedBlock(ctx)
 	if err != nil {
@@ -40,36 +33,20 @@ func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes c
 
 	for {
 
-		nextExpectedBlock := new(big.Int).Add(lastProcessedBlock, big.NewInt(1))
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case h = <-headers:
+		}
 
-		if val, ok := cache[nextExpectedBlock.String()]; ok {
-			// If the next expected block is cached, assign it to h and process.
-			if val.Number.Cmp(nextExpectedBlock) != 0 {
-				log.Error("Block Processor Key/Value Mismatch", "key", nextExpectedBlock.Int64(), "value", val.Number.Int64()) // TODO(Alec): Return formatted error here.
-				return ErrBlockProcessor
-			}
-			h = val
-			delete(cache, nextExpectedBlock.String())
-			log.Info("Cached Block is Processing", "block", h.Number.Int64())
-		} else {
-			// If the next expected block is not cached, wait for it on headers channel.
-		selectLoop:
-			for {
-				select {
-				case <-ctx.Done():
-					return ctx.Err()
-				case h = <-headers:
-					switch h.Number.Cmp(nextExpectedBlock) {
-					case 0: // We have the right block, process it.
-						break selectLoop
-					case -1: // We somehow got an old block, error.
-						log.Error("Block(s) Repeated in Processing", "last processed", lastProcessedBlock.Int64(), "now receiving", h.Number.Int64()) // TODO(Alec): Return formatted error here.
-						return ErrBlockProcessor
-					case 1: // We aren't ready to process this block yet, add it to cache.
-						cache[h.Number.String()] = h
-					}
-				}
-			}
+		nextExpectedBlock := new(big.Int).Add(lastProcessedBlock, big.NewInt(1))
+		switch h.Number.Cmp(nextExpectedBlock) {
+		case -1:
+			logger.Error("Repeated Block(s) Received. Skipping...", "last processed", lastProcessedBlock.Int64(), "now receiving", h.Number.Int64())
+			continue
+		case 1:
+			logger.Error("Future Block(s) Received. Skipping...", "last processed", lastProcessedBlock.Int64(), "now receiving", h.Number.Int64())
+			continue
 		}
 
 		lastProcessedBlock = h.Number
@@ -93,7 +70,6 @@ func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes c
 		for iter.Next() {
 			if iter.Event.Identifier == "GasPriceMinimum" {
 				gpmAddress = iter.Event.Addr
-				//TODO(Alec): could gpm value change unexpectedly in this case?
 			}
 			registryChanges = append(registryChanges, db.RegistryChange{
 				TxIndex:    iter.Event.Raw.TxIndex,
