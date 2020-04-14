@@ -25,6 +25,8 @@ func HeaderListener(ctx context.Context, headers chan<- *types.Header, cc *clien
 
 	syncMode := func(sub ethereum.Subscription) error {
 		logger.Info("Starting Sync Mode")
+		defer logger.Info("Ending Sync Mode")
+
 		for {
 			select {
 			case err := <-sub.Err():
@@ -41,20 +43,18 @@ func HeaderListener(ctx context.Context, headers chan<- *types.Header, cc *clien
 	}
 
 	catchUpMode := func() error {
-		logger.Info("Starting Catch-Up Mode")
 		lastBlock, err := lastNodeBlockNumber(ctx, cc)
 		if err != nil {
 			return err
 		}
 
 		if lastBlock.Cmp(startBlock) > 0 {
-			logger.Info("Start fetching old blocks", "start", startBlock, "end", lastBlock)
+			logger.Info("Starting Catch-Up Mode", "start", startBlock, "end", lastBlock)
 			if err = fetchHeaderRange(ctx, headers, cc, logger, startBlock, lastBlock); err != nil {
 				return err
 			}
-			logger.Info("Finished fetching old blocks", "start", startBlock, "end", lastBlock, "new", len(newHeaders))
+			logger.Info("Finished Catch-Up Mode", "start", startBlock, "end", lastBlock)
 		}
-		logger.Info("Ending Catch-Up Mode", "blocks fetched", new(big.Int).Sub(lastBlock, startBlock))
 		return nil
 	}
 
