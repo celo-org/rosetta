@@ -44,13 +44,6 @@ func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes c
 		case h = <-headers:
 		}
 
-		if h.Number.Cmp(lastProcessedBlock) <= 0 {
-			logger.Error("Repeated Block(s) Received. Skipping...", "last processed", lastProcessedBlock, "now receiving", h.Number)
-			continue
-		}
-
-		lastProcessedBlock = h.Number
-
 		bcs := db.BlockChangeSet{
 			BlockNumber: h.Number,
 		}
