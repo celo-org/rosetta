@@ -58,11 +58,6 @@ github.com/btcsuite/goleveldb v0.0.0-20160330041536-7834afc9e8cd/go.mod h1:F+uVa
 github.com/btcsuite/snappy-go v0.0.0-20151229074030-0bdef8d06723/go.mod h1:8woku9dyThutzjeg+3xrA5iCpBRH8XEEg3lh6TiUghc=
 github.com/btcsuite/websocket v0.0.0-20150119174127-31079b680792/go.mod h1:ghJtEyQwv5/p4Mg4C0fgbePVuGr935/5ddU9Z3TmDRY=
 github.com/btcsuite/winsvc v1.0.0/go.mod h1:jsenWakMcC0zFBFurPLEAyrnc/teJEM1O46fmI40EZs=
-github.com/celo-org/bls-zexe v0.0.0-20200403142907-bed84e409a0d h1:ByTyJVeGeEqNFCJgflMsfwB/nx3/H/oINZHaGS/6U5E=
-github.com/celo-org/celo-blockchain v0.0.0-20200404162424-58437ecc7d8c h1:TC1IBPjTcJReTX985meV5iP4z6gE3MWEE6OnBV8XTqA=
-github.com/celo-org/celo-blockchain v0.0.0-20200404162424-58437ecc7d8c/go.mod h1:fjbKeebYSb0akEY16ozvWV9kKOTr1LpVIzjqrNidz44=
-github.com/celo-org/celo-blockchain v0.0.0-20200408040223-7eb9ee81ad88 h1:Q23cHG6l0wLLqboMeGDuj7uA/+v42roGPyBJLXFtoyA=
-github.com/celo-org/celo-blockchain v0.0.0-20200408040223-7eb9ee81ad88/go.mod h1:fjbKeebYSb0akEY16ozvWV9kKOTr1LpVIzjqrNidz44=
 github.com/celo-org/celo-blockchain v0.0.0-20200408223849-d021a14a4676 h1:yfcubyleqI/EyM5UxLB2WiTcRgGDanNycexiNRqH5Js=
 github.com/celo-org/celo-blockchain v0.0.0-20200408223849-d021a14a4676/go.mod h1:fjbKeebYSb0akEY16ozvWV9kKOTr1LpVIzjqrNidz44=
 github.com/cespare/cp v0.1.0 h1:SE+dxFebS7Iik5LK0tsi1k9ZCxEaFX4AjQmoyA+1dJk=
@@ -226,6 +221,8 @@ github.com/mattn/go-isatty v0.0.11/go.mod h1:PhnuNfih5lzO57/f3n+odYbM4JtupLOxQOA
 github.com/mattn/go-runewidth v0.0.3/go.mod h1:LwmH8dsx7+W8Uxz3IHJYH5QSwggIsqBzpuz5H//U1FU=
 github.com/mattn/go-runewidth v0.0.4 h1:2BvfKmzob6Bmd4YsL0zygOqfdFnK7GR4QL06Do4/p7Y=
 github.com/mattn/go-runewidth v0.0.4/go.mod h1:LwmH8dsx7+W8Uxz3IHJYH5QSwggIsqBzpuz5H//U1FU=
+github.com/mattn/go-sqlite3 v2.0.3+incompatible h1:gXHsfypPkaMZrKbD5209QV9jbUTJKjyR5WD3HYQSd+U=
+github.com/mattn/go-sqlite3 v2.0.3+incompatible/go.mod h1:FPy6KqzDD04eiIsT53CuJW3U88zkxoIYsOqkbpncsNc=
 github.com/matttproud/golang_protobuf_extensions v1.0.1 h1:4hp9jkHxhMHkqkrB3Ix0jegS5sx/RkqARlsWZ6pIwiU=
 github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5Ld7szi9bcBfOoFv/3dc6xSMkL2PC0=
 github.com/miguelmota/go-ethereum-hdwallet v0.0.0-20200123000308-a60dcd172b4c h1:cbhK2JT4nl7k8frmCN98ttRdSGP75x9mDxDhlQ1kHQQ=
