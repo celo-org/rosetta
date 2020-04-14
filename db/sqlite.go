@@ -21,33 +21,27 @@ type rosettaSqlDb struct {
 	insertRegistryAddressStmt *sql.Stmt
 }
 
-const (
-	setGasPriceMinimumOnStmt   = "INSERT INTO gasPriceMinimum (fromBlock, val) VALUES (?, ?)"
-	setRegisteredAddressOnStmt = "INSERT INTO registryAddresses (contract, fromBlock, fromTx, address) VALUES (?, ?, ?, ?)"
-)
-
 func initDatabase(db *sql.DB) error {
-	if _, err := db.Exec("CREATE table IF NOT EXISTS registryAddresses (contract text, fromBlock integer, fromTx integer, address blob)"); err != nil {
-		return err
+	schema := []string{
+		"CREATE table IF NOT EXISTS registry (contract text, fromBlock integer, fromTx integer, address blob)",
+		"CREATE table IF NOT EXISTS gasPriceMinimum (fromBlock integer, val blob)",
+		"CREATE table IF NOT EXISTS stats (lastBlock integer not null DEFAULT 0)",
 	}
 
-	if _, err := db.Exec("CREATE table IF NOT EXISTS gasPriceMinimum (fromBlock integer, val integer)"); err != nil {
-		return err
+	for _, sqlString := range schema {
+		if _, err := db.Exec(sqlString); err != nil {
+			return err
+		}
 	}
 
-	_, err := db.Exec(`CREATE table IF NOT EXISTS stats (lastPersistedBlock integer not null DEFAULT 0)`)
-	if err != nil {
-		return err
-	}
-
-	// Insert an initial lastPersistedBlock if none found
+	// Insert an initial lastBlock if none found
 	var count uint
-	if err := db.QueryRow("SELECT count(lastPersistedBlock) FROM stats").Scan(&count); err != nil {
+	if err := db.QueryRow("SELECT count(lastBlock) FROM stats").Scan(&count); err != nil {
 		return err
 	}
 
 	if count == 0 {
-		_, err := db.Exec(`INSERT INTO stats (lastPersistedBlock) VALUES(?)`, 0)
+		_, err := db.Exec(`INSERT INTO stats (lastBlock) VALUES(?)`, 0)
 		if err != nil {
 			return err
 		}
@@ -68,7 +62,7 @@ func NewSqliteDb(dbpath string) (*rosettaSqlDb, error) {
 		return nil, err
 	}
 
-	updateLastBlockStmt, err := db.Prepare("UPDATE stats SET lastPersistedBlock = $1")
+	updateLastBlockStmt, err := db.Prepare("UPDATE stats SET lastBlock = $1")
 	if err != nil {
 		return nil, err
 	}
@@ -78,19 +72,19 @@ func NewSqliteDb(dbpath string) (*rosettaSqlDb, error) {
 		return nil, err
 	}
 
-	insertRegistryAddressStmt, err := db.Prepare("INSERT INTO registryAddresses (contract, fromBlock, fromTx, address) VALUES (?, ?, ?, ?)")
+	insertRegistryAddressStmt, err := db.Prepare("INSERT INTO registry (contract, fromBlock, fromTx, address) VALUES (?, ?, ?, ?)")
 	if err != nil {
 		return nil, err
 	}
 
-	getLastBlockStmt, err := db.Prepare("SELECT lastPersistedBlock FROM stats")
+	getLastBlockStmt, err := db.Prepare("SELECT lastBlock FROM stats")
 	if err != nil {
 		return nil, err
 	}
 
 	getRegistryAddressStmt, err := db.Prepare(`
 		SELECT address 
-			FROM registryAddresses 
+			FROM registry 
 			WHERE contract == $1 and (fromBlock < $2 OR (fromBlock = $2 AND fromTx <= $3)) 
 			ORDER BY fromblock DESC, fromTx DESC 
 			LIMIT 1
@@ -135,11 +129,11 @@ func (cs *rosettaSqlDb) LastPersistedBlock(ctx context.Context) (*big.Int, error
 }
 
 func (cs *rosettaSqlDb) CheckBlockNumber(ctx context.Context, block *big.Int) error {
-	lastPersistedBlock, err := cs.LastPersistedBlock(ctx)
+	lastBlock, err := cs.LastPersistedBlock(ctx)
 	if err != nil {
 		return err
 	}
-	if block.Cmp(lastPersistedBlock) > 0 {
+	if block.Cmp(lastBlock) > 0 {
 		return ErrFutureBlock
 	}
 	return nil
@@ -150,16 +144,16 @@ func (cs *rosettaSqlDb) GasPriceMinimumOn(ctx context.Context, block *big.Int) (
 		return nil, err
 	}
 
-	var gpm int64
+	var gpmBytes []byte
 
-	if err := cs.getGasPriceMinimumStmt.QueryRowContext(ctx, block.Uint64()).Scan(&gpm); err != nil {
+	if err := cs.getGasPriceMinimumStmt.QueryRowContext(ctx, block.Uint64()).Scan(&gpmBytes); err != nil {
 		if err == sql.ErrNoRows {
 			return big.NewInt(0), nil
 		}
 		return nil, err
 	}
 
-	return big.NewInt(gpm), nil
+	return new(big.Int).SetBytes(gpmBytes), nil
 }
 
 func (cs *rosettaSqlDb) RegistryAddressOn(ctx context.Context, block *big.Int, txIndex uint, contractName string) (common.Address, error) {
@@ -214,7 +208,7 @@ func (cs *rosettaSqlDb) ApplyChanges(ctx context.Context, changeSet *BlockChange
 	}
 
 	if changeSet.GasPriceMinimum != nil {
-		_, err = tx.StmtContext(ctx, cs.insertGasPriceMinimumStmt).ExecContext(ctx, changeSet.BlockNumber.Int64(), changeSet.GasPriceMinimum.Int64())
+		_, err = tx.StmtContext(ctx, cs.insertGasPriceMinimumStmt).ExecContext(ctx, changeSet.BlockNumber.Int64(), changeSet.GasPriceMinimum.Bytes())
 		if err != nil {
 			if rollbackErr := tx.Rollback(); rollbackErr != nil {
 				return rollbackErr

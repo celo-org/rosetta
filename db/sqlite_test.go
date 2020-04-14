@@ -108,7 +108,6 @@ func TestGasPriceMinimum(t *testing.T) {
 	RegisterTestingT(t)
 	ctx := context.Background()
 
-	// celoDb, err := NewSqliteDb("/tmp/prueba.db")
 	celoDb, err := NewSqliteDb(":memory:")
 	Ω(err).ShouldNot(HaveOccurred())
 
@@ -160,6 +159,28 @@ func TestGasPriceMinimum(t *testing.T) {
 		Ω(err).Should(Equal(ErrFutureBlock))
 	})
 
+}
+
+func TestGasPriceMinimum_VeryLargeNumber(t *testing.T) {
+	RegisterTestingT(t)
+	ctx := context.Background()
+
+	// celoDb, err := NewSqliteDb("/tmp/prueba2.db")
+	celoDb, err := NewSqliteDb(":memory:")
+	Ω(err).ShouldNot(HaveOccurred())
+
+	value := new(big.Int).SetBytes([]byte{255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255})
+	err = celoDb.ApplyChanges(ctx, &BlockChangeSet{
+		BlockNumber:     big.NewInt(10),
+		GasPriceMinimum: value,
+	})
+	Ω(err).ShouldNot(HaveOccurred())
+
+	var gpm *big.Int
+
+	gpm, err = celoDb.GasPriceMinimumOn(ctx, big.NewInt(10))
+	Ω(err).ShouldNot(HaveOccurred())
+	Ω(gpm.String()).Should(Equal(value.String()))
 }
 
 //TODO(Alec, Next): Add more tests
