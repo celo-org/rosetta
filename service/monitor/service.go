@@ -64,6 +64,9 @@ func (ms *monitorService) Start(ctx context.Context) error {
 	var wg sync.WaitGroup
 	var errorCollector service.ErrorCollector
 
+	// headerCh is buffered so that sends from the header
+	// listener never have to wait for the preceding block
+	// to finish processing.
 	headerCh := make(chan *types.Header, 10)
 	changeSetsCh := make(chan *db.BlockChangeSet)
 

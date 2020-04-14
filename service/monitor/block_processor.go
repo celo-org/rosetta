@@ -21,14 +21,19 @@ func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes c
 	if err != nil {
 		return err
 	}
-
 	lastProcessedBlock, err := db_.LastPersistedBlock(ctx)
 	if err != nil {
 		return err
 	}
+	gpmAddress, err := db_.RegistryAddressOn(ctx, lastProcessedBlock, 0, "GasPriceMinimum")
+	if err != nil {
+		return err
+	}
+	gpmPrev, err := db_.GasPriceMinimumOn(ctx, lastProcessedBlock)
+	if err != nil {
+		return err
+	}
 
-	var gpmAddress common.Address
-	var gpmPrev *big.Int
 	var h *types.Header
 
 	for {
@@ -39,13 +44,8 @@ func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes c
 		case h = <-headers:
 		}
 
-		nextExpectedBlock := new(big.Int).Add(lastProcessedBlock, big.NewInt(1))
-		switch h.Number.Cmp(nextExpectedBlock) {
-		case -1:
-			logger.Error("Repeated Block(s) Received. Skipping...", "last processed", lastProcessedBlock.Int64(), "now receiving", h.Number.Int64())
-			continue
-		case 1:
-			logger.Error("Future Block(s) Received. Skipping...", "last processed", lastProcessedBlock.Int64(), "now receiving", h.Number.Int64())
+		if h.Number.Cmp(lastProcessedBlock) <= 0 {
+			logger.Error("Repeated Block(s) Received. Skipping...", "last processed", lastProcessedBlock, "now receiving", h.Number)
 			continue
 		}
 
@@ -84,18 +84,15 @@ func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes c
 
 		bcs.RegistryChanges = registryChanges
 
-		// If gpmAddress has been defined, ask it for the gpm.
-		if gpmAddress != common.ZeroAddress {
-			gpm, err := getGasPriceMinimumFromEthCall(ctx, cc, gpmAddress, h.Number)
-			if err != nil {
-				return err
-			}
-			// We only add GasPriceMinimum to bcs if there's a change.
-			if gpmPrev == nil || gpmPrev.Cmp(gpm) != 0 {
-				bcs.GasPriceMinimum = gpm
-			}
-			gpmPrev = gpm
+		gpm, err := getGasPriceMinimumFromEthCall(ctx, cc, gpmAddress, h.Number)
+		if err != nil {
+			return err
 		}
+		// We only add GasPriceMinimum to bcs if there's a change.
+		if gpmPrev.Cmp(gpm) != 0 {
+			bcs.GasPriceMinimum = gpm
+		}
+		gpmPrev = gpm
 
 		// TODO(Alec): add rc1 implementation (leave commented for now)
 
