@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"math/big"
-	"os"
 
 	"github.com/ethereum/go-ethereum/common"
 	_ "github.com/mattn/go-sqlite3"
@@ -51,8 +50,6 @@ func initDatabase(db *sql.DB) error {
 }
 
 func NewSqliteDb(dbpath string) (*rosettaSqlDb, error) {
-	os.Remove(dbpath)
-
 	db, err := sql.Open("sqlite3", dbpath)
 	if err != nil {
 		return nil, err
