@@ -22,10 +22,12 @@ import (
 	"time"
 
 	"github.com/celo-org/rosetta/celo/client"
+	"github.com/celo-org/rosetta/db"
 	"github.com/celo-org/rosetta/internal/fileutils"
 	"github.com/celo-org/rosetta/internal/signals"
 	"github.com/celo-org/rosetta/service"
 	"github.com/celo-org/rosetta/service/geth"
+	"github.com/celo-org/rosetta/service/monitor"
 	"github.com/celo-org/rosetta/service/rpc"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/spf13/cobra"
@@ -99,6 +101,7 @@ func getDatadir(cmd *cobra.Command) string {
 func runRunCmd(cmd *cobra.Command, args []string) {
 	datadir := getDatadir(cmd)
 	gethDataDir := filepath.Join(datadir, "celo")
+	sqlitePath := filepath.Join(datadir, "rosetta.db")
 
 	exitOnMissingConfig(cmd, "geth")
 	exitOnMissingConfig(cmd, "genesis")
@@ -116,6 +119,12 @@ func runRunCmd(cmd *cobra.Command, args []string) {
 		stopServices()
 	}()
 
+	celoStore, err := db.NewSqliteDb(sqlitePath)
+	if err != nil {
+		log.Error("Error opening CeloStore", "err", err)
+		os.Exit(1)
+	}
+
 	sm := service.NewServiceManager(srvCtx)
 
 	gethSrv := geth.NewGethService(
@@ -125,27 +134,21 @@ func runRunCmd(cmd *cobra.Command, args []string) {
 		staticNodes,
 	)
 
-	if err := gethSrv.Setup(); err != nil {
-		log.Error("Error on geth setup", "err", err)
-		os.Exit(1)
-	}
-
 	sm.Add(gethSrv)
+
+	time.Sleep(5 * time.Second)
 
 	chainParams := gethSrv.ChainParameters()
 	log.Info("Detected Chain Parameters", "chainId", chainParams.ChainId, "epochSize", chainParams.EpochSize)
 
-	nodeUri := gethSrv.IpcFilePath()
-	log.Debug("celo nodes ipc file", "filepath", nodeUri)
-
-	time.Sleep(5 * time.Second)
-	cc, err := client.Dial(nodeUri)
+	cc, err := client.Dial(gethSrv.IpcFilePath())
 	if err != nil {
 		log.Error("Error on client connection to geth", "err", err)
 		os.Exit(1)
 	}
 
 	sm.Add(rpc.NewRosettaServer(cc, &rosettaRpcConfig, chainParams))
+	sm.Add(monitor.NewMonitorService(cc, db))
 
 	if err := sm.Wait(); err != nil {
 		log.Error("Error running services", "err", err)

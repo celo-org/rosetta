@@ -113,7 +113,7 @@ func NewSqliteDb(dbpath string) (*rosettaSqlDb, error) {
 }
 
 func (cs *rosettaSqlDb) LastPersistedBlock(ctx context.Context) (*big.Int, error) {
-	var block int64 // TODO(Alec): Figure out better (safer) way of storing bigints
+	var block int64
 
 	if err := cs.getLastBlockStmt.QueryRowContext(ctx).Scan(&block); err != nil {
 		if err == sql.ErrNoRows {
@@ -176,7 +176,6 @@ func (cs *rosettaSqlDb) RegistryAddressesOn(ctx context.Context, block *big.Int,
 	}
 
 	addresses := make(map[string]common.Address)
-	// TODO(Alec): Could this be done more efficiently?
 	for _, name := range contractNames {
 		address, err := cs.RegistryAddressOn(ctx, block, txIndex, name)
 		if err == ErrContractNotFound {
