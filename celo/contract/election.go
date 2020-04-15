@@ -1642,7 +1642,7 @@ func (_Election *ElectionTransactorSession) Vote(group common.Address, value *bi
 	return _Election.Contract.Vote(&_Election.TransactOpts, group, value, lesser, greater)
 }
 
-// TryParseLog attemps to parse a log. Returns the parsed log, evenName and wether it was succesfull
+// TryParseLog attempts to parse a log. Returns the parsed log, eventName and whether it was successful
 func (_Election *ElectionFilterer) TryParseLog(log types.Log) (eventName string, event interface{}, ok bool, err error) {
 	eventName, ok, err = _Election.contract.LogEventName(log)
 	if err != nil || !ok {

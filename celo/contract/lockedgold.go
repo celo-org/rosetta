@@ -843,7 +843,7 @@ func (_LockedGold *LockedGoldTransactorSession) Withdraw(index *big.Int) (*types
 	return _LockedGold.Contract.Withdraw(&_LockedGold.TransactOpts, index)
 }
 
-// TryParseLog attemps to parse a log. Returns the parsed log, evenName and wether it was succesfull
+// TryParseLog attempts to parse a log. Returns the parsed log, eventName and whether it was successful
 func (_LockedGold *LockedGoldFilterer) TryParseLog(log types.Log) (eventName string, event interface{}, ok bool, err error) {
 	eventName, ok, err = _LockedGold.contract.LogEventName(log)
 	if err != nil || !ok {

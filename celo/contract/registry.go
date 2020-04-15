@@ -499,7 +499,7 @@ func (_Registry *RegistryTransactorSession) TransferOwnership(newOwner common.Ad
 	return _Registry.Contract.TransferOwnership(&_Registry.TransactOpts, newOwner)
 }
 
-// TryParseLog attemps to parse a log. Returns the parsed log, evenName and wether it was succesfull
+// TryParseLog attempts to parse a log. Returns the parsed log, eventName and whether it was successful
 func (_Registry *RegistryFilterer) TryParseLog(log types.Log) (eventName string, event interface{}, ok bool, err error) {
 	eventName, ok, err = _Registry.contract.LogEventName(log)
 	if err != nil || !ok {
