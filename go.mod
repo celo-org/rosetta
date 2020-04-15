@@ -3,9 +3,9 @@ module github.com/celo-org/rosetta
 go 1.13
 
 require (
+	github.com/coinbase/rosetta-sdk-go v0.1.4
 	github.com/ethereum/go-ethereum v1.9.8
 	github.com/felixge/httpsnoop v1.0.1
-	github.com/gorilla/mux v1.7.3
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
 	github.com/k0kubun/pp v3.0.1+incompatible
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
