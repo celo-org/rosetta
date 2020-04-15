@@ -2238,7 +2238,7 @@ func (_Validators *ValidatorsTransactorSession) UpdateValidatorScoreFromSigner(s
 	return _Validators.Contract.UpdateValidatorScoreFromSigner(&_Validators.TransactOpts, signer, uptime)
 }
 
-// TryParseLog attemps to parse a log. Returns the parsed log, evenName and wether it was succesfull
+// TryParseLog attempts to parse a log. Returns the parsed log, eventName and whether it was successful
 func (_Validators *ValidatorsFilterer) TryParseLog(log types.Log) (eventName string, event interface{}, ok bool, err error) {
 	eventName, ok, err = _Validators.contract.LogEventName(log)
 	if err != nil || !ok {

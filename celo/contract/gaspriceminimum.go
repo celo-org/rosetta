@@ -609,7 +609,7 @@ func (_GasPriceMinimum *GasPriceMinimumTransactorSession) UpdateGasPriceMinimum(
 	return _GasPriceMinimum.Contract.UpdateGasPriceMinimum(&_GasPriceMinimum.TransactOpts, blockGasTotal, blockGasLimit)
 }
 
-// TryParseLog attemps to parse a log. Returns the parsed log, evenName and wether it was succesfull
+// TryParseLog attempts to parse a log. Returns the parsed log, eventName and whether it was successful
 func (_GasPriceMinimum *GasPriceMinimumFilterer) TryParseLog(log types.Log) (eventName string, event interface{}, ok bool, err error) {
 	eventName, ok, err = _GasPriceMinimum.contract.LogEventName(log)
 	if err != nil || !ok {
