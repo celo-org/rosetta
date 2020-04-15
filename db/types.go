@@ -20,7 +20,7 @@ type RosettaDBReader interface {
 
 	// GasPriceMinimumOn return the gasPriceMinimum registered for that block
 	// In case of no value, will return with fallbackValue which is 0
-	GasPriceMinimumOn(ctx context.Context, block *big.Int) (*big.Int, error)
+	GasPriceMinimumFor(ctx context.Context, block *big.Int) (*big.Int, error)
 
 	// RegistryAddressOn returns the address of the contract at the point in history (block, txIndex)
 	// In case there's no record for that contract it will fail with ErrContractNotFound

@@ -127,35 +127,35 @@ func TestGasPriceMinimum(t *testing.T) {
 
 	t.Run("Before", func(t *testing.T) {
 		RegisterTestingT(t)
-		gpm, err = celoDb.GasPriceMinimumOn(ctx, big.NewInt(2))
+		gpm, err = celoDb.GasPriceMinimumFor(ctx, big.NewInt(10))
 		Ω(err).ShouldNot(HaveOccurred())
 		Ω(gpm.Uint64()).Should(Equal(uint64(0)))
 	})
 
 	t.Run("Same Block", func(t *testing.T) {
 		RegisterTestingT(t)
-		gpm, err = celoDb.GasPriceMinimumOn(ctx, big.NewInt(10))
+		gpm, err = celoDb.GasPriceMinimumFor(ctx, big.NewInt(11))
 		Ω(err).ShouldNot(HaveOccurred())
 		Ω(gpm.Uint64()).Should(Equal(uint64(50000)))
 	})
 
 	t.Run("After Block", func(t *testing.T) {
 		RegisterTestingT(t)
-		gpm, err = celoDb.GasPriceMinimumOn(ctx, big.NewInt(11))
+		gpm, err = celoDb.GasPriceMinimumFor(ctx, big.NewInt(15))
 		Ω(err).ShouldNot(HaveOccurred())
 		Ω(gpm.Uint64()).Should(Equal(uint64(50000)))
 	})
 
 	t.Run("On Next Change", func(t *testing.T) {
 		RegisterTestingT(t)
-		gpm, err = celoDb.GasPriceMinimumOn(ctx, big.NewInt(15))
+		gpm, err = celoDb.GasPriceMinimumFor(ctx, big.NewInt(16))
 		Ω(err).ShouldNot(HaveOccurred())
 		Ω(gpm.Uint64()).Should(Equal(uint64(100000)))
 	})
 
 	t.Run("After Last Persisted Change", func(t *testing.T) {
 		RegisterTestingT(t)
-		gpm, err = celoDb.GasPriceMinimumOn(ctx, big.NewInt(16))
+		gpm, err = celoDb.GasPriceMinimumFor(ctx, big.NewInt(17))
 		Ω(err).Should(Equal(ErrFutureBlock))
 	})
 
@@ -178,7 +178,7 @@ func TestGasPriceMinimum_VeryLargeNumber(t *testing.T) {
 
 	var gpm *big.Int
 
-	gpm, err = celoDb.GasPriceMinimumOn(ctx, big.NewInt(10))
+	gpm, err = celoDb.GasPriceMinimumFor(ctx, big.NewInt(11))
 	Ω(err).ShouldNot(HaveOccurred())
 	Ω(gpm.String()).Should(Equal(value.String()))
 }
