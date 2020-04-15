@@ -3,7 +3,7 @@ package api
 import (
 	"math/big"
 
-	"github.com/celo-org/rosetta/celo"
+	"github.com/celo-org/rosetta/analyzer"
 	"github.com/celo-org/rosetta/celo/client/txpool"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -118,26 +118,26 @@ func NewCeloGoldBalance(account common.Address, value *big.Int, subAccount *SubA
 	return NewBalance(account, subAccount, NewAmount(value, CeloGold))
 }
 
-func RewardsToOperations(rewards map[common.Address]*big.Int) []Operation {
-	operations := make([]Operation, 0, len(rewards))
-	opIndex := int64(0)
-	for address, value := range rewards {
-		operations = append(operations, Operation{
-			OperationIdentifier: NewOperationIdentifier(opIndex),
-			Account:             NewAccountIdentifier(address, nil),
-			Amount:              NewAmount(value, CeloGold),
-			Status:              OperationSuccess.String(),
-			Type:                OpKindMint.String(),
-		})
-		opIndex++
+func AccountFromAnalyzer(acc analyzer.Account) AccountIdentifier {
+	if acc.SubAccount.Identifier == analyzer.AccMain {
+		return AccountIdentifier{
+			Address: acc.Address.Hex(),
+		}
 	}
-	return operations
+
+	return AccountIdentifier{
+		Address: acc.Address.Hex(),
+		SubAccount: &SubAccountIdentifier{
+			SubAccount: string(acc.SubAccount.Identifier),
+			Metadata:   acc.SubAccount.Metadata,
+		},
+	}
 }
 
-func GasDetailsToOperations(gasDetails map[common.Address]*big.Int) []Operation {
-	var operations []Operation
-	opIndex := int64(0)
-	for address, value := range gasDetails {
+func OperationsFromAnalyzer(iop *analyzer.Operation, baseIndex int64) []Operation {
+	opIndex := baseIndex
+	operations := make([]Operation, len(iop.Changes))
+	for i, change := range iop.Changes {
 		var relatedOps []OperationIdentifier
 		if opIndex > 0 {
 			relatedOps = make([]OperationIdentifier, opIndex)
@@ -146,36 +146,15 @@ func GasDetailsToOperations(gasDetails map[common.Address]*big.Int) []Operation 
 			}
 		}
 
-		operations = append(operations, Operation{
+		operations[i] = Operation{
 			OperationIdentifier: NewOperationIdentifier(opIndex),
-			Account:             NewAccountIdentifier(address, nil),
-			Amount:              NewAmount(value, CeloGold),
-			Status:              OperationSuccess.String(),
-			Type:                OpKindFee.String(),
+			Account:             AccountFromAnalyzer(change.Account),
+			Amount:              NewAmount(change.Amount, CeloGold),
+			Status:              GetOperationStatus(iop.Successful).String(),
+			Type:                string(iop.Type),
 			RelatedOperations:   relatedOps,
-		})
-		opIndex += 1
+		}
+		opIndex++
 	}
-
 	return operations
-}
-
-func TransferToOperations(baseIndex int64, transfer *celo.Transfer) []Operation {
-	return []Operation{
-		{
-			OperationIdentifier: NewOperationIdentifier(baseIndex),
-			Account:             NewAccountIdentifier(transfer.From.Address, nil),
-			Amount:              NewAmount(new(big.Int).Neg(transfer.Value), CeloGold),
-			Status:              GetOperationStatus(transfer.Status).String(),
-			Type:                OpKindTransfer.String(),
-		},
-		{
-			OperationIdentifier: NewOperationIdentifier(baseIndex + 1),
-			Account:             NewAccountIdentifier(transfer.To.Address, nil),
-			Amount:              NewAmount(transfer.Value, CeloGold),
-			Status:              GetOperationStatus(transfer.Status).String(),
-			Type:                OpKindTransfer.String(),
-			RelatedOperations:   []OperationIdentifier{{Index: baseIndex}},
-		},
-	}
 }

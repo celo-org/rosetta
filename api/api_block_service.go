@@ -13,8 +13,10 @@ import (
 	"context"
 	"math/big"
 
+	"github.com/celo-org/rosetta/analyzer"
 	"github.com/celo-org/rosetta/celo"
 	"github.com/celo-org/rosetta/celo/client"
+	"github.com/celo-org/rosetta/db"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
@@ -24,13 +26,15 @@ import (
 // Include any external packages or services that will be required by this service.
 type BlockApiService struct {
 	celoClient  *client.CeloClient
+	db          db.RosettaDBReader
 	chainParams *celo.ChainParameters
 }
 
 // NewBlockApiService creates a default api service
-func NewBlockApiService(celoClient *client.CeloClient, cp *celo.ChainParameters) BlockApiServicer {
+func NewBlockApiService(celoClient *client.CeloClient, db db.RosettaDBReader, cp *celo.ChainParameters) BlockApiServicer {
 	return &BlockApiService{
 		celoClient:  celoClient,
+		db:          db,
 		chainParams: cp,
 	}
 }
@@ -119,11 +123,11 @@ func (s *BlockApiService) BlockTransaction(ctx context.Context, request BlockTra
 	var operations []Operation
 	// Check If it's block transaction (imaginary transaction)
 	if s.chainParams.IsLastBlockOfEpoch(blockHeader.Number.Uint64()) && txHash == blockHeader.Hash() {
-		rewards, err := celo.ComputeEpochRewards(ctx, s.celoClient, &blockHeader.Header)
+		rewards, err := analyzer.ComputeEpochRewards(ctx, s.celoClient, s.db, &blockHeader.Header)
 		if err != nil {
 			return nil, err
 		}
-		operations = RewardsToOperations(rewards)
+		operations = OperationsFromAnalyzer(rewards, 0)
 	} else {
 		// Normal transaction
 
@@ -141,23 +145,16 @@ func (s *BlockApiService) BlockTransaction(ctx context.Context, request BlockTra
 			return nil, ErrRpcError("TransactionReceipt", err)
 		}
 
-		txTracer := celo.NewTxTracer(ctx, s.celoClient, &blockHeader.Header, tx, receipt)
+		tracer := analyzer.NewTracer(ctx, s.celoClient, s.db)
 
-		gasDetails, err := txTracer.GasDetail()
+		ops, err := tracer.TraceTransaction(&blockHeader.Header, tx, receipt)
 		if err != nil {
 			return nil, err
 		}
 
-		operations = GasDetailsToOperations(gasDetails)
-
-		transfers, err := txTracer.TransferDetail()
-		if err != nil {
-			return nil, err
-		}
-
-		opIndex := int64(len(operations))
-		for i, transfer := range transfers {
-			operations = append(operations, TransferToOperations(opIndex+int64(2*i), &transfer)...)
+		for _, aop := range ops {
+			transferOps := OperationsFromAnalyzer(&aop, int64(len(operations)))
+			operations = append(operations, transferOps...)
 		}
 	}
 

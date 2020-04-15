@@ -34,7 +34,6 @@ func HeaderListener(ctx context.Context, headers chan<- *types.Header, cc *clien
 			case <-ctx.Done():
 				return ctx.Err()
 			case h := <-newHeaders:
-				logger.Info("New Header", "block", h.Number.Int64())
 				if err := sendToProcessor(ctx, headers, h); err != nil {
 					return err
 				}

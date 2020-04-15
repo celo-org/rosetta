@@ -22,13 +22,13 @@ type RosettaDBReader interface {
 	// In case of no value, will return with fallbackValue which is 0
 	GasPriceMinimumFor(ctx context.Context, block *big.Int) (*big.Int, error)
 
-	// RegistryAddressOn returns the address of the contract at the point in history (block, txIndex)
+	// RegistryAddressStartOf returns the address of the contract at the start of (block, tx)
 	// In case there's no record for that contract it will fail with ErrContractNotFound
-	RegistryAddressOn(ctx context.Context, block *big.Int, txIndex uint, contractName string) (common.Address, error)
+	RegistryAddressStartOf(ctx context.Context, block *big.Int, txIndex uint, contractName string) (common.Address, error)
 
-	// RegistryAddressesOn returns the address of the contracts at the point in history (block, txIndex)
+	// RegistryAddressesStartOf returns the address of the contracts at the start of (block, tx)
 	// For the case a contract is not yet deployed, that contract won't be in the result map
-	RegistryAddressesOn(ctx context.Context, block *big.Int, txIndex uint, contractName ...string) (map[string]common.Address, error)
+	RegistryAddressesStartOf(ctx context.Context, block *big.Int, txIndex uint, contractName ...string) (map[string]common.Address, error)
 }
 
 type RosettaDBWriter interface {

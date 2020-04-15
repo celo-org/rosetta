@@ -147,7 +147,7 @@ func runRunCmd(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	sm.Add(rpc.NewRosettaServer(cc, &rosettaRpcConfig, chainParams))
+	sm.Add(rpc.NewRosettaServer(cc, celoStore, &rosettaRpcConfig, chainParams))
 	sm.Add(monitor.NewMonitorService(cc, celoStore))
 
 	if err := sm.Wait(); err != nil {
