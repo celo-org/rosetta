@@ -136,14 +136,19 @@ func (cs *rosettaSqlDb) CheckBlockNumber(ctx context.Context, block *big.Int) er
 	return nil
 }
 
-func (cs *rosettaSqlDb) GasPriceMinimumOn(ctx context.Context, block *big.Int) (*big.Int, error) {
-	if err := cs.CheckBlockNumber(ctx, block); err != nil {
+// GasPriceMinimumFor reads the gpm that was used FOR the specified block.
+// That is, it gets the gpm that was set at the end of the preceding block.
+// The gpm value is updated at the end of each block, and applied to txs
+// in the following block.
+func (cs *rosettaSqlDb) GasPriceMinimumFor(ctx context.Context, block *big.Int) (*big.Int, error) {
+	prev := new(big.Int).Sub(block, big.NewInt(1))
+	if err := cs.CheckBlockNumber(ctx, prev); err != nil {
 		return nil, err
 	}
 
 	var gpmBytes []byte
 
-	if err := cs.getGasPriceMinimumStmt.QueryRowContext(ctx, block.Uint64()).Scan(&gpmBytes); err != nil {
+	if err := cs.getGasPriceMinimumStmt.QueryRowContext(ctx, prev.Uint64()).Scan(&gpmBytes); err != nil {
 		if err == sql.ErrNoRows {
 			return big.NewInt(0), nil
 		}
