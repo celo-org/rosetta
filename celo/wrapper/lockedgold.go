@@ -10,7 +10,7 @@ import (
 )
 
 type LockedGoldWrapper struct {
-	contract *contract.LockedGold
+	*contract.LockedGold
 }
 
 func NewLockedGold(celoClient *client.CeloClient, registryWrapper *RegistryWrapper) (*LockedGoldWrapper, error) {
@@ -20,7 +20,7 @@ func NewLockedGold(celoClient *client.CeloClient, registryWrapper *RegistryWrapp
 	}
 
 	return &LockedGoldWrapper{
-		contract: lockedgold,
+		lockedgold,
 	}, nil
 }
 
@@ -34,13 +34,8 @@ type NonVotingLockedGold struct {
 	PendingWithdrawals []PendingWithdrawal
 }
 
-func (w *LockedGoldWrapper) GetAccountNonVotingLockedGold(account common.Address, opts *bind.CallOpts) (*NonVotingLockedGold, error) {
-	lockedGoldNonVotingAmt, err := w.contract.GetAccountNonvotingLockedGold(opts, account)
-	if err != nil {
-		return nil, err
-	}
-
-	values, timestamps, err := w.contract.GetPendingWithdrawals(opts, account)
+func (w *LockedGoldWrapper) GetPendingWithdrawals(opts *bind.CallOpts, account common.Address) ([]PendingWithdrawal, error) {
+	values, timestamps, err := w.LockedGold.GetPendingWithdrawals(opts, account)
 	if err != nil {
 		return nil, err
 	}
@@ -50,10 +45,5 @@ func (w *LockedGoldWrapper) GetAccountNonVotingLockedGold(account common.Address
 		withdrawals[idx].Amount = val
 		withdrawals[idx].Timestamp = timestamps[idx]
 	}
-
-	result := NonVotingLockedGold{
-		Amount:             lockedGoldNonVotingAmt,
-		PendingWithdrawals: withdrawals,
-	}
-	return &result, nil
+	return withdrawals, nil
 }

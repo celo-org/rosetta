@@ -5,12 +5,13 @@ import (
 
 	"github.com/celo-org/rosetta/celo/client"
 	"github.com/celo-org/rosetta/celo/contract"
+	"github.com/celo-org/rosetta/internal/utils"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 )
 
 type ElectionWrapper struct {
-	contract *contract.Election
+	*contract.Election
 }
 
 func NewElection(celoClient *client.CeloClient, registryWrapper *RegistryWrapper) (*ElectionWrapper, error) {
@@ -20,7 +21,7 @@ func NewElection(celoClient *client.CeloClient, registryWrapper *RegistryWrapper
 	}
 
 	return &ElectionWrapper{
-		contract: election,
+		election,
 	}, nil
 }
 
@@ -30,10 +31,8 @@ type ElectionVotes struct {
 	Pending VotesByGroup
 }
 
-var BIG_ZERO = big.NewInt(0)
-
-func (w *ElectionWrapper) GetAccountElectionVotes(account common.Address, opts *bind.CallOpts) (*ElectionVotes, error) {
-	groups, err := w.contract.GetGroupsVotedForByAccount(opts, account)
+func (w *ElectionWrapper) GetAccountElectionVotes(opts *bind.CallOpts, account common.Address) (*ElectionVotes, error) {
+	groups, err := w.GetGroupsVotedForByAccount(opts, account)
 	if err != nil {
 		return nil, err
 	}
@@ -41,19 +40,19 @@ func (w *ElectionWrapper) GetAccountElectionVotes(account common.Address, opts *
 	var votes *ElectionVotes
 	for _, groupAddr := range groups {
 		// TODO(yorke): dedup
-		pendingAmt, err := w.contract.GetPendingVotesForGroupByAccount(opts, groupAddr, account)
+		pendingAmt, err := w.GetPendingVotesForGroupByAccount(opts, groupAddr, account)
 		if err != nil {
 			return nil, err
 		}
-		if pendingAmt.Cmp(BIG_ZERO) == 1 {
+		if pendingAmt.Cmp(utils.Big0) == 1 {
 			votes.Pending[groupAddr] = pendingAmt
 		}
 
-		activeAmt, err := w.contract.GetActiveVotesForGroupByAccount(opts, groupAddr, account)
+		activeAmt, err := w.GetActiveVotesForGroupByAccount(opts, groupAddr, account)
 		if err != nil {
 			return nil, err
 		}
-		if activeAmt.Cmp(BIG_ZERO) == 1 {
+		if activeAmt.Cmp(utils.Big0) == 1 {
 			votes.Active[groupAddr] = activeAmt
 		}
 	}
