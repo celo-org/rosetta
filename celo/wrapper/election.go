@@ -30,6 +30,8 @@ type ElectionVotes struct {
 	Pending VotesByGroup
 }
 
+var BIG_ZERO = big.NewInt(0)
+
 func (w *ElectionWrapper) GetAccountElectionVotes(account common.Address, opts *bind.CallOpts) (*ElectionVotes, error) {
 	groups, err := w.contract.GetGroupsVotedForByAccount(opts, account)
 	if err != nil {
@@ -38,17 +40,22 @@ func (w *ElectionWrapper) GetAccountElectionVotes(account common.Address, opts *
 
 	var votes *ElectionVotes
 	for _, groupAddr := range groups {
+		// TODO(yorke): dedup
 		pendingAmt, err := w.contract.GetPendingVotesForGroupByAccount(opts, groupAddr, account)
 		if err != nil {
 			return nil, err
 		}
-		votes.Pending[groupAddr] = pendingAmt
+		if pendingAmt.Cmp(BIG_ZERO) == 1 {
+			votes.Pending[groupAddr] = pendingAmt
+		}
 
 		activeAmt, err := w.contract.GetActiveVotesForGroupByAccount(opts, groupAddr, account)
 		if err != nil {
 			return nil, err
 		}
-		votes.Active[groupAddr] = activeAmt
+		if activeAmt.Cmp(BIG_ZERO) == 1 {
+			votes.Active[groupAddr] = activeAmt
+		}
 	}
 
 	return votes, nil

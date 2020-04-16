@@ -61,64 +61,62 @@ func (s *AccountApiService) AccountBalance(ctx context.Context, accountBalanceRe
 		Context:     ctx,
 	}
 
-	// fetch amounts
+	// available rosetta balances at latest block
+	var balances []Balance
+
 	goldAmt, err := s.celoClient.Eth.BalanceAt(ctx, accountAddr, latestHeader.Number)
 	if err != nil {
 		return nil, err
 	}
 
-	registryWrapper, err := wrapper.NewRegistry(s.celoClient)
-	if err != nil {
-		return nil, err
-	}
-
-	lockedGoldWrapper, err := wrapper.NewLockedGold(s.celoClient, registryWrapper)
-	if err != nil {
-		return nil, err
-	}
-
-	nonVotingLockedGold, err := lockedGoldWrapper.GetAccountNonVotingLockedGold(accountAddr, latestBlockOpts)
-	if err != nil {
-		return nil, err
-	}
-
-	electionWrapper, err := wrapper.NewElection(s.celoClient, registryWrapper)
-	if err != nil {
-		return nil, err
-	}
-
-	electionVotes, err := electionWrapper.GetAccountElectionVotes(accountAddr, latestBlockOpts)
-	if err != nil {
-		return nil, err
-	}
-
-	// construct balances
-	// TODO(yorke): fix types with new coinbase-rosetta-sdk release
-	var balances []Balance
-
 	goldBalance := NewCeloGoldBalance(accountAddr, goldAmt, nil)
 	balances = append(balances, *goldBalance)
 
-	lockedGoldBalance := NewCeloGoldBalance(accountAddr, nonVotingLockedGold.Amount, NewSubAccountIdentifier(LockedGoldNonVoting, "", ""))
-	balances = append(balances, *lockedGoldBalance)
+	// TODO(yorke): flatten if/else
+	registryWrapper, err := wrapper.NewRegistry(s.celoClient)
+	if err == nil {
+		lockedGoldWrapper, err := wrapper.NewLockedGold(s.celoClient, registryWrapper)
+		if err == nil {
+			nonVotingLockedGold, err := lockedGoldWrapper.GetAccountNonVotingLockedGold(accountAddr, latestBlockOpts)
+			if err != nil {
+				return nil, err
+			}
 
-	// TODO(yorke): dedup
-	for _, withdrawal := range nonVotingLockedGold.PendingWithdrawals {
-		pendingWithdrawalSubAccount := NewSubAccountIdentifier(LockedGoldPendingWithdrawal, "timestamp", withdrawal.Timestamp.String())
-		pendingWithdrawalBalanace := NewCeloGoldBalance(accountAddr, withdrawal.Amount, pendingWithdrawalSubAccount)
-		balances = append(balances, *pendingWithdrawalBalanace)
-	}
+			lockedGoldBalance := NewCeloGoldBalance(accountAddr, nonVotingLockedGold.Amount, NewSubAccountIdentifier(LockedGoldNonVoting, "", ""))
+			balances = append(balances, *lockedGoldBalance)
 
-	for groupAddr, activeAmt := range electionVotes.Active {
-		activeGroupSubAccount := NewSubAccountIdentifier(LockedGoldVotingActive, "group", groupAddr.String())
-		activeVotesForGroupBalance := NewCeloGoldBalance(accountAddr, activeAmt, activeGroupSubAccount)
-		balances = append(balances, *activeVotesForGroupBalance)
-	}
+			for _, withdrawal := range nonVotingLockedGold.PendingWithdrawals {
+				pendingWithdrawalSubAccount := NewSubAccountIdentifier(LockedGoldPendingWithdrawal, "timestamp", withdrawal.Timestamp.String())
+				pendingWithdrawalBalanace := NewCeloGoldBalance(accountAddr, withdrawal.Amount, pendingWithdrawalSubAccount)
+				balances = append(balances, *pendingWithdrawalBalanace)
+			}
+		} else if err != client.ErrContractNotDeployed {
+			return nil, err
+		}
 
-	for groupAddr, pendingAmt := range electionVotes.Pending {
-		pendingGroupSubAccount := NewSubAccountIdentifier(LockedGoldVotingPending, "group", groupAddr.String())
-		pendingVotesForGroupbalance := NewCeloGoldBalance(accountAddr, pendingAmt, pendingGroupSubAccount)
-		balances = append(balances, *pendingVotesForGroupbalance)
+		electionWrapper, err := wrapper.NewElection(s.celoClient, registryWrapper)
+		if err == nil {
+			electionVotes, err := electionWrapper.GetAccountElectionVotes(accountAddr, latestBlockOpts)
+			if err != nil {
+				return nil, err
+			}
+
+			for groupAddr, activeAmt := range electionVotes.Active {
+				activeGroupSubAccount := NewSubAccountIdentifier(LockedGoldVotingActive, "group", groupAddr.String())
+				activeVotesForGroupBalance := NewCeloGoldBalance(accountAddr, activeAmt, activeGroupSubAccount)
+				balances = append(balances, *activeVotesForGroupBalance)
+			}
+
+			for groupAddr, pendingAmt := range electionVotes.Pending {
+				pendingGroupSubAccount := NewSubAccountIdentifier(LockedGoldVotingPending, "group", groupAddr.String())
+				pendingVotesForGroupbalance := NewCeloGoldBalance(accountAddr, pendingAmt, pendingGroupSubAccount)
+				balances = append(balances, *pendingVotesForGroupbalance)
+			}
+		} else if err != client.ErrContractNotDeployed {
+			return nil, err
+		}
+	} else if err != wrapper.ErrRegistryNotDeployed {
+		return nil, err
 	}
 
 	// return balance response
