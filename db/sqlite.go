@@ -82,7 +82,7 @@ func NewSqliteDb(dbpath string) (*rosettaSqlDb, error) {
 	getRegistryAddressStmt, err := db.Prepare(`
 		SELECT address 
 			FROM registry 
-			WHERE contract == $1 and (fromBlock < $2 OR (fromBlock = $2 AND fromTx <= $3)) 
+			WHERE contract == $1 and (fromBlock < $2 OR (fromBlock = $2 AND fromTx < $3)) 
 			ORDER BY fromblock DESC, fromTx DESC 
 			LIMIT 1
 	`)
@@ -158,7 +158,7 @@ func (cs *rosettaSqlDb) GasPriceMinimumFor(ctx context.Context, block *big.Int) 
 	return new(big.Int).SetBytes(gpmBytes), nil
 }
 
-func (cs *rosettaSqlDb) RegistryAddressOn(ctx context.Context, block *big.Int, txIndex uint, contractName string) (common.Address, error) {
+func (cs *rosettaSqlDb) RegistryAddressStartOf(ctx context.Context, block *big.Int, txIndex uint, contractName string) (common.Address, error) {
 	if err := cs.CheckBlockNumber(ctx, block); err != nil {
 		return common.ZeroAddress, err
 	}
@@ -175,14 +175,14 @@ func (cs *rosettaSqlDb) RegistryAddressOn(ctx context.Context, block *big.Int, t
 	return addr, nil
 }
 
-func (cs *rosettaSqlDb) RegistryAddressesOn(ctx context.Context, block *big.Int, txIndex uint, contractNames ...string) (map[string]common.Address, error) {
+func (cs *rosettaSqlDb) RegistryAddressesStartOf(ctx context.Context, block *big.Int, txIndex uint, contractNames ...string) (map[string]common.Address, error) {
 	if err := cs.CheckBlockNumber(ctx, block); err != nil {
 		return nil, err
 	}
 
 	addresses := make(map[string]common.Address)
 	for _, name := range contractNames {
-		address, err := cs.RegistryAddressOn(ctx, block, txIndex, name)
+		address, err := cs.RegistryAddressStartOf(ctx, block, txIndex, name)
 		if err == ErrContractNotFound {
 			continue
 		} else if err != nil {

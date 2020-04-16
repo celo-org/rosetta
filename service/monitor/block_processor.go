@@ -25,7 +25,7 @@ func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes c
 	if err != nil {
 		return err
 	}
-	gpmAddress, err := db_.RegistryAddressOn(ctx, lastProcessedBlock, 0, "GasPriceMinimum")
+	gpmAddress, err := db_.RegistryAddressStartOf(ctx, lastProcessedBlock, 0, "GasPriceMinimum")
 	if err != nil && err != db.ErrContractNotFound {
 		return err
 	}

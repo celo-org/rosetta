@@ -1,4 +1,4 @@
-package celo
+package analyzer
 
 import (
 	"context"
@@ -6,11 +6,10 @@ import (
 
 	"github.com/celo-org/rosetta/celo/client"
 	"github.com/celo-org/rosetta/celo/contract"
-	"github.com/celo-org/rosetta/celo/wrapper"
+	"github.com/celo-org/rosetta/db"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/params"
 )
 
 type rewardsContext struct {
@@ -19,7 +18,7 @@ type rewardsContext struct {
 	header *types.Header
 }
 
-func ComputeEpochRewards(ctx context.Context, cc *client.CeloClient, header *types.Header) (map[common.Address]*big.Int, error) {
+func ComputeEpochRewards(ctx context.Context, cc *client.CeloClient, db db.RosettaDBReader, header *types.Header) (*Operation, error) {
 	rewards := make(map[common.Address]*big.Int)
 
 	rctx := &rewardsContext{
@@ -28,19 +27,27 @@ func ComputeEpochRewards(ctx context.Context, cc *client.CeloClient, header *typ
 		header: header,
 	}
 
+	// We use start of next block for queries since the won't change during epoch rewards
+	nextBlock := new(big.Int).Add(header.Number, big.NewInt(1))
+
 	// Obtain the address of all the contract we need for the computation
-	addresses, err := rctx.getEpochRewardsAddresses()
-	if err == wrapper.ErrRegistryNotDeployed || err == client.ErrContractNotDeployed {
-		// We assume rewards are active AFTER migration. So, we return an empty map
-		return rewards, nil
-	} else if err != nil {
+	addresses, err := db.RegistryAddressesStartOf(ctx, nextBlock, 0, "EpochRewards", "LockedGold", "Governance", "Reserve")
+	if err != nil {
 		return nil, err
+	}
+	if len(addresses) < 4 {
+		// we don't have all addresses =>
+		// We assume rewards are active AFTER migration. So, we return an empty map
+		return NewEpochRewards(rewards), nil
 	}
 
 	// Voters rewards are deposited to the LockedGold contract
-	rewards[addresses[params.LockedGoldRegistryId]], err = rctx.getTotalVoterRewards(addresses)
+	voterRewards, err := rctx.getTotalVoterRewards(addresses)
 	if err != nil {
 		return nil, err
+	}
+	if voterRewards.Cmp(big.NewInt(0)) > 0 {
+		rewards[addresses["LockedGold"]] = voterRewards
 	}
 
 	// Rewards are deposited in: Reserve, Governance, CarbonOffsetAddress (if any	)
@@ -49,13 +56,13 @@ func ComputeEpochRewards(ctx context.Context, cc *client.CeloClient, header *typ
 	// but this can have errors since it doesn't consider transfer that happened within the block in other txs
 
 	// First obtain carbonOffsettingPartner
-	epochRewards, err := contract.NewEpochRewards(addresses[params.EpochRewardsRegistryId], rctx.cc.Eth)
+	epochRewards, err := contract.NewEpochRewards(addresses["EpochRewards"], rctx.cc.Eth)
 	if err != nil {
 		// Error here means a Bug. Failed to parse ABI
 		return nil, err
 	}
 	carbonOffsettingPartner, err := epochRewards.CarbonOffsettingPartner(&bind.CallOpts{
-		BlockNumber: rctx.blockNumber(),
+		BlockNumber: rctx.blockNumber(), // by the end of the block
 		Context:     rctx.ctx,
 	})
 	if err != nil {
@@ -63,7 +70,7 @@ func ComputeEpochRewards(ctx context.Context, cc *client.CeloClient, header *typ
 		return nil, err
 	}
 
-	for _, addr := range []common.Address{addresses[params.ReserveRegistryId], addresses[params.GovernanceRegistryId], carbonOffsettingPartner} {
+	for _, addr := range []common.Address{addresses["Reserve"], addresses["Governance"], carbonOffsettingPartner} {
 		diff, err := rctx.balanceDifferenceInBlock(addr)
 		if err != nil {
 			return nil, err
@@ -77,7 +84,7 @@ func ComputeEpochRewards(ctx context.Context, cc *client.CeloClient, header *typ
 
 	// NOTE: Validator & Validator Groups rewards are in CUSD. We don't cover them for now
 
-	return rewards, nil
+	return NewEpochRewards(rewards), nil
 }
 
 func (rctx *rewardsContext) blockNumber() *big.Int {
@@ -86,15 +93,6 @@ func (rctx *rewardsContext) blockNumber() *big.Int {
 
 func (rctx *rewardsContext) prevBlockNumber() *big.Int {
 	return new(big.Int).Sub(rctx.header.Number, big.NewInt(1))
-}
-
-func (rctx *rewardsContext) contractsIdentifiers() [][32]byte {
-	return [][32]byte{
-		params.EpochRewardsRegistryId,
-		params.LockedGoldRegistryId,
-		params.GovernanceRegistryId,
-		params.ReserveRegistryId,
-	}
 }
 
 func (rctx *rewardsContext) balanceDifferenceInBlock(address common.Address) (*big.Int, error) {
@@ -111,8 +109,8 @@ func (rctx *rewardsContext) balanceDifferenceInBlock(address common.Address) (*b
 	return currBalance, nil
 }
 
-func (rctx *rewardsContext) getTotalVoterRewards(addresses map[[32]byte]common.Address) (*big.Int, error) {
-	election, err := contract.NewElection(addresses[params.ElectionRegistryId], rctx.cc.Eth)
+func (rctx *rewardsContext) getTotalVoterRewards(addresses map[string]common.Address) (*big.Int, error) {
+	election, err := contract.NewElection(addresses["Election"], rctx.cc.Eth)
 	if err != nil {
 		return nil, err
 	}
@@ -133,30 +131,4 @@ func (rctx *rewardsContext) getTotalVoterRewards(addresses map[[32]byte]common.A
 		totalRewards.Add(totalRewards, iter.Event.Value)
 	}
 	return totalRewards, nil
-}
-
-func (rctx *rewardsContext) getEpochRewardsAddresses() (map[[32]byte]common.Address, error) {
-	addresses := make(map[[32]byte]common.Address)
-
-	registry, err := wrapper.NewRegistry(rctx.cc)
-	if err != nil {
-		return nil, err
-	}
-
-	// Since there are not registry changes in the Finalize tx
-	// we can query the state just after that (block = header.Number)
-	callOpts := &bind.CallOpts{
-		BlockNumber: rctx.blockNumber(),
-		Context:     rctx.ctx,
-	}
-
-	for _, id := range rctx.contractsIdentifiers() {
-		addr, err := registry.GetAddressFor(callOpts, id)
-		if err != nil {
-			return nil, err
-		}
-		addresses[id] = addr
-	}
-
-	return addresses, nil
 }

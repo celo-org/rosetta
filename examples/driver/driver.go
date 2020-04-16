@@ -8,7 +8,6 @@ import (
 	"math/big"
 	"os"
 
-	"github.com/celo-org/rosetta/celo"
 	"github.com/celo-org/rosetta/celo/client"
 	"github.com/celo-org/rosetta/celo/contract"
 	"github.com/celo-org/rosetta/celo/wrapper"
@@ -51,7 +50,6 @@ func main() {
 	// DriverRegistryErrors()
 	// DriverEpochLogs()
 	// DriverEpochRewards()
-	DriverEpochRewards2()
 }
 
 func PanicOnErr(err error) {
@@ -60,21 +58,6 @@ func PanicOnErr(err error) {
 	}
 }
 
-func DriverEpochRewards2() {
-	cc := CeloClient()
-	blockNumber := big.NewInt(241920)
-
-	header, err := cc.Eth.HeaderByNumber(ctx, blockNumber)
-	PanicOnErr(err)
-
-	rewards, err := celo.ComputeEpochRewards(ctx, cc, header)
-	PanicOnErr(err)
-
-	for add, value := range rewards {
-		fmt.Printf("%s = %s\n", add, value)
-	}
-
-}
 func DriverEpochRewards() {
 	cc := CeloClient()
 
@@ -196,34 +179,6 @@ func DriverRegistryErrors() {
 		return err != client.ErrContractNotDeployed
 	})
 	fmt.Println(value)
-}
-
-func TxContextDriver() {
-	cc := CeloClient()
-
-	txHash := common.HexToHash("0xd6ab1c883179b677d2120c7a0d2f2a32351bd735b5c76386d13b2c23eb33ce4c")
-	blockNumber := big.NewInt(222130)
-
-	header, err := cc.Eth.HeaderByNumber(ctx, blockNumber)
-	PanicOnErr(err)
-
-	tx, _, err := cc.Eth.TransactionByHash(ctx, txHash)
-	PanicOnErr(err)
-
-	receipt, err := cc.Eth.TransactionReceipt(ctx, tx.Hash())
-	PanicOnErr(err)
-
-	txTracer := celo.NewTxTracer(
-		ctx,
-		cc,
-		header,
-		tx,
-		receipt,
-	)
-
-	gasDetail, err := txTracer.GasDetail()
-	pp.Print(gasDetail)
-	pp.Print(err)
 }
 
 func CheckHeaderHash() {

@@ -39,6 +39,10 @@ func TestRegisterContract(t *testing.T) {
 	celoDb, err := NewSqliteDb(":memory:")
 	Ω(err).ShouldNot(HaveOccurred())
 
+	// Changes
+	// Governance 0x34   (10, 4)
+	// Governance 0x34   (15, 4)
+
 	err = celoDb.ApplyChanges(ctx, &BlockChangeSet{
 		BlockNumber: big.NewInt(10),
 		RegistryChanges: []RegistryChange{
@@ -59,47 +63,47 @@ func TestRegisterContract(t *testing.T) {
 
 	t.Run("Before", func(t *testing.T) {
 		RegisterTestingT(t)
-		addr, err = celoDb.RegistryAddressOn(ctx, big.NewInt(2), 8, "Governance")
+		addr, err = celoDb.RegistryAddressStartOf(ctx, big.NewInt(2), 8, "Governance")
 		Ω(err).Should(Equal(ErrContractNotFound))
 	})
 
 	t.Run("Same Block, Before Tx", func(t *testing.T) {
 		RegisterTestingT(t)
-		addr, err = celoDb.RegistryAddressOn(ctx, big.NewInt(10), 3, "Governance")
+		addr, err = celoDb.RegistryAddressStartOf(ctx, big.NewInt(10), 4, "Governance")
 		Ω(err).Should(Equal(ErrContractNotFound))
 	})
 
 	t.Run("Same Block & Tx", func(t *testing.T) {
 		RegisterTestingT(t)
-		addr, err = celoDb.RegistryAddressOn(ctx, big.NewInt(10), 4, "Governance")
+		addr, err = celoDb.RegistryAddressStartOf(ctx, big.NewInt(10), 5, "Governance")
 		Ω(err).ShouldNot(HaveOccurred())
 		Ω(addr).Should(Equal(common.HexToAddress("0x34")))
 	})
 
 	t.Run("Same Block & After Tx", func(t *testing.T) {
 		RegisterTestingT(t)
-		addr, err = celoDb.RegistryAddressOn(ctx, big.NewInt(10), 6, "Governance")
+		addr, err = celoDb.RegistryAddressStartOf(ctx, big.NewInt(10), 7, "Governance")
 		Ω(err).ShouldNot(HaveOccurred())
 		Ω(addr).Should(Equal(common.HexToAddress("0x34")))
 	})
 
 	t.Run("After Block & Before Tx", func(t *testing.T) {
 		RegisterTestingT(t)
-		addr, err = celoDb.RegistryAddressOn(ctx, big.NewInt(11), 3, "Governance")
+		addr, err = celoDb.RegistryAddressStartOf(ctx, big.NewInt(11), 3, "Governance")
 		Ω(err).ShouldNot(HaveOccurred())
 		Ω(addr).Should(Equal(common.HexToAddress("0x34")))
 	})
 
 	t.Run("On Next Change", func(t *testing.T) {
 		RegisterTestingT(t)
-		addr, err = celoDb.RegistryAddressOn(ctx, big.NewInt(15), 4, "Governance")
+		addr, err = celoDb.RegistryAddressStartOf(ctx, big.NewInt(15), 5, "Governance")
 		Ω(err).ShouldNot(HaveOccurred())
 		Ω(addr).Should(Equal(common.HexToAddress("0x111")))
 	})
 
 	t.Run("After Last Persisted Change", func(t *testing.T) {
 		RegisterTestingT(t)
-		addr, err = celoDb.RegistryAddressOn(ctx, big.NewInt(16), 1, "Governance")
+		addr, err = celoDb.RegistryAddressStartOf(ctx, big.NewInt(16), 1, "Governance")
 		Ω(err).Should(Equal(ErrFutureBlock))
 	})
 }

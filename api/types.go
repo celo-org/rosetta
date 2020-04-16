@@ -58,16 +58,6 @@ func GetOperationStatus(success bool) OperationResult {
 	}
 }
 
-type OperationKind string
-
-const (
-	OpKindTransfer OperationKind = "transfer"
-	OpKindFee      OperationKind = "fee"
-	OpKindMint     OperationKind = "mint"
-)
-
-func (ok OperationKind) String() string { return string(ok) }
-
 type Method = string
 
 const (

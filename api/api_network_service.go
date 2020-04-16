@@ -13,6 +13,7 @@ import (
 	"context"
 	"math/big"
 
+	"github.com/celo-org/rosetta/analyzer"
 	"github.com/celo-org/rosetta/celo"
 	"github.com/celo-org/rosetta/celo/client"
 )
@@ -87,11 +88,7 @@ func (s *NetworkApiService) NetworkStatus(ctx context.Context, networkStatusRequ
 				OperationFailed.ToOperationStatus(),
 				OperationSuccess.ToOperationStatus(),
 			},
-			OperationTypes: []string{
-				OpKindTransfer.String(),
-				OpKindFee.String(),
-				OpKindMint.String(),
-			},
+			OperationTypes: analyzer.AllOperationTypesString(),
 			SubmissionStatuses: []SubmissionStatus{
 				SubmissionSuccess.ToSubmissionStatus(),
 				SubmissionFailed.ToSubmissionStatus(),
