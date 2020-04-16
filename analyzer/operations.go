@@ -81,7 +81,7 @@ type Operation struct {
 }
 
 // ---------------------------------------------------------------------------------------------------
-// Operation Factories
+// Account Factories
 // ---------------------------------------------------------------------------------------------------
 
 func NewAccount(addr common.Address, subAccount SubAccountType) Account {
@@ -102,6 +102,10 @@ func NewVotingAccount(addr common.Address, subAccount SubAccountType, group comm
 		},
 	}
 }
+
+// ---------------------------------------------------------------------------------------------------
+// Operation Factories
+// ---------------------------------------------------------------------------------------------------
 
 func NewEpochRewards(changes map[common.Address]*big.Int) *Operation {
 	return &Operation{

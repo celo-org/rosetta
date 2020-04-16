@@ -107,15 +107,15 @@ func NewAmount(value *big.Int, currency Currency) Amount {
 	}
 }
 
-func NewBalance(account common.Address, subAccount *SubAccountIdentifier, amount Amount) *Balance {
+func NewBalance(account analyzer.Account, amount Amount) *Balance {
 	return &Balance{
-		AccountIdentifier: NewAccountIdentifier(account, subAccount),
+		AccountIdentifier: AccountFromAnalyzer(account),
 		Amounts:           []Amount{amount},
 	}
 }
 
-func NewCeloGoldBalance(account common.Address, value *big.Int, subAccount *SubAccountIdentifier) *Balance {
-	return NewBalance(account, subAccount, NewAmount(value, CeloGold))
+func NewCeloGoldBalance(account analyzer.Account, value *big.Int) *Balance {
+	return NewBalance(account, NewAmount(value, CeloGold))
 }
 
 func AccountFromAnalyzer(acc analyzer.Account) AccountIdentifier {
