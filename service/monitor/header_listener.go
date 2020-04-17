@@ -5,152 +5,154 @@ import (
 	"math/big"
 	"sync"
 
-	"github.com/ethereum/go-ethereum"
-
 	"github.com/celo-org/rosetta/celo/client"
-	"github.com/celo-org/rosetta/service"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
+type listener struct {
+	ctx     context.Context
+	headers chan<- *types.Header
+	cc      *client.CeloClient
+	logger  log.Logger
+}
+
+const (
+	maxAllowedGap = 50
+)
+
 func HeaderListener(ctx context.Context, headers chan<- *types.Header, cc *client.CeloClient, logger log.Logger, startBlock *big.Int) error {
-	logger = logger.New("pipe", "header_listener")
-
-	// Subscriptions also have a built in buffer/queue of size 2000.
-	// So, 3000 new headers can be produced while we're fetching old
-	// blocks before the subscription overflows.
-	newHeaders := make(chan *types.Header, 1000)
-	defer close(newHeaders)
-
-	syncMode := func(sub ethereum.Subscription) error {
-		logger.Info("Starting Sync Mode")
-		defer logger.Info("Ending Sync Mode")
-
-		for {
-			select {
-			case err := <-sub.Err():
-				return err
-			case <-ctx.Done():
-				return ctx.Err()
-			case h := <-newHeaders:
-				if err := sendToProcessor(ctx, headers, h); err != nil {
-					return err
-				}
-			}
-		}
+	listener := &listener{
+		logger:  logger.New("pipe", "header_listener"),
+		ctx:     ctx,
+		cc:      cc,
+		headers: headers,
 	}
 
-	catchUpMode := func() error {
-		lastBlock, err := lastNodeBlockNumber(ctx, cc)
+	lastFetchedBlock, err := listener.syncOldBlocks(startBlock)
+	if err != nil {
+		return err
+	}
+
+	nextBlock := new(big.Int).Add(big.NewInt(1), lastFetchedBlock)
+	if err := listener.syncNewBlocks(nextBlock); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// syncOldBlocks will fetch all blocks until until the distance between node head and last fetched block is less than maxDistance
+func (listener *listener) syncOldBlocks(startBlock *big.Int) (*big.Int, error) {
+	maxGap := big.NewInt(maxAllowedGap)
+
+	currBlock := startBlock
+	lastBlock, err := listener.lastNodeBlockNumber()
+	if err != nil {
+		return nil, err
+	}
+
+	// While we are behind more than `maxGap` we keep on syncing by range
+	for new(big.Int).Sub(lastBlock, currBlock).Cmp(maxGap) > 0 {
+		listener.logger.Info("Fetching Old Blocks", "start", currBlock, "end", lastBlock)
+		if err = listener.syncBlockRange(startBlock, lastBlock); err != nil {
+			return nil, err
+		}
+		listener.logger.Info("Finished Catching Up", "start", startBlock, "end", lastBlock)
+
+		currBlock = lastBlock
+		lastBlock, err = listener.lastNodeBlockNumber()
 		if err != nil {
+			return nil, err
+		}
+	}
+	return currBlock, nil
+}
+
+func (listener *listener) syncNewBlocks(startBlock *big.Int) error {
+	listener.logger.Info("Listening For New Headers")
+	defer listener.logger.Info("Stopped Listening For New Headers")
+
+	subscriptionHeaders := make(chan *types.Header)
+	var closeOnce sync.Once
+	defer closeOnce.Do(func() { close(subscriptionHeaders) })
+
+	sub, err := listener.cc.Eth.SubscribeNewHead(listener.ctx, subscriptionHeaders)
+	if err != nil {
+		return err
+	}
+	defer sub.Unsubscribe()
+
+	// After stating the subscription we fetch block gap between lastFetched and node's head
+	// by doing it after, we assure we will get all blocks in order
+	lastBlock, err := listener.lastNodeBlockNumber()
+	if err != nil {
+		return err
+	}
+	if lastBlock.Cmp(startBlock) > 0 {
+		listener.logger.Info("Closing gap with header subscription", "from", startBlock, "to", lastBlock)
+		if err = listener.syncBlockRange(startBlock, lastBlock); err != nil {
 			return err
 		}
-
-		if lastBlock.Cmp(startBlock) > 0 {
-			logger.Info("Starting Catch-Up Mode", "start", startBlock, "end", lastBlock)
-			if err = fetchHeaderRange(ctx, headers, cc, logger, startBlock, lastBlock); err != nil {
-				return err
-			}
-			logger.Info("Finished Catch-Up Mode", "start", startBlock, "end", lastBlock)
-		}
-		return nil
 	}
 
+	// After closing the gap, start reading from the subscription
 	for {
-		sub, err := cc.Eth.SubscribeNewHead(ctx, newHeaders)
+		select {
+		case err := <-sub.Err():
+			if err == rpc.ErrSubscriptionQueueOverflow {
+				listener.logger.Warn("Header Subscription overflowed. Flushing remaining header & restart")
+				closeOnce.Do(func() { close(subscriptionHeaders) })
+				for h := range subscriptionHeaders {
+					if err := listener.writeHeader(h); err != nil {
+						return err
+					}
+				}
+				return nil
+			}
+			return err
+		case <-listener.ctx.Done():
+			return listener.ctx.Err()
+		case h := <-subscriptionHeaders:
+			if h.Number.Int64()%1000 == 0 {
+				listener.logger.Info("Fetched 1000 New Blocks", "block", h.Number)
+			}
+			if err := listener.writeHeader(h); err != nil {
+				return err
+			}
+		}
+	}
+}
+
+// syncBlockRange will fetch & write all blocks in range [start,end] incluse
+func (listener *listener) syncBlockRange(start, end *big.Int) error {
+
+	for curr := new(big.Int).Set(start); curr.Cmp(end) <= 0; curr.Add(curr, big.NewInt(1)) {
+		h, err := listener.cc.Eth.HeaderByNumber(listener.ctx, curr)
 		if err != nil {
 			return err
 		}
-		defer sub.Unsubscribe()
-
-		if err := catchUpMode(); err != nil {
+		if err = listener.writeHeader(h); err != nil {
 			return err
-		}
-
-		if err := syncMode(sub); err != nil {
-			if err == rpc.ErrSubscriptionQueueOverflow {
-				logger.Error("Subscription Queue Overflowed", "New headers in buffer", len(newHeaders))
-				if len(newHeaders) > 0 {
-					var h *types.Header
-					for h = range newHeaders {
-						if err := sendToProcessor(ctx, headers, h); err != nil {
-							return err
-						}
-					}
-					startBlock = new(big.Int).Add(h.Number, big.NewInt(1))
-				}
-				logger.Info("Restarting Listener In Catch Up Mode")
-				continue
-			}
-			return err
-		}
-		return nil
-	}
-}
-
-func sendToProcessor(ctx context.Context, headers chan<- *types.Header, h *types.Header) error {
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case headers <- h:
-	}
-	return nil
-}
-
-func fetchHeaderRange(ctx context.Context, headers chan<- *types.Header, cc *client.CeloClient, logger log.Logger, startBlock, endBlock *big.Int) error {
-	var wg sync.WaitGroup
-	var errorCollector service.ErrorCollector
-	batchSize := 20
-
-	count := 0
-
-	for i := new(big.Int).Set(startBlock); i.Cmp(endBlock) <= 0; i.Add(i, big.NewInt(int64(batchSize))) {
-		remaining := new(big.Int).Add(new(big.Int).Sub(endBlock, i), big.NewInt(1))
-		if remaining.Cmp(big.NewInt(int64(batchSize))) < 0 {
-			batchSize = int(remaining.Int64())
-		}
-
-		mu := &sync.Mutex{}
-		batch := make([]*types.Header, batchSize)
-		wg.Add(batchSize)
-		for j := 0; j < batchSize; j++ {
-			go func(index int) {
-				defer wg.Done()
-				h, err := cc.Eth.HeaderByNumber(ctx, new(big.Int).Add(i, big.NewInt(int64(index))))
-				if err != nil {
-					errorCollector.Add(err)
-				}
-				mu.Lock()
-				batch[index] = h
-				mu.Unlock()
-			}(j)
-		}
-		wg.Wait()
-
-		if err := errorCollector.Error(); err != nil {
-			return err
-		}
-
-		for _, h := range batch {
-			if err := sendToProcessor(ctx, headers, h); err != nil {
-				return err
-			}
-			logger.Trace("Block Fetched", "block", h.Number)
-			count++
-			if count == 10000 {
-				logger.Info("Fetched 10000 Blocks", "from", new(big.Int).Sub(h.Number, big.NewInt(int64(count-1))), "to", h.Number)
-				count = 0
-			}
 		}
 	}
 	return nil
 }
 
-func lastNodeBlockNumber(ctx context.Context, cc *client.CeloClient) (*big.Int, error) {
-	latest, err := cc.Eth.HeaderByNumber(ctx, nil)
+func (listener *listener) lastNodeBlockNumber() (*big.Int, error) {
+	latest, err := listener.cc.Eth.HeaderByNumber(listener.ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 	return latest.Number, nil
+}
+
+func (listener *listener) writeHeader(h *types.Header) error {
+	select {
+	case <-listener.ctx.Done():
+		return listener.ctx.Err()
+	case listener.headers <- h:
+	}
+	return nil
 }

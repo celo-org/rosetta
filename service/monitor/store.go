@@ -20,9 +20,9 @@ func ProcessChanges(ctx context.Context, changes <-chan *db.BlockChangeSet, dbWr
 			}
 
 			count++
-			if count == 100 {
+			if count == 1000 {
 				count = 0
-				logger.Info("Stored 100 blocks", "block", changeSet.BlockNumber, "registryUpdates", len(changeSet.RegistryChanges))
+				logger.Info("Stored 1000 blocks", "block", changeSet.BlockNumber, "registryUpdates", len(changeSet.RegistryChanges))
 			}
 		}
 	}
