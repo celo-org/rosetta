@@ -6,14 +6,13 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/celo-org/rosetta/api"
 	"github.com/celo-org/rosetta/celo"
 	"github.com/celo-org/rosetta/celo/client"
 	"github.com/celo-org/rosetta/db"
 	"github.com/celo-org/rosetta/service"
+	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/felixge/httpsnoop"
-	"github.com/gorilla/mux"
 )
 
 type RosettaServerConfig struct {
@@ -93,22 +92,23 @@ func requestLogHandler(handler http.Handler) http.Handler {
 	})
 }
 
-func createRouter(celoClient *client.CeloClient, db db.RosettaDBReader, chainParams *celo.ChainParameters) *mux.Router {
-	AccountApiService := api.NewAccountApiService(celoClient, chainParams)
-	AccountApiController := api.NewAccountApiController(AccountApiService)
+func createRouter(celoClient *client.CeloClient, db db.RosettaDBReader, chainParams *celo.ChainParameters) http.Handler {
 
-	BlockApiService := api.NewBlockApiService(celoClient, db, chainParams)
-	BlockApiController := api.NewBlockApiController(BlockApiService)
+	AccountApiService := NewAccountApiService(celoClient, chainParams)
+	AccountApiController := server.NewAccountAPIController(AccountApiService)
 
-	ConstructionApiService := api.NewConstructionApiService(celoClient, chainParams)
-	ConstructionApiController := api.NewConstructionApiController(ConstructionApiService)
+	BlockApiService := NewBlockApiService(celoClient, db, chainParams)
+	BlockApiController := server.NewBlockAPIController(BlockApiService)
 
-	MempoolApiService := api.NewMempoolApiService(celoClient, chainParams)
-	MempoolApiController := api.NewMempoolApiController(MempoolApiService)
+	ConstructionApiService := NewConstructionApiService(celoClient, chainParams)
+	ConstructionApiController := server.NewConstructionAPIController(ConstructionApiService)
 
-	NetworkApiService := api.NewNetworkApiService(celoClient, chainParams)
-	NetworkApiController := api.NewNetworkApiController(NetworkApiService)
+	MempoolApiService := NewMempoolApiService(celoClient, chainParams)
+	MempoolApiController := server.NewMempoolAPIController(MempoolApiService)
 
-	router := api.NewRouter(AccountApiController, BlockApiController, ConstructionApiController, MempoolApiController, NetworkApiController)
+	NetworkApiService := NewNetworkApiService(celoClient, chainParams)
+	NetworkApiController := server.NewNetworkAPIController(NetworkApiService)
+
+	router := server.NewRouter(AccountApiController, BlockApiController, ConstructionApiController, MempoolApiController, NetworkApiController)
 	return router
 }
