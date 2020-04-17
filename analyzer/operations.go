@@ -246,7 +246,7 @@ func NewRevokeActiveVotes(addr common.Address, group common.Address, value *big.
 // ---------------------------------------------------------------------------------------------------
 
 func FilterChangesBySubAccount(op *Operation, subAccountType SubAccountType) map[common.Address]*big.Int {
-	var changes map[common.Address]*big.Int
+	changes := make(map[common.Address]*big.Int)
 	for _, change := range op.Changes {
 		if change.Account.SubAccount.Identifier == subAccountType {
 			changes[change.Account.Address] = change.Amount

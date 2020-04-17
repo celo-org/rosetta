@@ -43,7 +43,7 @@ func (s *Servicer) Mempool(ctx context.Context, request *types.MempoolRequest) (
 
 	content, err := s.cc.TxPool.Content(ctx)
 	if err != nil {
-		return nil, NewCeloClientError("TxPoolContent", err)
+		return nil, LogErrCeloClient("TxPoolContent", err)
 	}
 
 	allTransactionIds := append(TxIdsFromTxAccountMap((*content)["pending"]), TxIdsFromTxAccountMap((*content)["queued"])...)
@@ -56,7 +56,7 @@ func (s *Servicer) Mempool(ctx context.Context, request *types.MempoolRequest) (
 
 // MempoolTransaction - Get a Mempool Transaction
 func (s *Servicer) MempoolTransaction(ctx context.Context, request *types.MempoolTransactionRequest) (*types.MempoolTransactionResponse, *types.Error) {
-	return nil, ErrUnimplementedEndpoint("/mempool/transaction")
+	return nil, LogErrUnimplemented("/mempool/transaction")
 }
 
 func (s *Servicer) NetworkList(ctx context.Context, request *types.MetadataRequest) (*types.NetworkListResponse, *types.Error) {
@@ -83,8 +83,11 @@ func (s *Servicer) NetworkOptions(ctx context.Context, request *types.NetworkReq
 				OperationSuccess.ToOperationStatus(),
 			},
 			OperationTypes: analyzer.AllOperationTypesString(),
-			Errors:         []*types.Error{
-				// TODO: fill
+			Errors: []*types.Error{
+				ErrValidation,
+				ErrUnimplemented,
+				ErrInternal,
+				ErrCeloClient,
 			},
 		},
 	}
@@ -97,17 +100,17 @@ func (s *Servicer) NetworkStatus(ctx context.Context, request *types.NetworkRequ
 
 	latestHeader, err := s.cc.Eth.HeaderByNumber(ctx, nil) // nil == latest
 	if err != nil {
-		return nil, NewCeloClientError("HeaderByNumber", err)
+		return nil, LogErrCeloClient("HeaderByNumber", err)
 	}
 
 	genesisHeader, err := s.cc.Eth.HeaderByNumber(ctx, big.NewInt(0)) // 0 == genesis
 	if err != nil {
-		return nil, NewCeloClientError("HeaderByNumber", err)
+		return nil, LogErrCeloClient("HeaderByNumber", err)
 	}
 
 	peersInfo, err := s.cc.Admin.Peers(ctx)
 	if err != nil {
-		return nil, NewCeloClientError("AdminPeers", err)
+		return nil, LogErrCeloClient("AdminPeers", err)
 	}
 
 	response := types.NetworkStatusResponse{
@@ -153,7 +156,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 		// Main Account, just cGLD
 		goldAmt, err := s.cc.Eth.BalanceAt(ctx, accountAddr, blockHeader.Number)
 		if err != nil {
-			return nil, NewCeloClientError("BalanceAt", err)
+			return nil, LogErrCeloClient("BalanceAt", err)
 		}
 		return createReponse(NewAmount(goldAmt, CeloGold)), nil
 	}
@@ -163,7 +166,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 		// Nothing is deployed => ignore lockedGold & election balances
 		return emptyResponse, nil
 	} else if err != nil {
-		return nil, NewCeloClientError("NewRegistry", err)
+		return nil, LogErrCeloClient("NewRegistry", err)
 	}
 
 	if subAccount.Address == string(analyzer.AccLockedGoldNonVoting) {
@@ -173,12 +176,12 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 			// Nothing is deployed => ignore lockedGold & election balances
 			return emptyResponse, nil
 		} else if err != nil {
-			return nil, NewCeloClientError("NewLockedGold", err)
+			return nil, LogErrCeloClient("NewLockedGold", err)
 		}
 
 		nonVotingLockedGold, err := lockedGoldWrapper.GetAccountNonvotingLockedGold(requestedBlockOpts, accountAddr)
 		if err != nil {
-			return nil, NewCeloClientError("GetAccountNonvotingLockedGold", err)
+			return nil, LogErrCeloClient("GetAccountNonvotingLockedGold", err)
 		}
 
 		return createReponse(NewAmount(nonVotingLockedGold, CeloGold)), nil
@@ -191,12 +194,12 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 			// Nothing is deployed => ignore lockedGold & election balances
 			return emptyResponse, nil
 		} else if err != nil {
-			return nil, NewCeloClientError("NewLockedGold", err)
+			return nil, LogErrCeloClient("NewLockedGold", err)
 		}
 
 		totalPending, err := lockedGoldWrapper.GetTotalPendingWithdrawals(requestedBlockOpts, accountAddr)
 		if err != nil {
-			return nil, NewCeloClientError("GetTotalPendingWithdrawals", err)
+			return nil, LogErrCeloClient("GetTotalPendingWithdrawals", err)
 		}
 
 		return createReponse(NewAmount(totalPending, CeloGold)), nil
@@ -210,14 +213,14 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 		// Nothing is deployed => ignore lockedGold & election balances
 		return emptyResponse, nil
 	} else if err != nil {
-		return nil, NewCeloClientError("NewElection", err)
+		return nil, LogErrCeloClient("NewElection", err)
 	}
 
 	// For now we only support "pending" votes
 
 	electionVotes, err := electionWrapper.GetAccountElectionVotes(requestedBlockOpts, accountAddr)
 	if err != nil {
-		return nil, NewCeloClientError("GetAccountElectionVotes", err)
+		return nil, LogErrCeloClient("GetAccountElectionVotes", err)
 	}
 
 	if subAccount.Metadata != nil {
@@ -249,7 +252,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 	// 	balances = append(balances, *NewCeloGoldBalance(account, pendingAmt))
 	// }
 
-	return nil, NewCeloClientError("InvalidAccountIdentifier", err)
+	return nil, LogErrCeloClient("InvalidAccountIdentifier", err)
 }
 
 // Block - Get a Block
@@ -292,38 +295,38 @@ func (s *Servicer) BlockTransaction(ctx context.Context, request *types.BlockTra
 		return nil, err
 	}
 
-	txHash := common.HexToHash(request.BlockIdentifier.Hash)
+	txHash := common.HexToHash(request.TransactionIdentifier.Hash)
 
 	var operations []*types.Operation
 	// Check If it's block transaction (imaginary transaction)
 	if s.chainParams.IsLastBlockOfEpoch(blockHeader.Number.Uint64()) && txHash == blockHeader.Hash() {
 		rewards, err := analyzer.ComputeEpochRewards(ctx, s.cc, s.db, &blockHeader.Header)
 		if err != nil {
-			return nil, NewCeloClientError("ComputeEpochRewards", err)
+			return nil, LogErrCeloClient("ComputeEpochRewards", err)
 		}
 		operations = OperationsFromAnalyzer(rewards, 0)
 	} else {
 		// Normal transaction
 
 		if !HeaderContainsTx(blockHeader, txHash) {
-			return nil, NewInternalError(ErrMissingTxInBlock)
+			return nil, LogErrInternal(ErrMissingTxInBlock, "blockNumber", blockHeader.Number, "txHash", txHash.Hex())
 		}
 
 		tx, _, err := s.cc.Eth.TransactionByHash(ctx, txHash)
 		if err != nil {
-			return nil, NewCeloClientError("TransactionByHash", err)
+			return nil, LogErrCeloClient("TransactionByHash", err)
 		}
 
 		receipt, err := s.cc.Eth.TransactionReceipt(ctx, tx.Hash())
 		if err != nil {
-			return nil, NewCeloClientError("TransactionReceipt", err)
+			return nil, LogErrCeloClient("TransactionReceipt", err)
 		}
 
 		tracer := analyzer.NewTracer(ctx, s.cc, s.db)
 
 		ops, err := tracer.TraceTransaction(&blockHeader.Header, tx, receipt)
 		if err != nil {
-			return nil, NewCeloClientError("TraceTransaction", err)
+			return nil, LogErrCeloClient("TraceTransaction", err)
 		}
 
 		for _, aop := range ops {
@@ -346,17 +349,17 @@ func (s *Servicer) getTxMetadata(ctx context.Context, address common.Address) (*
 
 	txMetadata.Nonce, err = s.cc.Eth.NonceAt(ctx, address, nil) // nil == latest
 	if err != nil {
-		return nil, NewCeloClientError("NonceAt", err)
+		return nil, LogErrCeloClient("NonceAt", err)
 	}
 
 	txMetadata.GatewayFeeRecipient, err = s.cc.Eth.Coinbase(ctx)
 	if err != nil {
-		return nil, NewCeloClientError("Coinbase", err)
+		return nil, LogErrCeloClient("Coinbase", err)
 	}
 
 	txMetadata.GasPrice, err = s.cc.Eth.SuggestGasPrice(ctx)
 	if err != nil {
-		return nil, NewCeloClientError("SuggestGasPrice", err)
+		return nil, LogErrCeloClient("SuggestGasPrice", err)
 	}
 
 	// TODO: consider fetching from node
@@ -418,7 +421,7 @@ func (s *Servicer) ConstructionMetadata(ctx context.Context, request *types.Cons
 func (s *Servicer) ConstructionSubmit(ctx context.Context, request *types.ConstructionSubmitRequest) (*types.ConstructionSubmitResponse, *types.Error) {
 	txhash, err := s.cc.Eth.SendRawTransaction(ctx, []byte(request.SignedTransaction))
 	if err != nil {
-		return nil, NewCeloClientError("SendRawTx", err)
+		return nil, LogErrCeloClient("SendRawTx", err)
 	}
 
 	response := types.ConstructionSubmitResponse{
@@ -435,11 +438,11 @@ func (s *Servicer) ConstructionSubmit(ctx context.Context, request *types.Constr
 
 func (s *Servicer) validateNetworkId(id *types.NetworkIdentifier) *types.Error {
 	if id.Blockchain != BlockchainName {
-		return NewValidationError(fmt.Errorf("Expected blockchain id %s to be %s", id.Blockchain, BlockchainName))
+		return LogErrValidation(fmt.Errorf("Expected blockchain id %s to be %s", id.Blockchain, BlockchainName))
 	}
 
 	if s.chainParams.ChainId.String() != id.Network {
-		return NewValidationError(fmt.Errorf("Expected network id %s to be %s", id.Network, s.chainParams.ChainId.String()))
+		return LogErrValidation(fmt.Errorf("Expected network id %s to be %s", id.Network, s.chainParams.ChainId.String()))
 	}
 
 	return nil
@@ -453,23 +456,23 @@ func (s *Servicer) blockHeader(ctx context.Context, blockIdentifier *types.Parti
 		hash := common.HexToHash(*blockIdentifier.Hash)
 		blockHeader, err = s.cc.Eth.HeaderAndTxnHashesByHash(ctx, hash)
 		if err != nil {
-			return nil, ErrCantFetchBlockHeader(err)
+			return nil, LogErrFetchBlockHeader(err)
 		}
 
 		// If both were specified check the result matches
 		if blockIdentifier.Index != nil && blockHeader.Number.Cmp(big.NewInt(*blockIdentifier.Index)) != 0 {
-			return nil, ErrCantFetchBlockHeader(ErrBadBlockIdentifier)
+			return nil, LogErrValidation(ErrBadBlockIdentifier)
 		}
 
 	} else if blockIdentifier.Index != nil {
 		blockHeader, err = s.cc.Eth.HeaderAndTxnHashesByNumber(ctx, big.NewInt(*blockIdentifier.Index))
 		if err != nil {
-			return nil, ErrCantFetchBlockHeader(err)
+			return nil, LogErrFetchBlockHeader(err)
 		}
 	} else {
 		blockHeader, err = s.cc.Eth.HeaderAndTxnHashesByNumber(ctx, nil)
 		if err != nil {
-			return nil, ErrCantFetchBlockHeader(err)
+			return nil, LogErrFetchBlockHeader(err)
 		}
 	}
 

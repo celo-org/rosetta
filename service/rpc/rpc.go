@@ -39,6 +39,9 @@ func NewRosettaServer(cc *client.CeloClient, db db.RosettaDBReader, cfg *Rosetta
 	mainHandler = createRouter(cc, db, chainParams)
 	mainHandler = requestLogHandler(mainHandler)
 	mainHandler = http.TimeoutHandler(mainHandler, cfg.RequestTimeout, "Request Timed out")
+	// mainHandler = handlers.RecoveryHandler(
+	// 	handlers.PrintRecoveryStack(true),
+	// )(mainHandler)
 
 	server := &http.Server{
 		Addr:         cfg.ListenAddress(),
@@ -87,6 +90,7 @@ func (rs *rosettaServer) Start(ctx context.Context) error {
 
 func requestLogHandler(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Info("RequestStarted", "method", r.Method, "uri", r.URL)
 		m := httpsnoop.CaptureMetrics(handler, w, r)
 		log.Info("RequestServed", "method", r.Method, "uri", r.URL, "code", m.Code, "duration", m.Duration, "bytes", m.Written)
 	})

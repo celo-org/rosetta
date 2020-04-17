@@ -2,51 +2,67 @@ package rpc
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/celo-org/rosetta/celo/client"
 	"github.com/coinbase/rosetta-sdk-go/types"
+	"github.com/ethereum/go-ethereum/log"
 )
 
-func newErrorResponse(code int32, err error, retriable bool) *types.Error {
+var logger = log.Root().New("srv", "rpc")
+
+func newErrorResponse(code int32, msg string, retriable bool) *types.Error {
 	return &types.Error{
 		Code:      code,
-		Message:   err.Error(),
+		Message:   msg,
 		Retriable: retriable,
 	}
 }
 
-func NewErrorResponse(code int32, err error) *types.Error {
-	return newErrorResponse(code, err, false)
+// [Caution]: all expected error responses must be enumerated in /network/options
+func NewErrorResponse(code int32, msg string) *types.Error {
+	return newErrorResponse(code, msg, false)
 }
 
-func NewRetriableErrorResponse(code int32, err error) *types.Error {
-	return newErrorResponse(code, err, true)
-}
-
-func NewValidationError(err error) *types.Error {
-	return NewErrorResponse(400, err)
-}
-
-func NewInternalError(err error) *types.Error {
-	return NewErrorResponse(500, err)
-}
-
-func NewCeloClientError(rpcEndpoint string, err error) *types.Error {
-	cause := client.WrapRpcError(err)
-	formattedErr := fmt.Errorf("rpc %s failed with %s", rpcEndpoint, cause.Error())
-	return NewErrorResponse(502, formattedErr)
-}
-
-func ErrUnimplementedEndpoint(rosettaEndpoint string) *types.Error {
-	return NewErrorResponse(404, fmt.Errorf("'%s' endpoint not implemented", rosettaEndpoint))
+// [Caution]: all expected error responses must be enumerated in /network/options
+func NewRetriableErrorResponse(code int32, msg string) *types.Error {
+	return newErrorResponse(code, msg, true)
 }
 
 var (
-	ErrBadBlockIdentifier = errors.New("Invalid Block Identifier")
-	ErrMissingTxInBlock   = errors.New("Transaction doesn't belong to block")
+	ErrValidation    = NewErrorResponse(400, "Request body invalid")
+	ErrUnimplemented = NewErrorResponse(405, "Unimplemented rosetta endpoint")
+	ErrInternal      = NewErrorResponse(500, "Internal server error")
+	ErrCeloClient    = NewErrorResponse(502, "Celo node rpc request failed")
 )
 
-func ErrCantFetchBlockHeader(cause error) *types.Error {
-	return NewCeloClientError("Can't fetch Block Header", cause)
+func LogErrValidation(err error) *types.Error {
+	logger.Error("ValidatorError", "err", err)
+	return ErrValidation
 }
+
+func LogErrUnimplemented(rosettaEndpoint string) *types.Error {
+	logger.Error("NotImplementedError", "endpoint", rosettaEndpoint)
+	return ErrUnimplemented
+}
+
+func LogErrInternal(err error, params ...interface{}) *types.Error {
+	params = append([]interface{}{"err", err}, params...)
+	logger.Error("InternalError", params...)
+	return ErrInternal
+}
+
+func LogErrCeloClient(rpcEndpoint string, err error) *types.Error {
+	cause := client.WrapRpcError(err)
+	logger.Error("CeloClientError", "endpoint", rpcEndpoint, "err", cause)
+	return ErrCeloClient
+}
+
+func LogErrFetchBlockHeader(err error) *types.Error {
+	return LogErrCeloClient("HeaderAndTxnHashesByNumber", err)
+}
+
+var (
+	ErrBadBlockIdentifier = errors.New("Bad block identifier")
+	ErrFetchBlockHeader   = errors.New("Failed to fetch block header")
+	ErrMissingTxInBlock   = errors.New("Transaction doesn't belong to block")
+)
