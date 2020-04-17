@@ -33,9 +33,7 @@ func main() {
 	}
 	_ = pubKey
 
-	accountIdentifier := client.NewAccountIdentifier(addr)
-
-	_ = accountIdentifier
+	_ = addr
 
 	// step 2: query rosetta for network/api information ONLINE
 	// ctx := context.Background()

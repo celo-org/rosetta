@@ -29,6 +29,16 @@ type RegistryWrapper struct {
 	contract *contract.Registry
 }
 
+type RegistryKey string
+
+var (
+	LockedGoldRegistryId RegistryKey = "LockedGold"
+	ElectionRegistryId   RegistryKey = "Election"
+	AccountsRegistryId   RegistryKey = "Accounts"
+)
+
+func (rk RegistryKey) String() string { return string(rk) }
+
 var (
 	ErrRegistryNotDeployed = errors.New("Registry Not Deployed")
 )
@@ -89,7 +99,7 @@ func (w *RegistryWrapper) GetAddressForString(opts *bind.CallOpts, identifier st
 }
 
 func (w *RegistryWrapper) GetLockedGold(opts *bind.CallOpts, backend bind.ContractBackend) (*contract.LockedGold, error) {
-	addr, err := w.GetAddressForString(opts, "LockedGold")
+	addr, err := w.GetAddressForString(opts, LockedGoldRegistryId.String())
 	if err != nil {
 		return nil, err
 	}
@@ -102,8 +112,22 @@ func (w *RegistryWrapper) GetLockedGold(opts *bind.CallOpts, backend bind.Contra
 	return lockedGold, nil
 }
 
+func (w *RegistryWrapper) GetAccounts(opts *bind.CallOpts, backend bind.ContractBackend) (*contract.Accounts, error) {
+	addr, err := w.GetAddressForString(opts, AccountsRegistryId.String())
+	if err != nil {
+		return nil, err
+	}
+
+	accounts, err := contract.NewAccounts(addr, backend)
+	if err != nil {
+		return nil, err
+	}
+
+	return accounts, nil
+}
+
 func (w *RegistryWrapper) GetElection(opts *bind.CallOpts, backend bind.ContractBackend) (*contract.Election, error) {
-	addr, err := w.GetAddressForString(opts, "Election")
+	addr, err := w.GetAddressForString(opts, ElectionRegistryId.String())
 	if err != nil {
 		return nil, err
 	}

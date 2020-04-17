@@ -22,6 +22,7 @@ import (
 	"github.com/celo-org/rosetta/analyzer"
 	"github.com/celo-org/rosetta/celo"
 	"github.com/celo-org/rosetta/celo/client"
+	"github.com/celo-org/rosetta/celo/transaction"
 	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/celo-org/rosetta/db"
 	"github.com/celo-org/rosetta/internal/utils"
@@ -348,74 +349,27 @@ func (s *Servicer) BlockTransaction(ctx context.Context, request *types.BlockTra
 	}, nil
 }
 
-func (s *Servicer) getTxMetadata(ctx context.Context, address common.Address) (*TransactionMetadata, *types.Error) {
-	var txMetadata TransactionMetadata
-	var err error
-
-	txMetadata.Nonce, err = s.cc.Eth.NonceAt(ctx, address, nil) // nil == latest
-	if err != nil {
-		return nil, LogErrCeloClient("NonceAt", err)
-	}
-
-	txMetadata.GatewayFeeRecipient, err = s.cc.Eth.Coinbase(ctx)
-	if err != nil {
-		return nil, LogErrCeloClient("Coinbase", err)
-	}
-
-	txMetadata.GasPrice, err = s.cc.Eth.SuggestGasPrice(ctx)
-	if err != nil {
-		return nil, LogErrCeloClient("SuggestGasPrice", err)
-	}
-
-	// TODO: consider fetching from node
-	txMetadata.GatewayFee = big.NewInt(0)
-
-	return &txMetadata, nil
-}
-
 func (s *Servicer) ConstructionMetadata(ctx context.Context, request *types.ConstructionMetadataRequest) (*types.ConstructionMetadataResponse, *types.Error) {
 
-	options := request.Options
-	account := fmt.Sprintf("%v", options["account"])
-	address := common.HexToAddress(account)
-
-	var metadata = make(map[string]interface{})
-
-	txMetadata, err := s.getTxMetadata(ctx, address)
-	if err != nil {
-		return nil, err
+	txOptions, errResp := s.validateTxConstructionOptions(request.Options)
+	if errResp != nil {
+		return nil, errResp
 	}
 
-	metadata["general"] = txMetadata
+	builder, err := transaction.NewTransactionBuilder(s.cc)
+	if err != nil {
+		return nil, LogErrInternal(fmt.Errorf("Failed to instantiate tx builder"))
+	}
 
-	// switch request.Method {
-	// case TransferMethod:
-	// 	balance, err := s.celoClient.Eth.BalanceAt(ctx, address, nil) // nil == latest
-	// 	if err != nil {
-	// 		return nil, WrapError("Transfer: BalanceAt", err)
-	// 	}
-
-	// 	msg := txMetadata.asMessage()
-	// 	msg.Value = balance
-	// 	msg.To = &DummyAddress
-	// 	gasLimit, err := s.celoClient.Eth.EstimateGas(ctx, *msg)
-	// 	if err != nil {
-	// 		return nil, WrapError("Transfer: EstimateGas", err)
-	// 	}
-
-	// 	txMetadata.GasLimit = gasLimit
-
-	// 	metadata[TransferMethod] = TransferMetadata{
-	// 		Balance: balance,
-	// 		Tx:      txMetadata,
-	// 	}
-
-	// default:
-	// 	return nil, WrapError("Unknown method", err)
-	// }
+	txMetadata, err := builder.FetchTransactionMetadata(ctx, txOptions)
+	if err != nil {
+		return nil, LogErrInternal(fmt.Errorf("Failed to fetch tx metadata"))
+	}
 
 	response := types.ConstructionMetadataResponse{
-		Metadata: metadata,
+		Metadata: map[string]interface{}{
+			"tx": txMetadata,
+		},
 	}
 	return &response, nil
 }
@@ -437,6 +391,87 @@ func (s *Servicer) ConstructionSubmit(ctx context.Context, request *types.Constr
 // ----------------------------------------------------------------------------------------
 // Private Functions
 // ----------------------------------------------------------------------------------------
+
+func getStringFromOptionsMap(options map[string]interface{}, key string) string {
+	option, present := options[key]
+	if !present {
+		return ""
+	}
+	str := fmt.Sprintf("%v", option)
+	return str
+}
+
+func (s *Servicer) validateTxConstructionOptions(options map[string]interface{}) (*transaction.TransactionOptions, *types.Error) {
+	from := getStringFromOptionsMap(options, OptionsFromKey)
+	if from == "" {
+		return nil, LogErrValidation(fmt.Errorf("No '%s' provided on tx construction options", OptionsFromKey))
+	}
+	fromAddress := common.HexToAddress(from)
+
+	to := getStringFromOptionsMap(options, OptionsToKey)
+	var toAddress common.Address
+	if to != "" {
+		toAddress = common.HexToAddress(to)
+	}
+
+	method := getStringFromOptionsMap(options, OptionsMethodKey)
+	var celoMethod *transaction.CeloMethod
+	if method != "" {
+		var found = false
+		for _, currMethod := range transaction.AllCeloMethods {
+			if method == currMethod.String() {
+				celoMethod = currMethod
+				found = true
+				break
+			}
+		}
+		if !found {
+			return nil, LogErrValidation(fmt.Errorf("Method '%s' not supported", method))
+		}
+	}
+
+	args, argsPresent := options[OptionsArgsKey]
+	var argsArray []interface{}
+	if argsPresent {
+		arr, ok := args.([]interface{})
+		if !ok {
+			return nil, LogErrValidation(fmt.Errorf("Args '%v' must be an array", args))
+		}
+		argsArray = arr
+	}
+
+	value, valuePresent := options[OptionsValueKey]
+	var valueBigInt *big.Int
+	if valuePresent {
+		intValue, ok := value.(int64)
+		if !ok {
+			return nil, LogErrValidation(fmt.Errorf("Value '%v' must be an int64", value))
+		}
+		valueBigInt = big.NewInt(intValue)
+	}
+
+	txOptions := transaction.TransactionOptions{
+		From:   fromAddress,
+		To:     &toAddress,
+		Value:  valueBigInt,
+		Method: celoMethod,
+		Args:   argsArray,
+	}
+
+	return &txOptions, nil
+}
+
+func (s *Servicer) validateNetworkId(id *types.NetworkIdentifier) *types.Error {
+	if id.Blockchain != BlockchainName {
+		return LogErrValidation(fmt.Errorf("Expected blockchain id %s to be %s", id.Blockchain, BlockchainName))
+	}
+
+	if s.chainParams.ChainId.String() != id.Network {
+		return LogErrValidation(fmt.Errorf("Expected network id %s to be %s", id.Network, s.chainParams.ChainId.String()))
+	}
+
+	return nil
+}
 
 func (s *Servicer) blockHeader(ctx context.Context, blockIdentifier *types.PartialBlockIdentifier) (*ethclient.HeaderAndTxnHashes, *types.Error) {
 	var err error
