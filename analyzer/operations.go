@@ -46,6 +46,7 @@ type OperationType string
 const (
 	OpFee                OperationType = "fee"
 	OpTransfer           OperationType = "transfer"
+	OpCreateAccount      OperationType = "createAccount"
 	OpLockGold           OperationType = "lockGold"
 	OpUnlockGold         OperationType = "unlockGold"
 	OpRelockGold         OperationType = "relockGold"
@@ -63,6 +64,7 @@ func (ot OperationType) String() string { return string(ot) }
 var AllOperationTypes = []OperationType{
 	OpFee,
 	OpTransfer,
+	OpCreateAccount,
 	OpLockGold,
 	OpUnlockGold,
 	OpRelockGold,

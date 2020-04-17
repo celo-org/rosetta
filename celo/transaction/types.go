@@ -19,7 +19,10 @@ import (
 
 	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/ethereum/go-ethereum/common"
+<<<<<<< HEAD
 	"github.com/ethereum/go-ethereum/core/types"
+=======
+>>>>>>> Generalize tx construction to support contract calls
 )
 
 type CeloMethod string
@@ -40,10 +43,29 @@ var (
 	// EpochRewards         TransactionType = "epochRewards"
 )
 
+<<<<<<< HEAD
 func (tt CeloMethod) String() string { return string(tt) }
 
 var (
 	CeloMethodToRegistryKey = map[*CeloMethod]*wrapper.RegistryKey{
+=======
+var AllCeloMethods = []*CeloMethod{
+	&CreateAccount,
+	&LockGold,
+	&UnlockGold,
+	&RelockGold,
+	&WithdrawGold,
+	&Vote,
+	&ActivateVotes,
+	&RevokeActiveVotes,
+	&RevokePendingVotes,
+}
+
+func (tt CeloMethod) String() string { return string(tt) }
+
+var (
+	CeloMethodToContract = map[*CeloMethod]*wrapper.RegistryKey{
+>>>>>>> Generalize tx construction to support contract calls
 		&CreateAccount:      &wrapper.AccountsRegistryId,
 		&LockGold:           &wrapper.LockedGoldRegistryId,
 		&UnlockGold:         &wrapper.LockedGoldRegistryId,
@@ -80,6 +102,7 @@ type TransactionMetadata struct {
 	Gas     uint64
 	Data    []byte
 }
+<<<<<<< HEAD
 
 func (tm *TransactionMetadata) AsTransaction() *types.Transaction {
 	return types.NewTransaction(
@@ -94,3 +117,5 @@ func (tm *TransactionMetadata) AsTransaction() *types.Transaction {
 		tm.Data,
 	)
 }
+=======
+>>>>>>> Generalize tx construction to support contract calls
