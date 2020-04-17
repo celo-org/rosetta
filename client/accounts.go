@@ -1,7 +1,7 @@
 package client
 
 import (
-	"math/big"
+	"errors"
 
 	"github.com/celo-org/rosetta/service/rpc"
 	"github.com/ethereum/go-ethereum/common"
@@ -9,22 +9,23 @@ import (
 )
 
 func ConstructCreateAccount(from *common.Address, metadata *rpc.TransactionMetadata) (*types.Transaction, error) {
-	args, err := metadata.ABIMethod.Inputs.Pack()
-	if err != nil {
-		return nil, err
-	}
+	return nil, errors.New("Not implemented yet")
+	// args, err := metadata.ABIMethod.Inputs.Pack()
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	data := append(metadata.ABIMethod.ID(), args...)
+	// data := append(metadata.ABIMethod.ID(), args...)
 
-	return types.NewTransaction(
-		metadata.Nonce,
-		*metadata.To,
-		big.NewInt(0),
-		metadata.GasLimit,
-		metadata.GasPrice,
-		nil, // guarantee cGLD
-		metadata.GatewayFeeRecipient,
-		metadata.GatewayFee,
-		data,
-	), nil
+	// return types.NewTransaction(
+	// 	metadata.Nonce,
+	// 	*metadata.To,
+	// 	big.NewInt(0),
+	// 	metadata.GasLimit,
+	// 	metadata.GasPrice,
+	// 	nil, // guarantee cGLD
+	// 	metadata.GatewayFeeRecipient,
+	// 	metadata.GatewayFee,
+	// 	data,
+	// ), nil
 }
