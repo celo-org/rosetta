@@ -23,70 +23,91 @@ func HeaderListener(ctx context.Context, headers chan<- *types.Header, cc *clien
 	newHeaders := make(chan *types.Header, 1000)
 	defer close(newHeaders)
 
-	syncMode := func(sub ethereum.Subscription) error {
-		logger.Info("Starting Sync Mode")
-		defer logger.Info("Ending Sync Mode")
-
-		for {
-			select {
-			case err := <-sub.Err():
-				return err
-			case <-ctx.Done():
-				return ctx.Err()
-			case h := <-newHeaders:
-				if err := sendToProcessor(ctx, headers, h); err != nil {
-					return err
-				}
-			}
-		}
-	}
-
-	catchUpMode := func() error {
-		lastBlock, err := lastNodeBlockNumber(ctx, cc)
-		if err != nil {
-			return err
-		}
-
-		if lastBlock.Cmp(startBlock) > 0 {
-			logger.Info("Starting Catch-Up Mode", "start", startBlock, "end", lastBlock)
-			if err = fetchHeaderRange(ctx, headers, cc, logger, startBlock, lastBlock); err != nil {
-				return err
-			}
-			logger.Info("Finished Catch-Up Mode", "start", startBlock, "end", lastBlock)
-		}
-		return nil
-	}
-
 	for {
-		sub, err := cc.Eth.SubscribeNewHead(ctx, newHeaders)
+		sub, err := catchUpWithNode(ctx, headers, newHeaders, cc, logger, startBlock)
 		if err != nil {
 			return err
 		}
 		defer sub.Unsubscribe()
 
-		if err := catchUpMode(); err != nil {
-			return err
-		}
-
-		if err := syncMode(sub); err != nil {
+		if err := keepUpWithNode(ctx, headers, newHeaders, cc, logger, startBlock, sub); err != nil {
 			if err == rpc.ErrSubscriptionQueueOverflow {
-				logger.Error("Subscription Queue Overflowed", "New headers in buffer", len(newHeaders))
-				if len(newHeaders) > 0 {
-					var h *types.Header
-					for h = range newHeaders {
-						if err := sendToProcessor(ctx, headers, h); err != nil {
-							return err
-						}
-					}
-					startBlock = new(big.Int).Add(h.Number, big.NewInt(1))
-				}
-				logger.Info("Restarting Listener In Catch Up Mode")
+				logger.Info("Restarting Header Listener")
+				sub.Unsubscribe()
 				continue
 			}
 			return err
 		}
 		return nil
 	}
+}
+
+func catchUpWithNode(ctx context.Context, headers, newHeaders chan<- *types.Header, cc *client.CeloClient, logger log.Logger, startBlock *big.Int) (ethereum.Subscription, error) {
+	// Start subscription right away so we don't miss any new headers.
+	sub, err := cc.Eth.SubscribeNewHead(ctx, newHeaders)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check which block the node is on.
+	lastBlock, err := lastNodeBlockNumber(ctx, cc)
+	if err != nil {
+		return nil, err
+	}
+
+	// If the node is ahead, catch-up with it.
+	if lastBlock.Cmp(startBlock) > 0 {
+		logger.Info("Catching Up...", "start", startBlock, "end", lastBlock)
+		if err = fetchHeaderRange(ctx, headers, cc, logger, startBlock, lastBlock); err != nil {
+			return nil, err
+		}
+		logger.Info("Finished Catching Up", "start", startBlock, "end", lastBlock)
+	} else {
+		logger.Info("Already Caught Up")
+	}
+
+	return sub, nil
+}
+
+func keepUpWithNode(ctx context.Context, headers chan<- *types.Header, newHeaders <-chan *types.Header, cc *client.CeloClient, logger log.Logger, startBlock *big.Int, sub ethereum.Subscription) error {
+	logger.Info("Listening For New Headers")
+	defer logger.Info("Stopped Listening For New Headers")
+	if len(newHeaders) > 0 {
+		logger.Debug("New Headers Were Produced And Buffered During Catch Up", "amount", len(newHeaders))
+	}
+
+	for {
+		select {
+		case err := <-sub.Err():
+			return handleSubscriptionOverflow(ctx, headers, newHeaders, logger, startBlock, err)
+		case <-ctx.Done():
+			return ctx.Err()
+		case h := <-newHeaders:
+			if h.Number.Int64()%1000 == 0 {
+				logger.Info("Fetched 1000 New Blocks", "block", h.Number)
+			}
+			if err := sendToProcessor(ctx, headers, h); err != nil {
+				return err
+			}
+		}
+	}
+}
+
+func handleSubscriptionOverflow(ctx context.Context, headers chan<- *types.Header, newHeaders <-chan *types.Header, logger log.Logger, startBlock *big.Int, _err error) error {
+	if _err == rpc.ErrSubscriptionQueueOverflow {
+		logger.Error("Subscription Queue Overflowed")
+		if len(newHeaders) > 0 {
+			logger.Info("Flushing Subscription Buffer", "length", len(newHeaders))
+			var h *types.Header
+			for h = range newHeaders {
+				if err := sendToProcessor(ctx, headers, h); err != nil {
+					return err
+				}
+			}
+			startBlock.Add(h.Number, big.NewInt(1))
+		}
+	}
+	return _err
 }
 
 func sendToProcessor(ctx context.Context, headers chan<- *types.Header, h *types.Header) error {
