@@ -85,6 +85,10 @@ rc0-env:
 	mkdir -p ./envs/rc0
 	curl 'https://storage.googleapis.com/genesis_blocks/rc0' > ./envs/rc0/genesis.json
 
+alfajores-env:
+	mkdir -p ./envs/alfajores
+	curl 'https://storage.googleapis.com/genesis_blocks/alfajores' > ./envs/alfajores/genesis.json
+
 docker-publish: docker-build
 	docker push us.gcr.io/celo-testnet/rosetta:$(COMMIT_SHA)
 

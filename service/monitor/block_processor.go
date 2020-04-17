@@ -2,6 +2,7 @@ package monitor
 
 import (
 	"context"
+	"errors"
 	"math/big"
 
 	"github.com/celo-org/rosetta/celo/client"
@@ -13,6 +14,8 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/log"
 )
+
+var ErrMultipleGasPriceMinimumUpdates = errors.New("Error multiple GasPriceMinimumUpdated events emmitted in same block")
 
 func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes chan<- *db.BlockChangeSet, cc *client.CeloClient, db_ db.RosettaDBReader, logger log.Logger) error {
 	logger = logger.New("pipe", "processor")
@@ -54,7 +57,7 @@ func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes c
 			End:     &blockNumber,
 			Start:   blockNumber,
 			Context: ctx,
-		}, nil)
+		}, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -71,25 +74,47 @@ func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes c
 			})
 			logger.Info("Core Contract Address Changed", "name", iter.Event.Identifier, "newAddress", iter.Event.Addr.Hex(), "txIndex", iter.Event.Raw.TxIndex)
 		}
-		if err != nil {
+		if err := iter.Error(); err != nil {
 			return err
 		}
 
 		bcs.RegistryChanges = registryChanges
 
 		if gpmAddress != common.ZeroAddress {
-			gpmNew, err := getGasPriceMinimumFromEthCall(ctx, cc, gpmAddress, h.Number)
+			gpmContract, err := contract.NewGasPriceMinimum(gpmAddress, cc.Eth)
 			if err != nil {
 				return err
 			}
-			// We only add GasPriceMinimum to bcs if there's a change.
-			if gpm.Cmp(gpmNew) != 0 {
-				bcs.GasPriceMinimum = gpmNew
-			}
-			gpm = gpmNew
-		}
 
-		// TODO(Alec): add rc1 implementation (leave commented for now)
+			iter, err := gpmContract.FilterGasPriceMinimumUpdated(&bind.FilterOpts{
+				End:     &blockNumber,
+				Start:   blockNumber,
+				Context: ctx,
+			})
+			if err != nil {
+				return err
+			}
+
+			// iter should only have 1 event, as gpm can only be updated once per block.
+			for multipleUpdates := false; iter.Next(); {
+				if multipleUpdates {
+					return ErrMultipleGasPriceMinimumUpdates
+				}
+				gpmNew := iter.Event.GasPriceMinimum
+
+				// We only add GasPriceMinimum to bcs if there's a change.
+				if gpm.Cmp(gpmNew) != 0 {
+					logger.Info("Gas Price Minimum Updated", "from", gpm, "to", gpmNew, "block", h.Number)
+					gpm = gpmNew
+					bcs.GasPriceMinimum = gpm
+				}
+				multipleUpdates = true
+			}
+
+			if err := iter.Error(); err != nil {
+				return err
+			}
+		}
 
 		select {
 		case <-ctx.Done():

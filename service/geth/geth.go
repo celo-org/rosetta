@@ -179,7 +179,8 @@ func (gs *gethService) startGeth() error {
 		return err
 	}
 
-	defer f.Close()
+	// TODO: fixt this
+	// defer f.Close()
 
 	cmd := gs.gethCmd(gethArgs...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
