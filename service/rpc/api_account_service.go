@@ -43,7 +43,7 @@ func (s *AccountApiService) AccountBalance(ctx context.Context, accountBalanceRe
 
 	latestHeader, err := s.celoClient.Eth.HeaderByNumber(ctx, nil) // nil == latest
 	if err != nil {
-		return nil, NewCeloClientError("HeaderByNumber", err)
+		return nil, LogErrCeloClient("HeaderByNumber", err)
 	}
 	latestBlockOpts := &bind.CallOpts{
 		BlockNumber: latestHeader.Number,
@@ -66,7 +66,7 @@ func (s *AccountApiService) AccountBalance(ctx context.Context, accountBalanceRe
 		// Main Account, just cGLD
 		goldAmt, err := s.celoClient.Eth.BalanceAt(ctx, accountAddr, latestHeader.Number)
 		if err != nil {
-			return nil, NewCeloClientError("BalanceAt", err)
+			return nil, LogErrCeloClient("BalanceAt", err)
 		}
 		return createReponse(NewAmount(goldAmt, CeloGold)), nil
 	}
@@ -76,7 +76,7 @@ func (s *AccountApiService) AccountBalance(ctx context.Context, accountBalanceRe
 		// Nothing is deployed => ignore lockedGold & election balances
 		return emptyResponse, nil
 	} else if err != nil {
-		return nil, NewCeloClientError("NewRegistry", err)
+		return nil, LogErrCeloClient("NewRegistry", err)
 	}
 
 	if subAccount.Address == string(analyzer.AccLockedGoldNonVoting) {
@@ -86,12 +86,12 @@ func (s *AccountApiService) AccountBalance(ctx context.Context, accountBalanceRe
 			// Nothing is deployed => ignore lockedGold & election balances
 			return emptyResponse, nil
 		} else if err != nil {
-			return nil, NewCeloClientError("NewLockedGold", err)
+			return nil, LogErrCeloClient("NewLockedGold", err)
 		}
 
 		nonVotingLockedGold, err := lockedGoldWrapper.GetAccountNonvotingLockedGold(latestBlockOpts, accountAddr)
 		if err != nil {
-			return nil, NewCeloClientError("GetAccountNonvotingLockedGold", err)
+			return nil, LogErrCeloClient("GetAccountNonvotingLockedGold", err)
 		}
 
 		return createReponse(NewAmount(nonVotingLockedGold, CeloGold)), nil
@@ -104,12 +104,12 @@ func (s *AccountApiService) AccountBalance(ctx context.Context, accountBalanceRe
 			// Nothing is deployed => ignore lockedGold & election balances
 			return emptyResponse, nil
 		} else if err != nil {
-			return nil, NewCeloClientError("NewLockedGold", err)
+			return nil, LogErrCeloClient("NewLockedGold", err)
 		}
 
 		totalPending, err := lockedGoldWrapper.GetTotalPendingWithdrawals(latestBlockOpts, accountAddr)
 		if err != nil {
-			return nil, NewCeloClientError("GetTotalPendingWithdrawals", err)
+			return nil, LogErrCeloClient("GetTotalPendingWithdrawals", err)
 		}
 
 		return createReponse(NewAmount(totalPending, CeloGold)), nil
@@ -123,14 +123,14 @@ func (s *AccountApiService) AccountBalance(ctx context.Context, accountBalanceRe
 		// Nothing is deployed => ignore lockedGold & election balances
 		return emptyResponse, nil
 	} else if err != nil {
-		return nil, NewCeloClientError("NewElection", err)
+		return nil, LogErrCeloClient("NewElection", err)
 	}
 
 	// For now we only support "pending" votes
 
 	electionVotes, err := electionWrapper.GetAccountElectionVotes(latestBlockOpts, accountAddr)
 	if err != nil {
-		return nil, NewCeloClientError("GetAccountElectionVotes", err)
+		return nil, LogErrCeloClient("GetAccountElectionVotes", err)
 	}
 
 	if subAccount.Metadata != nil {
@@ -162,5 +162,5 @@ func (s *AccountApiService) AccountBalance(ctx context.Context, accountBalanceRe
 	// 	balances = append(balances, *NewCeloGoldBalance(account, pendingAmt))
 	// }
 
-	return nil, NewCeloClientError("InvalidAccountIdentifier", err)
+	return nil, LogErrCeloClient("InvalidAccountIdentifier", err)
 }

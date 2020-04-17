@@ -51,8 +51,11 @@ func (s *NetworkApiService) NetworkOptions(ctx context.Context, networkRequest *
 				OperationSuccess.ToOperationStatus(),
 			},
 			OperationTypes: analyzer.AllOperationTypesString(),
-			Errors:         []*types.Error{
-				// TODO: fill
+			Errors: []*types.Error{
+				ErrValidation,
+				ErrUnimplemented,
+				ErrInternal,
+				ErrCeloClient,
 			},
 		},
 	}
@@ -65,17 +68,17 @@ func (s *NetworkApiService) NetworkStatus(ctx context.Context, networkStatusRequ
 
 	latestHeader, err := s.celoClient.Eth.HeaderByNumber(ctx, nil) // nil == latest
 	if err != nil {
-		return nil, NewCeloClientError("HeaderByNumber", err)
+		return nil, LogErrCeloClient("HeaderByNumber", err)
 	}
 
 	genesisHeader, err := s.celoClient.Eth.HeaderByNumber(ctx, big.NewInt(0)) // 0 == genesis
 	if err != nil {
-		return nil, NewCeloClientError("HeaderByNumber", err)
+		return nil, LogErrCeloClient("HeaderByNumber", err)
 	}
 
 	peersInfo, err := s.celoClient.Admin.Peers(ctx)
 	if err != nil {
-		return nil, NewCeloClientError("AdminPeers", err)
+		return nil, LogErrCeloClient("AdminPeers", err)
 	}
 
 	response := types.NetworkStatusResponse{

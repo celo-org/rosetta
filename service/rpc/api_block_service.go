@@ -40,23 +40,23 @@ func (b *BlockApiService) BlockHeader(ctx context.Context, blockIdentifier *type
 		hash := common.HexToHash(*blockIdentifier.Hash)
 		blockHeader, err = b.celoClient.Eth.HeaderAndTxnHashesByHash(ctx, hash)
 		if err != nil {
-			return nil, ErrCantFetchBlockHeader(err)
+			return nil, LogErrFetchBlockHeader(err)
 		}
 
 		// If both were specified check the result matches
 		if blockIdentifier.Index != nil && blockHeader.Number.Cmp(big.NewInt(*blockIdentifier.Index)) != 0 {
-			return nil, ErrCantFetchBlockHeader(ErrBadBlockIdentifier)
+			return nil, LogErrValidation(ErrBadBlockIdentifier)
 		}
 
 	} else if blockIdentifier.Index != nil {
 		blockHeader, err = b.celoClient.Eth.HeaderAndTxnHashesByNumber(ctx, big.NewInt(*blockIdentifier.Index))
 		if err != nil {
-			return nil, ErrCantFetchBlockHeader(err)
+			return nil, LogErrFetchBlockHeader(err)
 		}
 	} else {
 		blockHeader, err = b.celoClient.Eth.HeaderAndTxnHashesByNumber(ctx, nil)
 		if err != nil {
-			return nil, ErrCantFetchBlockHeader(err)
+			return nil, LogErrFetchBlockHeader(err)
 		}
 	}
 
@@ -115,31 +115,31 @@ func (s *BlockApiService) BlockTransaction(ctx context.Context, blockTransaction
 	if s.chainParams.IsLastBlockOfEpoch(blockHeader.Number.Uint64()) && txHash == blockHeader.Hash() {
 		rewards, err := analyzer.ComputeEpochRewards(ctx, s.celoClient, s.db, &blockHeader.Header)
 		if err != nil {
-			return nil, NewCeloClientError("ComputeEpochRewards", err)
+			return nil, LogErrCeloClient("ComputeEpochRewards", err)
 		}
 		operations = OperationsFromAnalyzer(rewards, 0)
 	} else {
 		// Normal transaction
 
 		if !HeaderContainsTx(blockHeader, txHash) {
-			return nil, NewInternalError(ErrMissingTxInBlock)
+			return nil, LogErrInternal(ErrMissingTxInBlock)
 		}
 
 		tx, _, err := s.celoClient.Eth.TransactionByHash(ctx, txHash)
 		if err != nil {
-			return nil, NewCeloClientError("TransactionByHash", err)
+			return nil, LogErrCeloClient("TransactionByHash", err)
 		}
 
 		receipt, err := s.celoClient.Eth.TransactionReceipt(ctx, tx.Hash())
 		if err != nil {
-			return nil, NewCeloClientError("TransactionReceipt", err)
+			return nil, LogErrCeloClient("TransactionReceipt", err)
 		}
 
 		tracer := analyzer.NewTracer(ctx, s.celoClient, s.db)
 
 		ops, err := tracer.TraceTransaction(&blockHeader.Header, tx, receipt)
 		if err != nil {
-			return nil, NewCeloClientError("TraceTransaction", err)
+			return nil, LogErrCeloClient("TraceTransaction", err)
 		}
 
 		for _, aop := range ops {

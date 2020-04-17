@@ -35,7 +35,7 @@ func (m *MempoolApiService) Mempool(ctx context.Context, mempoolRequest *types.M
 
 	content, err := m.celoClient.TxPool.Content(ctx)
 	if err != nil {
-		return nil, NewCeloClientError("TxPoolContent", err)
+		return nil, LogErrCeloClient("TxPoolContent", err)
 	}
 
 	allTransactionIds := append(TxIdsFromTxAccountMap((*content)["pending"]), TxIdsFromTxAccountMap((*content)["queued"])...)
@@ -48,5 +48,5 @@ func (m *MempoolApiService) Mempool(ctx context.Context, mempoolRequest *types.M
 
 // MempoolTransaction - Get a Mempool Transaction
 func (m *MempoolApiService) MempoolTransaction(ctx context.Context, mempoolTransactionRequest *types.MempoolTransactionRequest) (*types.MempoolTransactionResponse, *types.Error) {
-	return nil, ErrUnimplementedEndpoint("/mempool/transaction")
+	return nil, LogErrUnimplemented("/mempool/transaction")
 }

@@ -34,17 +34,17 @@ func (s *ConstructionApiService) getTxMetadata(ctx context.Context, address comm
 
 	txMetadata.Nonce, err = s.celoClient.Eth.NonceAt(ctx, address, nil) // nil == latest
 	if err != nil {
-		return nil, NewCeloClientError("NonceAt", err)
+		return nil, LogErrCeloClient("NonceAt", err)
 	}
 
 	txMetadata.GatewayFeeRecipient, err = s.celoClient.Eth.Coinbase(ctx)
 	if err != nil {
-		return nil, NewCeloClientError("Coinbase", err)
+		return nil, LogErrCeloClient("Coinbase", err)
 	}
 
 	txMetadata.GasPrice, err = s.celoClient.Eth.SuggestGasPrice(ctx)
 	if err != nil {
-		return nil, NewCeloClientError("SuggestGasPrice", err)
+		return nil, LogErrCeloClient("SuggestGasPrice", err)
 	}
 
 	// TODO: consider fetching from node
@@ -107,7 +107,7 @@ func (s *ConstructionApiService) ConstructionMetadata(ctx context.Context, txCon
 func (s *ConstructionApiService) ConstructionSubmit(ctx context.Context, constructionSubmitRequest *types.ConstructionSubmitRequest) (*types.ConstructionSubmitResponse, *types.Error) {
 	txhash, err := s.celoClient.Eth.SendRawTransaction(ctx, []byte(constructionSubmitRequest.SignedTransaction))
 	if err != nil {
-		return nil, NewCeloClientError("SendRawTx", err)
+		return nil, LogErrCeloClient("SendRawTx", err)
 	}
 
 	response := types.ConstructionSubmitResponse{
