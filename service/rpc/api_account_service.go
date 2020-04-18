@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 
 	"github.com/celo-org/rosetta/analyzer"
@@ -13,6 +14,7 @@ import (
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	gethTypes "github.com/ethereum/go-ethereum/core/types"
 )
 
 // AccountApiService is a service that implents the logic for the AccountApiServicer
@@ -41,21 +43,34 @@ func (s *AccountApiService) AccountBalance(ctx context.Context, accountBalanceRe
 
 	accountAddr := common.HexToAddress(accountBalanceRequest.AccountIdentifier.Address)
 
-	latestHeader, err := s.celoClient.Eth.HeaderByNumber(ctx, nil) // nil == latest
-	if err != nil {
-		return nil, NewCeloClientError("HeaderByNumber", err)
+	var requestedHeader *gethTypes.Header
+	var err error
+	blockIdx := accountBalanceRequest.BlockIdentifier.Index
+	if blockIdx != nil {
+		blockNumber := big.NewInt(*blockIdx)
+		requestedHeader, err = s.celoClient.Eth.HeaderByNumber(ctx, blockNumber)
+	} else {
+		blockHash := accountBalanceRequest.BlockIdentifier.Hash
+		if blockHash == nil {
+			return nil, NewValidationError(fmt.Errorf("No block hash or index provided"))
+		}
+		requestedHeader, err = s.celoClient.Eth.HeaderByHash(ctx, common.HexToHash(*blockHash))
 	}
-	latestBlockOpts := &bind.CallOpts{
-		BlockNumber: latestHeader.Number,
+	if err != nil {
+		return nil, ErrCantFetchBlockHeader(fmt.Errorf("Not found"))
+	}
+
+	requestedBlockOpts := &bind.CallOpts{
+		BlockNumber: requestedHeader.Number,
 		Context:     ctx,
 	}
 
 	emptyResponse := &types.AccountBalanceResponse{
-		BlockIdentifier: HeaderToBlockIdentifier(latestHeader),
+		BlockIdentifier: HeaderToBlockIdentifier(requestedHeader),
 	}
 	createReponse := func(amount *types.Amount) *types.AccountBalanceResponse {
 		return &types.AccountBalanceResponse{
-			BlockIdentifier: HeaderToBlockIdentifier(latestHeader),
+			BlockIdentifier: HeaderToBlockIdentifier(requestedHeader),
 			Balances:        []*types.Amount{amount},
 		}
 	}
@@ -64,7 +79,7 @@ func (s *AccountApiService) AccountBalance(ctx context.Context, accountBalanceRe
 
 	if subAccount == nil {
 		// Main Account, just cGLD
-		goldAmt, err := s.celoClient.Eth.BalanceAt(ctx, accountAddr, latestHeader.Number)
+		goldAmt, err := s.celoClient.Eth.BalanceAt(ctx, accountAddr, requestedHeader.Number)
 		if err != nil {
 			return nil, NewCeloClientError("BalanceAt", err)
 		}
@@ -89,7 +104,7 @@ func (s *AccountApiService) AccountBalance(ctx context.Context, accountBalanceRe
 			return nil, NewCeloClientError("NewLockedGold", err)
 		}
 
-		nonVotingLockedGold, err := lockedGoldWrapper.GetAccountNonvotingLockedGold(latestBlockOpts, accountAddr)
+		nonVotingLockedGold, err := lockedGoldWrapper.GetAccountNonvotingLockedGold(requestedBlockOpts, accountAddr)
 		if err != nil {
 			return nil, NewCeloClientError("GetAccountNonvotingLockedGold", err)
 		}
@@ -107,7 +122,7 @@ func (s *AccountApiService) AccountBalance(ctx context.Context, accountBalanceRe
 			return nil, NewCeloClientError("NewLockedGold", err)
 		}
 
-		totalPending, err := lockedGoldWrapper.GetTotalPendingWithdrawals(latestBlockOpts, accountAddr)
+		totalPending, err := lockedGoldWrapper.GetTotalPendingWithdrawals(requestedBlockOpts, accountAddr)
 		if err != nil {
 			return nil, NewCeloClientError("GetTotalPendingWithdrawals", err)
 		}
@@ -128,7 +143,7 @@ func (s *AccountApiService) AccountBalance(ctx context.Context, accountBalanceRe
 
 	// For now we only support "pending" votes
 
-	electionVotes, err := electionWrapper.GetAccountElectionVotes(latestBlockOpts, accountAddr)
+	electionVotes, err := electionWrapper.GetAccountElectionVotes(requestedBlockOpts, accountAddr)
 	if err != nil {
 		return nil, NewCeloClientError("GetAccountElectionVotes", err)
 	}

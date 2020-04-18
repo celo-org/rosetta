@@ -50,6 +50,13 @@ func FullToPartialBlockIdentifier(blockIdentifer *rosettaTypes.BlockIdentifier) 
 	}
 }
 
+func PartialToFullBlockIdentifier(blockIdentifer *rosettaTypes.PartialBlockIdentifier) *rosettaTypes.BlockIdentifier {
+	return &rosettaTypes.BlockIdentifier{
+		Index: *blockIdentifer.Index,
+		Hash:  *blockIdentifer.Hash,
+	}
+}
+
 func HeaderToBlockIdentifier(header *gethTypes.Header) *rosettaTypes.BlockIdentifier {
 	return &rosettaTypes.BlockIdentifier{
 		Hash:  header.Hash().Hex(),
