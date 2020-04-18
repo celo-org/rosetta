@@ -93,21 +93,13 @@ func requestLogHandler(handler http.Handler) http.Handler {
 }
 
 func createRouter(celoClient *client.CeloClient, db db.RosettaDBReader, chainParams *celo.ChainParameters) http.Handler {
+	servicer := NewServicer(celoClient, db, chainParams)
 
-	AccountApiService := NewAccountApiService(celoClient, chainParams)
-	AccountApiController := server.NewAccountAPIController(AccountApiService)
-
-	BlockApiService := NewBlockApiService(celoClient, db, chainParams)
-	BlockApiController := server.NewBlockAPIController(BlockApiService)
-
-	ConstructionApiService := NewConstructionApiService(celoClient, chainParams)
-	ConstructionApiController := server.NewConstructionAPIController(ConstructionApiService)
-
-	MempoolApiService := NewMempoolApiService(celoClient, chainParams)
-	MempoolApiController := server.NewMempoolAPIController(MempoolApiService)
-
-	NetworkApiService := NewNetworkApiService(celoClient, chainParams)
-	NetworkApiController := server.NewNetworkAPIController(NetworkApiService)
+	AccountApiController := server.NewAccountAPIController(servicer)
+	BlockApiController := server.NewBlockAPIController(servicer)
+	ConstructionApiController := server.NewConstructionAPIController(servicer)
+	MempoolApiController := server.NewMempoolAPIController(servicer)
+	NetworkApiController := server.NewNetworkAPIController(servicer)
 
 	router := server.NewRouter(AccountApiController, BlockApiController, ConstructionApiController, MempoolApiController, NetworkApiController)
 	return router

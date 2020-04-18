@@ -41,6 +41,7 @@ type ServiceManager struct {
 }
 
 func NewServiceManager(ctx context.Context) *ServiceManager {
+
 	ctx, stopAll := context.WithCancel(ctx)
 	return &ServiceManager{
 		ctx:     ctx,
