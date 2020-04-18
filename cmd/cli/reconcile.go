@@ -46,6 +46,7 @@ func init() {
 }
 
 func runReconciler(cmd *cobra.Command, args []string) {
+	logger := log.New()
 	ctx := context.Background()
 
 	fetcher, network, _ := getFetcher()
@@ -56,14 +57,14 @@ func runReconciler(cmd *cobra.Command, args []string) {
 		utils.ExitOnError(err)
 		blocks = []*types.Block{block}
 	} else {
-		blocks = make([]*types.Block, toBlockNum-fromBlockNum+1)
-		for i := fromBlockNum; i <= toBlockNum; i++ {
-			curr := &types.PartialBlockIdentifier{Index: &i}
-			currBlock, err := fetcher.BlockRetry(ctx, network, curr)
-			utils.ExitOnError(err)
-			blocks[i-fromBlockNum] = currBlock
-		}
+		logger.Info("Fetching block range (might take a while)", "from", fromBlockNum, "to", toBlockNum)
+		blockMap, err := fetcher.BlockRange(ctx, network, fromBlockNum, toBlockNum)
+		utils.ExitOnError(err)
 
+		blocks = make([]*types.Block, toBlockNum-fromBlockNum+1)
+		for num, block := range blockMap {
+			blocks[num-fromBlockNum] = block.Block
+		}
 	}
 
 	getBalance := func(acc *types.AccountIdentifier, block *types.BlockIdentifier) (*big.Int, error) {
@@ -81,10 +82,17 @@ func runReconciler(cmd *cobra.Command, args []string) {
 		return val, nil
 	}
 
-	checkDifferences := func(changes *AccountBalanceSet, from, to *types.BlockIdentifier) {
+	reconcileRange(blocks, getBalance)
+
+}
+
+func reconcileRange(blocks []*types.Block, getBalance func(acc *types.AccountIdentifier, block *types.BlockIdentifier) (*big.Int, error)) {
+	logger := log.New()
+
+	checkDifferences := func(logger log.Logger, changes *AccountBalanceSet, from, to *types.BlockIdentifier) {
 		accountsChanged := changes.Accounts()
 		if len(accountsChanged) == 0 {
-			log.Debug("No balance changes, skipping..")
+			logger.Debug("No balance changes, skipping..")
 			return
 		}
 
@@ -101,15 +109,16 @@ func runReconciler(cmd *cobra.Command, args []string) {
 
 			ok := diff.Cmp(changes.Get(acc)) == 0
 			if !ok {
-				fmt.Fprintf(w, "%v\t%s\t%s\n", acc, diff, changes.Get(acc))
+				logger.Error("Balance Difference", "acc", fmt.Sprintf("%v", acc), "realchange", diff, "computed", changes.Get(acc))
 			}
 		}
 		w.Flush()
 	}
 
+	logger.Info("Processing balances")
 	rangeChanges := NewAccountBalanceSet()
 	for _, block := range blocks {
-		log.Info("Processing block", "block", block.BlockIdentifier.Index)
+		blockLogger := logger.New("block", block.BlockIdentifier.Index)
 
 		blockChanges := NewAccountBalanceSet()
 
@@ -126,10 +135,11 @@ func runReconciler(cmd *cobra.Command, args []string) {
 			}
 		}
 
-		checkDifferences(blockChanges, block.ParentBlockIdentifier, block.BlockIdentifier)
+		checkDifferences(blockLogger, blockChanges, block.ParentBlockIdentifier, block.BlockIdentifier)
 	}
 
-	checkDifferences(rangeChanges, blocks[0].ParentBlockIdentifier, blocks[len(blocks)-1].BlockIdentifier)
+	logger.Info("Range differences")
+	checkDifferences(logger, rangeChanges, blocks[0].ParentBlockIdentifier, blocks[len(blocks)-1].BlockIdentifier)
 
 }
 
