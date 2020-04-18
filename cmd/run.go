@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/celo-org/rosetta/celo/client"
+	"github.com/celo-org/rosetta/cmd/internal/utils"
 	"github.com/celo-org/rosetta/db"
 	"github.com/celo-org/rosetta/internal/fileutils"
 	"github.com/celo-org/rosetta/internal/signals"
@@ -50,14 +51,14 @@ var gethBinary string
 var staticNodes []string
 
 func init() {
-	rootCmd.AddCommand(serveCmd)
+	RootCmd.AddCommand(serveCmd)
 
 	flagSet := serveCmd.Flags()
 
 	// Common Flags
 	flagSet.String("datadir", "", "datadir to use")
-	exitOnError(viper.BindPFlag("datadir", flagSet.Lookup("datadir")))
-	exitOnError(serveCmd.MarkFlagDirname("datadir"))
+	utils.ExitOnError(viper.BindPFlag("datadir", flagSet.Lookup("datadir")))
+	utils.ExitOnError(serveCmd.MarkFlagDirname("datadir"))
 
 	// RPC Service Flags
 	flagSet.UintVar(&rosettaRpcConfig.Port, "port", 8080, "Listening port for http server")
@@ -66,15 +67,15 @@ func init() {
 
 	// Geth Service Flags
 	flagSet.String("geth", "", "Path to the celo-blockchain binary")
-	exitOnError(viper.BindPFlag("geth", flagSet.Lookup("geth")))
-	exitOnError(serveCmd.MarkFlagFilename("geth"))
+	utils.ExitOnError(viper.BindPFlag("geth", flagSet.Lookup("geth")))
+	utils.ExitOnError(serveCmd.MarkFlagFilename("geth"))
 
 	flagSet.String("genesis", "", "path to the genesis.json")
-	exitOnError(viper.BindPFlag("genesis", flagSet.Lookup("genesis")))
-	exitOnError(serveCmd.MarkFlagFilename("genesis", "json"))
+	utils.ExitOnError(viper.BindPFlag("genesis", flagSet.Lookup("genesis")))
+	utils.ExitOnError(serveCmd.MarkFlagFilename("genesis", "json"))
 
 	flagSet.StringArrayVar(&staticNodes, "staticNode", []string{}, "StaticNode to use (can be repeated many times")
-	exitOnError(serveCmd.MarkFlagRequired("staticNode"))
+	utils.ExitOnError(serveCmd.MarkFlagRequired("staticNode"))
 
 	// Monitor Service Flags
 
