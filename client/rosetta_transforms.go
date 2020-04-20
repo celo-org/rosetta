@@ -19,6 +19,7 @@ import (
 
 	"github.com/celo-org/rosetta/analyzer"
 	"github.com/celo-org/rosetta/celo/transaction"
+	"github.com/celo-org/rosetta/service/rpc"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	rosettaTypes "github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -26,6 +27,30 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
 )
+
+func SerializeTransactionOptions(txOptions *transaction.TransactionOptions) map[string]interface{} {
+	return map[string]interface{}{
+		rpc.OptionsFromKey:   txOptions.From,
+		rpc.OptionsToKey:     txOptions.To,
+		rpc.OptionsValueKey:  txOptions.Value,
+		rpc.OptionsMethodKey: txOptions.Args,
+		rpc.OptionsArgsKey:   txOptions.Args,
+	}
+}
+
+func ConstructTxFromMetadata(txMetadata *transaction.TransactionMetadata) *gethTypes.Transaction {
+	return gethTypes.NewTransaction(
+		txMetadata.Generic.Nonce,
+		*txMetadata.To,
+		txMetadata.Value,
+		txMetadata.Gas,
+		txMetadata.Generic.GasPrice,
+		nil, // non-cGLD fees not supported
+		txMetadata.Generic.GatewayFeeRecipient,
+		txMetadata.Generic.GatewayFee,
+		txMetadata.Data,
+	)
+}
 
 func EncodeTransaction(transaction *gethTypes.Transaction) (string, error) {
 	bytes, err := rlp.EncodeToBytes(transaction)

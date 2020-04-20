@@ -19,10 +19,6 @@ import (
 
 	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/ethereum/go-ethereum/common"
-<<<<<<< HEAD
-	"github.com/ethereum/go-ethereum/core/types"
-=======
->>>>>>> Generalize tx construction to support contract calls
 )
 
 type CeloMethod string
@@ -43,12 +39,6 @@ var (
 	// EpochRewards         TransactionType = "epochRewards"
 )
 
-<<<<<<< HEAD
-func (tt CeloMethod) String() string { return string(tt) }
-
-var (
-	CeloMethodToRegistryKey = map[*CeloMethod]*wrapper.RegistryKey{
-=======
 var AllCeloMethods = []*CeloMethod{
 	&CreateAccount,
 	&LockGold,
@@ -65,7 +55,6 @@ func (tt CeloMethod) String() string { return string(tt) }
 
 var (
 	CeloMethodToContract = map[*CeloMethod]*wrapper.RegistryKey{
->>>>>>> Generalize tx construction to support contract calls
 		&CreateAccount:      &wrapper.AccountsRegistryId,
 		&LockGold:           &wrapper.LockedGoldRegistryId,
 		&UnlockGold:         &wrapper.LockedGoldRegistryId,
@@ -79,7 +68,7 @@ var (
 )
 
 type TransactionOptions struct {
-	From   common.Address
+	From   *common.Address
 	To     *common.Address // non-nil means exclusively cGLD transfer
 	Value  *big.Int
 	Method *CeloMethod // non-nil means celo registry contract invokation
@@ -88,9 +77,9 @@ type TransactionOptions struct {
 
 // [note]: non cGLD fee currencies currently unsupported
 type GenericMetadata struct {
-	From                common.Address
-	Nonce               uint64          `json:"nonce"   `
-	GasPrice            *big.Int        `json:"gasPrice"`
+	From                *common.Address
+	Nonce               uint64          `json:"nonce"    `
+	GasPrice            *big.Int        `json:"gasPrice" `
 	GatewayFeeRecipient *common.Address `json:"gatewayFeeRecipient" rlp:"nil"` // nil means no gateway fee is paid
 	GatewayFee          *big.Int        `json:"gatewayFee" rlp:"nil"`          // nil means no gateway fee is paid
 }
@@ -102,20 +91,3 @@ type TransactionMetadata struct {
 	Gas     uint64
 	Data    []byte
 }
-<<<<<<< HEAD
-
-func (tm *TransactionMetadata) AsTransaction() *types.Transaction {
-	return types.NewTransaction(
-		tm.Generic.Nonce,
-		*tm.To,
-		tm.Value,
-		tm.Gas,
-		tm.Generic.GasPrice,
-		nil, // non-cGLD fees not supported
-		tm.Generic.GatewayFeeRecipient,
-		tm.Generic.GatewayFee,
-		tm.Data,
-	)
-}
-=======
->>>>>>> Generalize tx construction to support contract calls
