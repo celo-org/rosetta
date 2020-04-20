@@ -17,6 +17,7 @@ package cli
 
 import (
 	"context"
+	"crypto/sha256"
 	"fmt"
 	"math/big"
 	"os"
@@ -24,6 +25,7 @@ import (
 
 	"github.com/celo-org/rosetta/cmd/internal/utils"
 	"github.com/coinbase/rosetta-sdk-go/types"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/spf13/cobra"
 )
@@ -68,40 +70,9 @@ func runReconciler(cmd *cobra.Command, args []string) {
 		return val, nil
 	}
 
-	if blockNum >= 0 {
-		fromBlockNum = blockNum
-		toBlockNum = blockNum
-	}
+	checkDifferences := func(id string, changes *AccountBalanceSet, from, to *types.BlockIdentifier) {
+		logger := log.New("id", id)
 
-	for curr := fromBlockNum; curr <= toBlockNum; {
-		var blocks []*types.Block
-
-		to := curr + batchSize - 1
-
-		logger.Info("Fetching block range (might take a while)", "from", curr, "to", to)
-		blockMap, err := fetcher.BlockRange(ctx, network, curr, to)
-		utils.ExitOnError(err)
-
-		blocks = make([]*types.Block, batchSize)
-		for num, block := range blockMap {
-			blocks[num-curr] = block.Block
-		}
-
-		reconcileRange(blocks, getBalance)
-
-		if to < toBlockNum {
-			curr = to
-		} else {
-			curr = toBlockNum
-		}
-	}
-
-}
-
-func reconcileRange(blocks []*types.Block, getBalance func(acc *types.AccountIdentifier, block *types.BlockIdentifier) (*big.Int, error)) {
-	logger := log.New()
-
-	checkDifferences := func(logger log.Logger, changes *AccountBalanceSet, from, to *types.BlockIdentifier) {
 		accountsChanged := changes.Accounts()
 		if len(accountsChanged) == 0 {
 			logger.Debug("No balance changes, skipping..")
@@ -118,7 +89,6 @@ func reconcileRange(blocks []*types.Block, getBalance func(acc *types.AccountIde
 			utils.ExitOnError(err)
 
 			diff := new(big.Int).Sub(after, before)
-
 			ok := diff.Cmp(changes.Get(acc)) == 0
 			if !ok {
 				logger.Error("Balance Difference", "acc", fmt.Sprintf("%v", acc), "realchange", diff, "computed", changes.Get(acc))
@@ -127,15 +97,51 @@ func reconcileRange(blocks []*types.Block, getBalance func(acc *types.AccountIde
 		w.Flush()
 	}
 
-	logger.Info("Processing balances")
+	if blockNum >= 0 {
+		fromBlockNum = blockNum
+		toBlockNum = blockNum
+	}
+
+	for curr := fromBlockNum; curr <= toBlockNum; {
+		var blocks []*types.Block
+
+		to := curr + batchSize - 1
+		if to > toBlockNum {
+			to = toBlockNum
+		}
+
+		logger.Info("Fetching block range (might take a while)", "from", curr, "to", to)
+		blockMap, err := fetcher.BlockRange(ctx, network, curr, to)
+		utils.ExitOnError(err)
+
+		blocks = make([]*types.Block, to-curr+1)
+		for num, block := range blockMap {
+			blocks[num-curr] = block.Block
+		}
+
+		reconcileRange(blocks, checkDifferences)
+		if to == toBlockNum {
+			break
+		}
+		curr = to
+	}
+
+}
+
+func reconcileRange(blocks []*types.Block, checkDifferences func(id string, changes *AccountBalanceSet, from, to *types.BlockIdentifier)) {
+	logger := log.New()
+
 	rangeChanges := NewAccountBalanceSet()
 	for _, block := range blocks {
+		if block == nil {
+			panic("NIL BLOCK")
+		}
 		blockLogger := logger.New("block", block.BlockIdentifier.Index)
 
 		blockChanges := NewAccountBalanceSet()
 
 		if len(block.Transactions) == 0 {
-			log.Debug("No transsactions, skipping..")
+			blockLogger.Debug("No transsactions, skipping..")
 			continue
 		}
 
@@ -147,12 +153,32 @@ func reconcileRange(blocks []*types.Block, getBalance func(acc *types.AccountIde
 			}
 		}
 
-		checkDifferences(blockLogger, blockChanges, block.ParentBlockIdentifier, block.BlockIdentifier)
+		checkDifferences(fmt.Sprintf("block %d", block.BlockIdentifier.Index), blockChanges, block.ParentBlockIdentifier, block.BlockIdentifier)
 	}
 
 	logger.Info("Range differences")
-	checkDifferences(logger, rangeChanges, blocks[0].ParentBlockIdentifier, blocks[len(blocks)-1].BlockIdentifier)
+	checkDifferences("range", rangeChanges, blocks[0].ParentBlockIdentifier, blocks[len(blocks)-1].BlockIdentifier)
 
+}
+
+func HashAccount(acc *types.AccountIdentifier) common.Hash {
+	h := sha256.New()
+	h.Write([]byte(acc.Address))
+	if acc.SubAccount != nil {
+		h.Write([]byte(acc.SubAccount.Address))
+
+		if acc.SubAccount.Metadata != nil {
+			val, ok := (*acc.SubAccount.Metadata)["group"]
+			if ok {
+				valStr := val.(string)
+				h.Write([]byte("group:"))
+				h.Write([]byte(valStr))
+			}
+		}
+	}
+	var hash []byte
+	hash = h.Sum(hash)
+	return common.BytesToHash(hash)
 }
 
 type comparableAccountIdentifier struct {
@@ -195,37 +221,37 @@ func (cai *comparableAccountIdentifier) fromAccount(acc *types.AccountIdentifier
 }
 
 type AccountBalanceSet struct {
-	balances map[comparableAccountIdentifier]*big.Int
+	accounts map[common.Hash]*types.AccountIdentifier
+	balances map[common.Hash]*big.Int
 }
 
 func NewAccountBalanceSet() *AccountBalanceSet {
 	return &AccountBalanceSet{
-		balances: make(map[comparableAccountIdentifier]*big.Int),
+		accounts: make(map[common.Hash]*types.AccountIdentifier),
+		balances: make(map[common.Hash]*big.Int),
 	}
 }
 
 func (bs *AccountBalanceSet) Get(acc *types.AccountIdentifier) *big.Int {
-	var cai comparableAccountIdentifier
-	cai.fromAccount(acc)
-	return bs.balances[cai]
+	return bs.balances[HashAccount(acc)]
 }
 
 func (bs *AccountBalanceSet) Add(acc *types.AccountIdentifier, value *big.Int) *AccountBalanceSet {
-	var cai comparableAccountIdentifier
-	cai.fromAccount(acc)
+	hash := HashAccount(acc)
 
-	if oldValue, ok := bs.balances[cai]; ok {
-		bs.balances[cai] = new(big.Int).Add(oldValue, value)
+	if _, ok := bs.accounts[hash]; ok {
+		bs.balances[hash] = new(big.Int).Add(bs.balances[hash], value)
 	} else {
-		bs.balances[cai] = value
+		bs.accounts[hash] = acc
+		bs.balances[hash] = value
 	}
 	return bs
 }
 
 func (bs *AccountBalanceSet) Accounts() []*types.AccountIdentifier {
-	accounts := make([]*types.AccountIdentifier, 0, len(bs.balances))
-	for acc, _ := range bs.balances {
-		accounts = append(accounts, acc.ToAccount())
+	accounts := make([]*types.AccountIdentifier, 0, len(bs.accounts))
+	for _, acc := range bs.accounts {
+		accounts = append(accounts, acc)
 	}
 	return accounts
 }
