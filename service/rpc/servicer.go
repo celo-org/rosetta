@@ -98,7 +98,12 @@ func (s *Servicer) NetworkOptions(ctx context.Context, request *types.NetworkReq
 // NetworkStatus - Get Network Status
 func (s *Servicer) NetworkStatus(ctx context.Context, request *types.NetworkRequest) (*types.NetworkStatusResponse, *types.Error) {
 
-	latestHeader, err := s.cc.Eth.HeaderByNumber(ctx, nil) // nil == latest
+	lastPersitedBlock, err := s.db.LastPersistedBlock(ctx)
+	if err != nil {
+		return nil, LogErrInternal(err)
+	}
+
+	latestHeader, err := s.cc.Eth.HeaderByNumber(ctx, lastPersitedBlock) // nil == latest
 	if err != nil {
 		return nil, LogErrCeloClient("HeaderByNumber", err)
 	}
