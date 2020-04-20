@@ -73,24 +73,24 @@ func main() {
 	}
 
 	submitSigned(&transaction.TransactionOptions{
-		From:   addr,
+		From:   *addr,
 		Method: &transaction.CreateAccount,
 	})
 
 	submitSigned(&transaction.TransactionOptions{
-		From:   addr,
+		From:   *addr,
 		Method: &transaction.LockGold,
 		Value:  big.NewInt(100),
 	})
 
 	submitSigned(&transaction.TransactionOptions{
-		From:   addr,
+		From:   *addr,
 		Method: &transaction.UnlockGold,
 		Value:  big.NewInt(50),
 	})
 
 	submitSigned(&transaction.TransactionOptions{
-		From:   addr,
+		From:   *addr,
 		Method: &transaction.WithdrawGold,
 		Args:   []interface{}{big.NewInt(0)}, // withdrawal index 0
 	})

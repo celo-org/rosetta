@@ -392,15 +392,15 @@ func (s *Servicer) ConstructionSubmit(ctx context.Context, request *types.Constr
 // Private Functions
 // ----------------------------------------------------------------------------------------
 
-// TODO: clean up
+// TODO:(yorke) replace with jsonDecode
 func (s *Servicer) validateTxConstructionOptions(options map[string]interface{}) (*transaction.TransactionOptions, *types.Error) {
 	from, fromPresent := options[OptionsFromKey]
 	if !fromPresent {
 		return nil, LogErrValidation(fmt.Errorf("No '%s' provided on tx construction options", OptionsFromKey))
 	}
-	fromAddress, ok := from.(*common.Address)
+	fromAddress, ok := from.(common.Address)
 	if !ok {
-		return nil, LogErrValidation(fmt.Errorf("From must be an address"))
+		return nil, LogErrValidation(fmt.Errorf("From must be a common.address"))
 	}
 
 	to, toPresent := options[OptionsToKey]
