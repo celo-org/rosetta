@@ -392,41 +392,32 @@ func (s *Servicer) ConstructionSubmit(ctx context.Context, request *types.Constr
 // Private Functions
 // ----------------------------------------------------------------------------------------
 
-func getStringFromOptionsMap(options map[string]interface{}, key string) string {
-	option, present := options[key]
-	if !present {
-		return ""
-	}
-	str := fmt.Sprintf("%v", option)
-	return str
-}
-
+// TODO: clean up
 func (s *Servicer) validateTxConstructionOptions(options map[string]interface{}) (*transaction.TransactionOptions, *types.Error) {
-	from := getStringFromOptionsMap(options, OptionsFromKey)
-	if from == "" {
+	from, fromPresent := options[OptionsFromKey]
+	if !fromPresent {
 		return nil, LogErrValidation(fmt.Errorf("No '%s' provided on tx construction options", OptionsFromKey))
 	}
-	fromAddress := common.HexToAddress(from)
-
-	to := getStringFromOptionsMap(options, OptionsToKey)
-	var toAddress common.Address
-	if to != "" {
-		toAddress = common.HexToAddress(to)
+	fromAddress, ok := from.(*common.Address)
+	if !ok {
+		return nil, LogErrValidation(fmt.Errorf("From must be an address"))
 	}
 
-	method := getStringFromOptionsMap(options, OptionsMethodKey)
-	var celoMethod *transaction.CeloMethod
-	if method != "" {
-		var found = false
-		for _, currMethod := range transaction.AllCeloMethods {
-			if method == currMethod.String() {
-				celoMethod = currMethod
-				found = true
-				break
-			}
+	to, toPresent := options[OptionsToKey]
+	var toAddress *common.Address
+	if toPresent {
+		toAddress, ok = to.(*common.Address)
+		if !ok {
+			return nil, LogErrValidation(fmt.Errorf("To must be a *common.address"))
 		}
-		if !found {
-			return nil, LogErrValidation(fmt.Errorf("Method '%s' not supported", method))
+	}
+
+	method, methodPresent := options[OptionsMethodKey]
+	var celoMethod *transaction.CeloMethod
+	if methodPresent {
+		celoMethod, ok = method.(*transaction.CeloMethod)
+		if !ok {
+			return nil, LogErrValidation(fmt.Errorf("Method '%v' must be a *CeloMethod", method))
 		}
 	}
 
@@ -435,7 +426,7 @@ func (s *Servicer) validateTxConstructionOptions(options map[string]interface{})
 	if argsPresent {
 		arr, ok := args.([]interface{})
 		if !ok {
-			return nil, LogErrValidation(fmt.Errorf("Args '%v' must be an array", args))
+			return nil, LogErrValidation(fmt.Errorf("Args '%v' must be an []interface{}", args))
 		}
 		argsArray = arr
 	}
@@ -443,16 +434,15 @@ func (s *Servicer) validateTxConstructionOptions(options map[string]interface{})
 	value, valuePresent := options[OptionsValueKey]
 	var valueBigInt *big.Int
 	if valuePresent {
-		intValue, ok := value.(int64)
+		valueBigInt, ok = value.(*big.Int)
 		if !ok {
-			return nil, LogErrValidation(fmt.Errorf("Value '%v' must be an int64", value))
+			return nil, LogErrValidation(fmt.Errorf("Value '%v' must be a *big.int", value))
 		}
-		valueBigInt = big.NewInt(intValue)
 	}
 
 	txOptions := transaction.TransactionOptions{
 		From:   fromAddress,
-		To:     &toAddress,
+		To:     toAddress,
 		Value:  valueBigInt,
 		Method: celoMethod,
 		Args:   argsArray,

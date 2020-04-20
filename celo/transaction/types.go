@@ -54,7 +54,7 @@ var (
 )
 
 type TransactionOptions struct {
-	From   common.Address
+	From   *common.Address
 	To     *common.Address // non-nil means exclusively cGLD transfer
 	Value  *big.Int
 	Method *CeloMethod // non-nil means celo registry contract invokation
@@ -65,7 +65,7 @@ type TransactionOptions struct {
 
 // [note]: non cGLD fee currencies currently unsupported
 type GenericMetadata struct {
-	From                common.Address
+	From                *common.Address
 	Nonce               uint64          `json:"nonce"    gencodec:"required"`
 	GasPrice            *big.Int        `json:"gasPrice" gencodec:"required"`
 	GatewayFeeRecipient *common.Address `json:"gatewayFeeRecipient" rlp:"nil"` // nil means no gateway fee is paid
