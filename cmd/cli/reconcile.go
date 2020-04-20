@@ -181,45 +181,6 @@ func HashAccount(acc *types.AccountIdentifier) common.Hash {
 	return common.BytesToHash(hash)
 }
 
-type comparableAccountIdentifier struct {
-	address    string
-	subAccount *string
-	group      *string
-}
-
-func (cai *comparableAccountIdentifier) ToAccount() *types.AccountIdentifier {
-	var acc types.AccountIdentifier
-
-	acc.Address = cai.address
-	if cai.subAccount != nil {
-		acc.SubAccount = &types.SubAccountIdentifier{
-			Address: *cai.subAccount,
-		}
-
-		if cai.group != nil {
-			acc.SubAccount.Metadata = &map[string]interface{}{
-				"group": *cai.group,
-			}
-		}
-	}
-	return &acc
-}
-
-func (cai *comparableAccountIdentifier) fromAccount(acc *types.AccountIdentifier) {
-	cai.address = acc.Address
-	if acc.SubAccount != nil {
-		cai.subAccount = &acc.SubAccount.Address
-
-		if acc.SubAccount.Metadata != nil {
-			val, ok := (*acc.SubAccount.Metadata)["group"]
-			if ok {
-				valStr := val.(string)
-				cai.group = &valStr
-			}
-		}
-	}
-}
-
 type AccountBalanceSet struct {
 	accounts map[common.Hash]*types.AccountIdentifier
 	balances map[common.Hash]*big.Int
