@@ -95,7 +95,7 @@ func keepUpWithNode(ctx context.Context, headers chan<- *types.Header, newHeader
 
 func handleSubscriptionOverflow(ctx context.Context, headers chan<- *types.Header, newHeaders <-chan *types.Header, logger log.Logger, startBlock *big.Int, _err error) error {
 	if _err == rpc.ErrSubscriptionQueueOverflow {
-		logger.Error("Subscription Queue Overflowed")
+		logger.Warn("Max new headers queued during catch-up, subscription will need to restart.")
 		if len(newHeaders) > 0 {
 			logger.Info("Flushing Subscription Buffer", "length", len(newHeaders))
 			var h *types.Header
