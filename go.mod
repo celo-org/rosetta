@@ -3,9 +3,10 @@ module github.com/celo-org/rosetta
 go 1.13
 
 require (
-	github.com/coinbase/rosetta-sdk-go v0.1.4
+	github.com/coinbase/rosetta-sdk-go v0.1.5
 	github.com/ethereum/go-ethereum v1.9.8
 	github.com/felixge/httpsnoop v1.0.1
+	github.com/gorilla/handlers v1.4.2 // indirect
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
 	github.com/k0kubun/pp v3.0.1+incompatible
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
@@ -13,8 +14,8 @@ require (
 	github.com/onsi/ginkgo v1.10.2 // indirect
 	github.com/onsi/gomega v1.9.0
 	github.com/smartystreets/assertions v1.0.1 // indirect
-	github.com/spf13/cobra v0.0.7
-	github.com/spf13/viper v1.6.2
+	github.com/spf13/cobra v1.0.0
+	github.com/spf13/viper v1.6.3
 )
 
 replace github.com/celo-org/bls-zexe/go => ./external/bls-zexe/go

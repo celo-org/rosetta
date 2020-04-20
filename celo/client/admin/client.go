@@ -17,11 +17,11 @@ func NewClient(c *rpc.Client) *AdminClient {
 	return &AdminClient{c}
 }
 
-func (ac *AdminClient) Peers(ctx context.Context) (*[]p2p.PeerInfo, error) {
+func (ac *AdminClient) Peers(ctx context.Context) ([]p2p.PeerInfo, error) {
 	var peerInfos []p2p.PeerInfo
 	err := ac.c.CallContext(ctx, &peerInfos, "admin_peers")
 	if err != nil {
 		return nil, err
 	}
-	return &peerInfos, nil
+	return peerInfos, nil
 }

@@ -14,10 +14,10 @@ import (
 	"github.com/ethereum/go-ethereum/p2p"
 )
 
-func PeersFromInfo(peersInfo *[]p2p.PeerInfo) []*rosettaTypes.Peer {
-	peers := make([]*rosettaTypes.Peer, len(*peersInfo))
-	for i, peerInfo := range *peersInfo {
-		peers[i].PeerID = peerInfo.ID
+func PeersFromInfo(peersInfo []p2p.PeerInfo) []*rosettaTypes.Peer {
+	peers := make([]*rosettaTypes.Peer, len(peersInfo))
+	for i, peerInfo := range peersInfo {
+		peers[i] = &rosettaTypes.Peer{PeerID: peerInfo.ID}
 	}
 	return peers
 }

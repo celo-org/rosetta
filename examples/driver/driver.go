@@ -7,12 +7,14 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"text/tabwriter"
 
 	"github.com/celo-org/rosetta/celo/client"
 	"github.com/celo-org/rosetta/celo/contract"
 	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/celo-org/rosetta/internal/config"
 	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -50,6 +52,20 @@ func main() {
 	// DriverRegistryErrors()
 	// DriverEpochLogs()
 	// DriverEpochRewards()
+	EventIds()
+}
+
+func EventIds() {
+	parsed, err := abi.JSON(os.Stdin)
+	PanicOnErr(err)
+
+	w := tabwriter.NewWriter(os.Stdout, 20, 5, 3, ' ', tabwriter.TabIndent)
+
+	fmt.Fprintf(w, "Name\tID\tSig\n")
+	for name, ev := range parsed.Events {
+		fmt.Fprintf(w, "%s\t%s\t%s\n", name, ev.ID().Hex(), ev.Sig())
+	}
+	w.Flush()
 }
 
 func PanicOnErr(err error) {

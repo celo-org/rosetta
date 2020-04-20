@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/celo-org/rosetta/cmd/cli"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/spf13/cobra"
 
@@ -28,7 +29,7 @@ import (
 // var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
+var RootCmd = &cobra.Command{
 	Use:   "rosetta",
 	Short: "A standard for blockchain interaction",
 }
@@ -36,7 +37,7 @@ var rootCmd = &cobra.Command{
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
+	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
@@ -47,6 +48,8 @@ func init() {
 	viper.AutomaticEnv() // read in environment variables that match
 
 	log.Root().SetHandler(log.LvlFilterHandler(log.LvlInfo, log.StreamHandler(os.Stderr, log.TerminalFormat(true))))
+
+	RootCmd.AddCommand(cli.CliCmd)
 
 	cobra.OnInitialize(initConfig)
 }
@@ -75,12 +78,6 @@ func initConfig() {
 	// if err := viper.ReadInConfig(); err == nil {
 	// 	fmt.Println("Using config file:", viper.ConfigFileUsed())
 	// }
-}
-
-func exitOnError(err error) {
-	if err != nil {
-		log.Crit("Unknown error", "err", err)
-	}
 }
 
 func exitOnMissingConfig(cmd *cobra.Command, configKey string) {
