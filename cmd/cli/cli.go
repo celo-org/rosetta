@@ -56,7 +56,7 @@ func getFetcher() (*fetcher.Fetcher, *types.NetworkIdentifier, *types.NetworkSta
 	return fetcher, primaryNetwork, networkStatus
 }
 
-func toBlockIndentifier(arg string) (blockIdentifier *types.PartialBlockIdentifier) {
+func toBlockIdentifier(arg string) (blockIdentifier *types.PartialBlockIdentifier) {
 	if strings.HasPrefix("0x", arg) {
 		blockIdentifier = &types.PartialBlockIdentifier{
 			Hash: &arg,

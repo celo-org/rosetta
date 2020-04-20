@@ -141,7 +141,7 @@ func reconcileRange(blocks []*types.Block, checkDifferences func(id string, chan
 		blockChanges := NewAccountBalanceSet()
 
 		if len(block.Transactions) == 0 {
-			blockLogger.Debug("No transsactions, skipping..")
+			blockLogger.Debug("No transactions, skipping..")
 			continue
 		}
 
