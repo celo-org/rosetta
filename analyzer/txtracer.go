@@ -97,7 +97,8 @@ func (tr *Tracer) TxGasDetails(blockHeader *types.Header, tx *types.Transaction,
 	// The "tip" goes to the coinbase address
 	balanceChanges.Add(blockHeader.Coinbase, new(big.Int).Sub(totalTxFee, baseTxFee))
 
-	governanceAddress, err := tr.db.RegistryAddressStartOf(tr.ctx, receipt.BlockNumber, receipt.TransactionIndex, "Governance")
+	// We want to get state AFTER the tx, since gas fees are processed by the end of the TX
+	governanceAddress, err := tr.db.RegistryAddressStartOf(tr.ctx, receipt.BlockNumber, receipt.TransactionIndex+1, "Governance")
 	if err == db.ErrContractNotFound {
 		// No community fund, we won't charge the user
 		totalTxFee.Sub(totalTxFee, baseTxFee)

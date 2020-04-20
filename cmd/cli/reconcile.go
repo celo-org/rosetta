@@ -35,14 +35,16 @@ var reconcileCmd = &cobra.Command{
 	Run:   runReconciler,
 }
 
-var blockStr string
+var blockNum int64
 var fromBlockNum int64
 var toBlockNum int64
+var batchSize int64
 
 func init() {
-	reconcileCmd.Flags().StringVar(&blockStr, "block", "", "block to reconcile")
+	reconcileCmd.Flags().Int64Var(&blockNum, "block", -1, "block to reconcile")
 	reconcileCmd.Flags().Int64Var(&fromBlockNum, "from", -1, "from block to reconcile")
 	reconcileCmd.Flags().Int64Var(&toBlockNum, "to", -1, "to block to reconcile")
+	reconcileCmd.Flags().Int64Var(&batchSize, "batchSize", 5000, "to block to reconcile")
 }
 
 func runReconciler(cmd *cobra.Command, args []string) {
@@ -50,22 +52,6 @@ func runReconciler(cmd *cobra.Command, args []string) {
 	ctx := context.Background()
 
 	fetcher, network, _ := getFetcher()
-
-	var blocks []*types.Block
-	if len(blockStr) > 0 {
-		block, err := fetcher.BlockRetry(ctx, network, toBlockIndentifier(blockStr))
-		utils.ExitOnError(err)
-		blocks = []*types.Block{block}
-	} else {
-		logger.Info("Fetching block range (might take a while)", "from", fromBlockNum, "to", toBlockNum)
-		blockMap, err := fetcher.BlockRange(ctx, network, fromBlockNum, toBlockNum)
-		utils.ExitOnError(err)
-
-		blocks = make([]*types.Block, toBlockNum-fromBlockNum+1)
-		for num, block := range blockMap {
-			blocks[num-fromBlockNum] = block.Block
-		}
-	}
 
 	getBalance := func(acc *types.AccountIdentifier, block *types.BlockIdentifier) (*big.Int, error) {
 		_, amounts, _, err := fetcher.AccountBalance(ctx, network, acc, types.ConstructPartialBlockIdentifier(block))
@@ -82,7 +68,33 @@ func runReconciler(cmd *cobra.Command, args []string) {
 		return val, nil
 	}
 
-	reconcileRange(blocks, getBalance)
+	if blockNum >= 0 {
+		fromBlockNum = blockNum
+		toBlockNum = blockNum
+	}
+
+	for curr := fromBlockNum; curr <= toBlockNum; {
+		var blocks []*types.Block
+
+		to := curr + batchSize - 1
+
+		logger.Info("Fetching block range (might take a while)", "from", curr, "to", to)
+		blockMap, err := fetcher.BlockRange(ctx, network, curr, to)
+		utils.ExitOnError(err)
+
+		blocks = make([]*types.Block, batchSize)
+		for num, block := range blockMap {
+			blocks[num-curr] = block.Block
+		}
+
+		reconcileRange(blocks, getBalance)
+
+		if to < toBlockNum {
+			curr = to
+		} else {
+			curr = toBlockNum
+		}
+	}
 
 }
 
