@@ -17,7 +17,6 @@ package client
 import (
 	"crypto/ecdsa"
 
-	"github.com/celo-org/rosetta/analyzer"
 	"github.com/celo-org/rosetta/celo/transaction"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	rosettaTypes "github.com/coinbase/rosetta-sdk-go/types"
@@ -55,6 +54,6 @@ func EncodeAccount(publicKey *ecdsa.PublicKey, address *common.Address) *types.A
 	}
 }
 
-func DecodeTransactionMetadata(resp *rosettaTypes.ConstructionMetadataResponse, opType analyzer.OperationType) *transaction.TransactionMetadata {
+func DecodeTransactionMetadata(resp *rosettaTypes.ConstructionMetadataResponse) *transaction.TransactionMetadata {
 	return resp.Metadata["tx"].(*transaction.TransactionMetadata)
 }
