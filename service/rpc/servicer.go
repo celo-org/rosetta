@@ -263,18 +263,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 			voteBalance = sumVotes(votes)
 		}
 	} else {
-		if groupAddr != common.ZeroAddress {
-			voteBalance, err = electionWrapper.GetVotesForGroupByAccount(requestedBlockOpts, groupAddr, accountAddr)
-			if err != nil {
-				return nil, LogErrCeloClient("GetPendingVotesForGroupByAccount", err)
-			}
-		} else {
-			votes, err := electionWrapper.GetAccountElectionVotes(requestedBlockOpts, accountAddr)
-			if err != nil {
-				return nil, LogErrCeloClient("GetPendingVotesForGroupByAccount", err)
-			}
-			voteBalance = new(big.Int).Add(sumVotes(votes.Active), sumVotes(votes.Pending))
-		}
+		return nil, LogErrCeloClient("InvalidAccountIdentifier", nil)
 	}
 
 	return createResponse(NewAmount(voteBalance, CeloGold)), nil
