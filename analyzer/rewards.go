@@ -31,54 +31,36 @@ func ComputeEpochRewards(ctx context.Context, cc *client.CeloClient, db db.Roset
 	nextBlock := new(big.Int).Add(header.Number, big.NewInt(1))
 
 	// Obtain the address of all the contract we need for the computation
-	addresses, err := db.RegistryAddressesStartOf(ctx, nextBlock, 0, "EpochRewards", "LockedGold", "Governance", "Reserve")
+	addresses, err := db.RegistryAddressesStartOf(ctx, nextBlock, 0, "EpochRewards", "LockedGold", "Governance", "Reserve", "GoldToken")
 	if err != nil {
 		return nil, err
 	}
-	if len(addresses) < 4 {
+	if len(addresses) < 5 {
 		// we don't have all addresses =>
 		// We assume rewards are active AFTER migration. So, we return an empty map
 		return NewEpochRewards(rewards), nil
 	}
 
-	// Voters rewards are deposited to the LockedGold contract
-	voterRewards, err := rctx.getTotalVoterRewards(addresses)
+	goldToken, err := contract.NewGoldToken(addresses["GoldToken"], cc.Eth)
 	if err != nil {
 		return nil, err
 	}
-	if voterRewards.Cmp(big.NewInt(0)) > 0 {
-		rewards[addresses["LockedGold"]] = voterRewards
-	}
+	delete(addresses, "GoldToken")
 
-	// Rewards are deposited in: Reserve, Governance, CarbonOffsetAddress (if any	)
-	// We can't compute exactly the rewards.
-	// For now the approach is to compute the balance difference with the previous block
-	// but this can have errors since it doesn't consider transfer that happened within the block in other txs
-
-	// First obtain carbonOffsettingPartner
-	epochRewards, err := contract.NewEpochRewards(addresses["EpochRewards"], rctx.cc.Eth)
+	addresses["CarbonOffset"], err = rctx.getCarbonOffsettingPartner(addresses["EpochRewards"])
 	if err != nil {
-		// Error here means a Bug. Failed to parse ABI
 		return nil, err
 	}
-	carbonOffsettingPartner, err := epochRewards.CarbonOffsettingPartner(&bind.CallOpts{
-		BlockNumber: rctx.blockNumber(), // by the end of the block
-		Context:     rctx.ctx,
-	})
-	if err != nil {
-		// Error here means some unexpected error, abort
-		return nil, err
-	}
+	delete(addresses, "EpochRewards")
 
-	for _, addr := range []common.Address{addresses["Reserve"], addresses["Governance"], carbonOffsettingPartner} {
-		diff, err := rctx.balanceDifferenceInBlock(addr)
+	for contract, address := range addresses {
+		rewardsForAddr, err := rctx.getRewardsForAddr(goldToken, address)
 		if err != nil {
 			return nil, err
 		}
-		// If balance is positive register it
-		// If balance were negative, then we are surely doing something wrong. Related to our bad heuristic
-		if diff.Cmp(new(big.Int)) > 0 {
-			rewards[addr] = diff
+
+		if rewardsForAddr.Cmp(big.NewInt(0)) > 0 {
+			rewards[addresses[contract]] = rewardsForAddr
 		}
 	}
 
@@ -95,40 +77,33 @@ func (rctx *rewardsContext) prevBlockNumber() *big.Int {
 	return new(big.Int).Sub(rctx.header.Number, big.NewInt(1))
 }
 
-func (rctx *rewardsContext) balanceDifferenceInBlock(address common.Address) (*big.Int, error) {
-	currBalance, err := rctx.cc.Eth.BalanceAt(rctx.ctx, address, rctx.header.Number)
-	if err != nil {
-		return nil, err
-	}
-	prevBalance, err := rctx.cc.Eth.BalanceAt(rctx.ctx, address, rctx.prevBlockNumber())
-	if err != nil {
-		return nil, err
-	}
-
-	currBalance.Sub(currBalance, prevBalance)
-	return currBalance, nil
-}
-
-func (rctx *rewardsContext) getTotalVoterRewards(addresses map[string]common.Address) (*big.Int, error) {
-	election, err := contract.NewElection(addresses["Election"], rctx.cc.Eth)
-	if err != nil {
-		return nil, err
-	}
-
+func (rctx *rewardsContext) getRewardsForAddr(token *contract.GoldToken, addr common.Address) (*big.Int, error) {
 	blockNumber := rctx.blockNumber().Uint64()
-	iter, err := election.FilterEpochRewardsDistributedToVoters(&bind.FilterOpts{
+	iter, err := token.FilterTransfer(&bind.FilterOpts{
 		Start:   blockNumber,
 		End:     &blockNumber,
 		Context: rctx.ctx,
-	}, nil)
+	}, []common.Address{common.ZeroAddress}, []common.Address{addr})
 
 	if err != nil {
 		return nil, err
 	}
 
-	totalRewards := new(big.Int)
+	rewards := big.NewInt(0)
 	for iter.Next() {
-		totalRewards.Add(totalRewards, iter.Event.Value)
+		rewards.Add(rewards, iter.Event.Value)
 	}
-	return totalRewards, nil
+	return rewards, nil
+}
+
+func (rctx *rewardsContext) getCarbonOffsettingPartner(epochRewardsAddr common.Address) (common.Address, error) {
+	epochRewards, err := contract.NewEpochRewards(epochRewardsAddr, rctx.cc.Eth)
+	if err != nil {
+		// Error here means a Bug. Failed to parse ABI
+		return common.ZeroAddress, err
+	}
+	return epochRewards.CarbonOffsettingPartner(&bind.CallOpts{
+		BlockNumber: rctx.blockNumber(), // by the end of the block
+		Context:     rctx.ctx,
+	})
 }
