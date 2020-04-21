@@ -10,7 +10,6 @@ import (
 	"github.com/celo-org/rosetta/celo/client"
 	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/celo-org/rosetta/db"
-	"github.com/celo-org/rosetta/internal/utils"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -148,7 +147,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 	emptyResponse := &types.AccountBalanceResponse{
 		BlockIdentifier: HeaderToBlockIdentifier(&blockHeader.Header),
 	}
-	createReponse := func(amount *types.Amount) *types.AccountBalanceResponse {
+	createResponse := func(amount *types.Amount) *types.AccountBalanceResponse {
 		return &types.AccountBalanceResponse{
 			BlockIdentifier: HeaderToBlockIdentifier(&blockHeader.Header),
 			Balances:        []*types.Amount{amount},
@@ -163,7 +162,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 		if err != nil {
 			return nil, LogErrCeloClient("BalanceAt", err)
 		}
-		return createReponse(NewAmount(goldAmt, CeloGold)), nil
+		return createResponse(NewAmount(goldAmt, CeloGold)), nil
 	}
 
 	registryWrapper, err := wrapper.NewRegistry(s.cc)
@@ -189,7 +188,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 			return nil, LogErrCeloClient("GetAccountNonvotingLockedGold", err)
 		}
 
-		return createReponse(NewAmount(nonVotingLockedGold, CeloGold)), nil
+		return createResponse(NewAmount(nonVotingLockedGold, CeloGold)), nil
 	}
 
 	if subAccount.Address == string(analyzer.AccLockedGoldPending) {
@@ -207,7 +206,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 			return nil, LogErrCeloClient("GetTotalPendingWithdrawals", err)
 		}
 
-		return createReponse(NewAmount(totalPending, CeloGold)), nil
+		return createResponse(NewAmount(totalPending, CeloGold)), nil
 	}
 
 	// If we are here need to be election based
@@ -221,43 +220,64 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 		return nil, LogErrCeloClient("NewElection", err)
 	}
 
-	// For now we only support "pending" votes
-
-	electionVotes, err := electionWrapper.GetAccountElectionVotes(requestedBlockOpts, accountAddr)
-	if err != nil {
-		return nil, LogErrCeloClient("GetAccountElectionVotes", err)
+	sumVotes := func(targetVotes wrapper.VotesByGroup) *big.Int {
+		sum := big.NewInt(0)
+		for _, amount := range targetVotes {
+			sum.Add(sum, amount)
+		}
+		return sum
 	}
 
+	var groupAddr common.Address
 	if subAccount.Metadata != nil {
 		if groupStr, ok := (*subAccount.Metadata)["group"]; ok {
-			groupAddr := common.HexToAddress(groupStr.(string))
-			pendingAmt, ok := electionVotes.Pending[groupAddr]
-			if !ok {
-				pendingAmt = utils.Big0
-			}
-			activeAmt, ok := electionVotes.Active[groupAddr]
-			if !ok {
-				activeAmt = utils.Big0
-			}
-			total := new(big.Int).Add(pendingAmt, activeAmt)
-			return createReponse(NewAmount(total, CeloGold)), nil
+			groupAddr = common.HexToAddress(groupStr.(string))
 		}
 	}
 
-	// On RC0 we can't track pending vs active votes, so we sum them up as "pending"
-	// TODO(rc1) fix
-	// correct code
-	// for groupAddr, activeAmt := range electionVotes.Active {
-	// 	account := analyzer.NewVotingAccount(accountAddr, analyzer.AccLockedGoldVotingActive, groupAddr)
-	// 	balances = append(balances, *NewCeloGoldBalance(account, activeAmt))
-	// }
+	voteBalance := big.NewInt(0)
+	if subAccount.Address == string(analyzer.AccLockedGoldVotingPending) {
+		if groupAddr != common.ZeroAddress {
+			voteBalance, err = electionWrapper.GetPendingVotesForGroupByAccount(requestedBlockOpts, groupAddr, accountAddr)
+			if err != nil {
+				return nil, LogErrCeloClient("GetPendingVotesForGroupByAccount", err)
+			}
+		} else {
+			votes, err := electionWrapper.GetAccountPendingVotes(requestedBlockOpts, accountAddr)
+			if err != nil {
+				return nil, LogErrCeloClient("GetPendingVotesForGroupByAccount", err)
+			}
+			voteBalance = sumVotes(votes)
+		}
+	} else if subAccount.Address == string(analyzer.AccLockedGoldVotingActive) {
+		if groupAddr != common.ZeroAddress {
+			voteBalance, err = electionWrapper.GetActiveVotesForGroupByAccount(requestedBlockOpts, groupAddr, accountAddr)
+			if err != nil {
+				return nil, LogErrCeloClient("GetActiveVotesForGroupByAccount", err)
+			}
+		} else {
+			votes, err := electionWrapper.GetAccountActiveVotes(requestedBlockOpts, accountAddr)
+			if err != nil {
+				return nil, LogErrCeloClient("GetActiveVotesForGroupByAccount", err)
+			}
+			voteBalance = sumVotes(votes)
+		}
+	} else {
+		if groupAddr != common.ZeroAddress {
+			voteBalance, err = electionWrapper.GetVotesForGroupByAccount(requestedBlockOpts, groupAddr, accountAddr)
+			if err != nil {
+				return nil, LogErrCeloClient("GetPendingVotesForGroupByAccount", err)
+			}
+		} else {
+			votes, err := electionWrapper.GetAccountElectionVotes(requestedBlockOpts, accountAddr)
+			if err != nil {
+				return nil, LogErrCeloClient("GetPendingVotesForGroupByAccount", err)
+			}
+			voteBalance = new(big.Int).Add(sumVotes(votes.Active), sumVotes(votes.Pending))
+		}
+	}
 
-	// for groupAddr, pendingAmt := range electionVotes.Pending {
-	// 	account := analyzer.NewVotingAccount(accountAddr, analyzer.AccLockedGoldVotingPending, groupAddr)
-	// 	balances = append(balances, *NewCeloGoldBalance(account, pendingAmt))
-	// }
-
-	return nil, LogErrCeloClient("InvalidAccountIdentifier", err)
+	return createResponse(NewAmount(voteBalance, CeloGold)), nil
 }
 
 // Block - Get a Block
