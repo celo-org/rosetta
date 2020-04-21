@@ -84,43 +84,59 @@ func (listener *listener) syncNewBlocks(startBlock *big.Int) error {
 	}
 	defer sub.Unsubscribe()
 
-	// After stating the subscription we fetch block gap between lastFetched and node's head
-	// by doing it after, we assure we will get all blocks in order
-	lastBlock, err := listener.lastNodeBlockNumber()
+	nextHeader := func() (*types.Header, error) {
+		select {
+		case err := <-sub.Err():
+			return nil, err
+		case <-listener.ctx.Done():
+			return nil, listener.ctx.Err()
+		case h := <-subscriptionHeaders:
+			return h, nil
+		}
+	}
+
+	// Need to check if we are missing blocks, and if so close the gap
+	firstNewBlock, err := nextHeader()
 	if err != nil {
 		return err
 	}
-	if lastBlock.Cmp(startBlock) > 0 {
-		listener.logger.Info("Closing gap with header subscription", "from", startBlock, "to", lastBlock)
-		if err = listener.syncBlockRange(startBlock, lastBlock); err != nil {
+
+	// if there's a gap, first fetch all old blocks
+	endGapBlock := new(big.Int).Sub(firstNewBlock.Number, big.NewInt(1))
+	if endGapBlock.Cmp(startBlock) > 0 {
+		listener.logger.Info("Closing gap with header subscription", "from", startBlock, "to", endGapBlock)
+		if err = listener.syncBlockRange(startBlock, endGapBlock); err != nil {
 			return err
 		}
 	}
 
+	// write the first block from the subscription
+	if err := listener.writeHeader(firstNewBlock); err != nil {
+		return err
+	}
+
 	// After closing the gap, start reading from the subscription
 	for {
-		select {
-		case err := <-sub.Err():
-			if err == rpc.ErrSubscriptionQueueOverflow {
-				listener.logger.Warn("Header Subscription overflowed. Flushing remaining header & restart")
-				closeOnce.Do(func() { close(subscriptionHeaders) })
-				for h := range subscriptionHeaders {
-					if err := listener.writeHeader(h); err != nil {
-						return err
-					}
+		header, err := nextHeader()
+
+		// If overflowed, first flush the subscription
+		if err == rpc.ErrSubscriptionQueueOverflow {
+			listener.logger.Error("Header Subscription overflowed. Flushing remaining header")
+			closeOnce.Do(func() { close(subscriptionHeaders) })
+
+			for h := range subscriptionHeaders {
+				if nestedErr := listener.writeHeader(h); nestedErr != nil {
+					return nestedErr
 				}
-				return nil
 			}
+		}
+
+		if err != nil {
 			return err
-		case <-listener.ctx.Done():
-			return listener.ctx.Err()
-		case h := <-subscriptionHeaders:
-			if h.Number.Int64()%1000 == 0 {
-				listener.logger.Info("Fetched 1000 New Blocks", "block", h.Number)
-			}
-			if err := listener.writeHeader(h); err != nil {
-				return err
-			}
+		}
+
+		if err := listener.writeHeader(header); err != nil {
+			return err
 		}
 	}
 }
