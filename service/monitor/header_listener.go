@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/celo-org/rosetta/celo/client"
+	"github.com/celo-org/rosetta/internal/utils"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/rpc"
@@ -56,12 +57,13 @@ func (listener *listener) syncOldBlocks(startBlock *big.Int) (*big.Int, error) {
 	// While we are behind more than `maxGap` we keep on syncing by range
 	for new(big.Int).Sub(lastBlock, currBlock).Cmp(maxGap) > 0 {
 		listener.logger.Info("Fetching Old Blocks", "start", currBlock, "end", lastBlock)
-		if err = listener.syncBlockRange(startBlock, lastBlock); err != nil {
+		if err = listener.syncBlockRange(currBlock, lastBlock); err != nil {
 			return nil, err
 		}
-		listener.logger.Info("Finished Catching Up", "start", startBlock, "end", lastBlock)
+		listener.logger.Info("Finished Catching Up", "start", currBlock, "end", lastBlock)
 
-		currBlock = lastBlock
+		// next Range
+		currBlock = new(big.Int).Add(lastBlock, big.NewInt(1))
 		lastBlock, err = listener.lastNodeBlockNumber()
 		if err != nil {
 			return nil, err
@@ -144,7 +146,7 @@ func (listener *listener) syncNewBlocks(startBlock *big.Int) error {
 // syncBlockRange will fetch & write all blocks in range [start,end] incluse
 func (listener *listener) syncBlockRange(start, end *big.Int) error {
 
-	for curr := new(big.Int).Set(start); curr.Cmp(end) <= 0; curr.Add(curr, big.NewInt(1)) {
+	for curr := new(big.Int).Set(start); end.Cmp(curr) > 0; curr.Add(curr, utils.Big1) {
 		h, err := listener.cc.Eth.HeaderByNumber(listener.ctx, curr)
 		if err != nil {
 			return err
