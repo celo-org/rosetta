@@ -59,3 +59,55 @@ func (w *ElectionWrapper) GetAccountElectionVotes(opts *bind.CallOpts, account c
 
 	return votes, nil
 }
+
+func (w *ElectionWrapper) GetAccountPendingVotes(opts *bind.CallOpts, account common.Address) (VotesByGroup, error) {
+	groups, err := w.GetGroupsVotedForByAccount(opts, account)
+	if err != nil {
+		return nil, err
+	}
+
+	var votes VotesByGroup
+	for _, groupAddr := range groups {
+		pendingAmt, err := w.GetPendingVotesForGroupByAccount(opts, groupAddr, account)
+		if err != nil {
+			return nil, err
+		}
+		if pendingAmt.Cmp(utils.Big0) == 1 {
+			votes[groupAddr] = pendingAmt
+		}
+	}
+
+	return votes, nil
+}
+
+func (w *ElectionWrapper) GetAccountActiveVotes(opts *bind.CallOpts, account common.Address) (VotesByGroup, error) {
+	groups, err := w.GetGroupsVotedForByAccount(opts, account)
+	if err != nil {
+		return nil, err
+	}
+
+	var votes VotesByGroup
+	for _, groupAddr := range groups {
+		activeAmt, err := w.GetActiveVotesForGroupByAccount(opts, groupAddr, account)
+		if err != nil {
+			return nil, err
+		}
+		if activeAmt.Cmp(utils.Big0) == 1 {
+			votes[groupAddr] = activeAmt
+		}
+	}
+
+	return votes, nil
+}
+
+func (w *ElectionWrapper) GetVotesForGroupByAccount(opts *bind.CallOpts, groupAddr, account common.Address) (*big.Int, error) {
+	activeAmt, err := w.GetActiveVotesForGroupByAccount(opts, groupAddr, account)
+	if err != nil {
+		return nil, err
+	}
+	pendingAmt, err := w.GetPendingVotesForGroupByAccount(opts, groupAddr, account)
+	if err != nil {
+		return nil, err
+	}
+	return new(big.Int).Add(activeAmt, pendingAmt), nil
+}

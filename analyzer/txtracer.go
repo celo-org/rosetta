@@ -195,14 +195,14 @@ func (tr *Tracer) TxLockedGoldTransfers(blockHeader *types.Header, tx *types.Tra
 				// activate() [ValidatorGroupVoteActivated] => lockVotingPending->lockVotingActive
 				event := eventRaw.(*contract.ElectionValidatorGroupVoteActivated)
 				transfers = append(transfers, *NewActiveVotes(event.Account, event.Group, event.Value))
-			case "ValidatorGroupVoteRevoked":
-				// revokePending() [ValidatorGroupVoteRevoked] => lockVotingPending->lockNonVoting
-				event := eventRaw.(*contract.ElectionValidatorGroupVoteRevoked)
+			case "ValidatorGroupPendingVoteRevoked":
+				// revokePending() [ValidatorGroupPendingVoteRevoked] => lockVotingPending->lockNonVoting
+				event := eventRaw.(*contract.ElectionValidatorGroupPendingVoteRevoked)
 				transfers = append(transfers, *NewRevokePendingVotes(event.Account, event.Group, event.Value))
-				// case "ValidatorGroupVoteRevoked":
-				// 	// revokeActive() [ValidatorGroupVoteRevoked] => lockVotingActive->lockNonVoting
-				// 	event := eventRaw.(contract.ElectionValidatorGroupVoteRevoked)
-				// 	transfers = append(transfers, *NewVote(event.Account, event.Group, event.Value))
+			case "ValidatorGroupActiveVoteRevoked":
+				// revokeActive() [ValidatorGroupActiveVoteRevoked] => lockVotingActive->lockNonVoting
+				event := eventRaw.(contract.ElectionValidatorGroupActiveVoteRevoked)
+				transfers = append(transfers, *NewRevokeActiveVotes(event.Account, event.Group, event.Value))
 			}
 
 		} else if eventLog.Address == lockedGoldAddr {
