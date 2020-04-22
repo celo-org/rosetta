@@ -15,6 +15,7 @@ require (
 	github.com/smartystreets/assertions v1.0.1 // indirect
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.6.3
+	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
 )
 
 replace github.com/celo-org/bls-zexe/go => ./external/bls-zexe/go

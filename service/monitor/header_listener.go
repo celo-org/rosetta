@@ -20,6 +20,7 @@ type listener struct {
 }
 
 const (
+	// max numbers of blocks we allow before starting a subscription
 	maxAllowedGap = 50
 )
 
@@ -31,15 +32,15 @@ func HeaderListener(ctx context.Context, headers chan<- *types.Header, cc *clien
 		headers: headers,
 	}
 
-	var currBlock *big.Int = startBlock
+	var nextBlock *big.Int = startBlock
 	var err error
 	for {
-		currBlock, err = listener.syncOldBlocks(startBlock)
+		nextBlock, err = listener.syncOldBlocks(nextBlock)
 		if err != nil {
 			return err
 		}
 
-		currBlock, err = listener.syncNewBlocks(new(big.Int).Add(utils.Big1, currBlock))
+		nextBlock, err = listener.syncNewBlocks(nextBlock)
 		if err != nil {
 			return err
 		}
@@ -47,38 +48,38 @@ func HeaderListener(ctx context.Context, headers chan<- *types.Header, cc *clien
 }
 
 // syncOldBlocks will fetch all blocks until until the distance between node head and last fetched block is less than maxDistance
-func (listener *listener) syncOldBlocks(startBlock *big.Int) (*big.Int, error) {
+// returns the next fetchable block
+func (listener *listener) syncOldBlocks(firstBlockToFetch *big.Int) (*big.Int, error) {
 	maxGap := big.NewInt(maxAllowedGap)
 
-	currBlock := startBlock
-	lastBlock, err := listener.lastNodeBlockNumber()
+	nextBlock := firstBlockToFetch
+	lastBlockInRange, err := listener.lastNodeBlockNumber()
 	if err != nil {
 		return nil, err
 	}
 
 	// While we are behind more than `maxGap` we keep on syncing by range
-	for new(big.Int).Sub(lastBlock, currBlock).Cmp(maxGap) > 0 {
-		listener.logger.Info("Fetching Old Blocks", "start", currBlock, "end", lastBlock)
-		if err = listener.syncBlockRange(currBlock, lastBlock); err != nil {
+	for new(big.Int).Sub(lastBlockInRange, nextBlock).Cmp(maxGap) > 0 {
+		listener.logger.Info("BatchFetchMode:Start", "start", nextBlock, "end", lastBlockInRange)
+		if err = listener.syncBlockRange(nextBlock, lastBlockInRange); err != nil {
 			return nil, err
 		}
-		listener.logger.Info("Finished Catching Up", "start", currBlock, "end", lastBlock)
+		listener.logger.Info("BatchFetchMode:Finish", "start", nextBlock, "end", lastBlockInRange)
 
 		// next Range
-		currBlock = new(big.Int).Add(lastBlock, big.NewInt(1))
-		lastBlock, err = listener.lastNodeBlockNumber()
+		nextBlock = utils.Inc(lastBlockInRange)
+		lastBlockInRange, err = listener.lastNodeBlockNumber()
 		if err != nil {
 			return nil, err
 		}
 	}
-	return currBlock, nil
+	return nextBlock, nil
 }
 
-func (listener *listener) syncNewBlocks(startBlock *big.Int) (*big.Int, error) {
-	listener.logger.Info("Listening For New Headers")
-	defer listener.logger.Info("Stopped Listening For New Headers")
-
-	subscriptionHeaders := make(chan *types.Header, 1000)
+// syncNewBlocks will continuously fetch all new blocks on the node
+// If consumer is too slow, it will overflow, and exit with the next fetchable block number
+func (listener *listener) syncNewBlocks(firstBlockToFetch *big.Int) (*big.Int, error) {
+	subscriptionHeaders := make(chan *types.Header, 100)
 	var closeOnce sync.Once
 	defer closeOnce.Do(func() { close(subscriptionHeaders) })
 
@@ -99,23 +100,37 @@ func (listener *listener) syncNewBlocks(startBlock *big.Int) (*big.Int, error) {
 		}
 	}
 
+	var lastWrittenBlock *big.Int
+	write := func(h *types.Header) error {
+		if err := listener.writeHeader(h); err != nil {
+			return err
+		}
+		lastWrittenBlock = h.Number
+		return nil
+	}
+
+	listener.logger.Info("SubscriptionFetchMode:Start", "start", firstBlockToFetch)
+	defer func() {
+		listener.logger.Info("SubscriptionFetchMode:Finish", "start", firstBlockToFetch, "end", lastWrittenBlock)
+	}()
+
 	// Need to check if we are missing blocks, and if so close the gap
-	firstNewBlock, err := nextHeader()
+	firstSubscriptionBlock, err := nextHeader()
 	if err != nil {
 		return nil, err
 	}
 
 	// if there's a gap, first fetch all old blocks
-	endGapBlock := new(big.Int).Sub(firstNewBlock.Number, big.NewInt(1))
-	if endGapBlock.Cmp(startBlock) > 0 {
-		listener.logger.Info("Closing gap with header subscription", "from", startBlock, "to", endGapBlock)
-		if err = listener.syncBlockRange(startBlock, endGapBlock); err != nil {
+	if firstSubscriptionBlock.Number.Cmp(firstBlockToFetch) > 0 {
+		endGapBlock := utils.Dec(firstSubscriptionBlock.Number)
+		listener.logger.Info("Gap found: closing gap with header subscription", "from", firstBlockToFetch, "to", endGapBlock)
+		if err = listener.syncBlockRange(firstBlockToFetch, endGapBlock); err != nil {
 			return nil, err
 		}
 	}
 
 	// write the first block from the subscription
-	if err := listener.writeHeader(firstNewBlock); err != nil {
+	if err := write(firstSubscriptionBlock); err != nil {
 		return nil, err
 	}
 
@@ -125,24 +140,23 @@ func (listener *listener) syncNewBlocks(startBlock *big.Int) (*big.Int, error) {
 
 		// If overflowed, first flush the subscription
 		if err == rpc.ErrSubscriptionQueueOverflow {
-			listener.logger.Error("Header Subscription overflowed. Flushing remaining header")
+			listener.logger.Warn("Header Subscription overflowed. Flushing remaining headers")
 			closeOnce.Do(func() { close(subscriptionHeaders) })
 
-			var lastFetchedBlock *big.Int
 			for h := range subscriptionHeaders {
-				if nestedErr := listener.writeHeader(h); nestedErr != nil {
+				if nestedErr := write(h); nestedErr != nil {
 					return nil, nestedErr
 				}
-				lastFetchedBlock = h.Number
 			}
-			return lastFetchedBlock, nil
+
+			return utils.Inc(lastWrittenBlock), nil
 		}
 
 		if err != nil {
 			return nil, err
 		}
 
-		if err := listener.writeHeader(header); err != nil {
+		if err := write(header); err != nil {
 			return nil, err
 		}
 	}
@@ -151,7 +165,8 @@ func (listener *listener) syncNewBlocks(startBlock *big.Int) (*big.Int, error) {
 // syncBlockRange will fetch & write all blocks in range [start,end] incluse
 func (listener *listener) syncBlockRange(start, end *big.Int) error {
 
-	for curr := new(big.Int).Set(start); end.Cmp(curr) > 0; curr.Add(curr, utils.Big1) {
+	// curr <= end => curr.Cmp(end) <= 0
+	for curr := new(big.Int).Set(start); curr.Cmp(end) <= 0; curr.Add(curr, utils.Big1) {
 		h, err := listener.cc.Eth.HeaderByNumber(listener.ctx, curr)
 		if err != nil {
 			return err
