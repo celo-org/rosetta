@@ -58,7 +58,7 @@ func printTitle(title string) {
 
 func printBlockContext(rosettabBlock *types.Block) {
 	ctx := context.Background()
-	celoStore, err := db.NewSqliteDb("./envs/rc0/rosetta.db")
+	celoStore, err := db.NewSqliteDb("./envs/alfajores/rosetta.db")
 	utils.ExitOnError(err)
 
 	cc, err := client.Dial("http://localhost:8545")
@@ -69,7 +69,7 @@ func printBlockContext(rosettabBlock *types.Block) {
 	gpm, err := celoStore.GasPriceMinimumFor(ctx, blockNumber)
 	utils.ExitOnError(err)
 
-	addresses, err := celoStore.RegistryAddressesStartOf(ctx, blockNumber, 0, "Governance", "GasPriceMinimum", "LockedGold", "Election")
+	addresses, err := celoStore.RegistryAddressesStartOf(ctx, blockNumber, 0, "Governance", "GasPriceMinimum", "LockedGold", "Election", "EpochRewards")
 
 	block, err := cc.Eth.BlockByNumber(ctx, blockNumber)
 	utils.ExitOnError(err)
@@ -103,12 +103,14 @@ func printBlockContext(rosettabBlock *types.Block) {
 	printTitle("Block Transactions")
 	for i, rtx := range rosettabBlock.Transactions {
 		fmt.Printf("Transaction %d: %s\n", i, rtx.TransactionIdentifier.Hash)
-		txHash := common.HexToHash(rtx.TransactionIdentifier.Hash)
-		tx := block.Transaction(txHash)
-		receipt, err := cc.Eth.TransactionReceipt(ctx, txHash)
-		utils.ExitOnError(err)
+		if rtx.TransactionIdentifier.Hash != rosettabBlock.BlockIdentifier.Hash {
+			txHash := common.HexToHash(rtx.TransactionIdentifier.Hash)
+			tx := block.Transaction(txHash)
+			receipt, err := cc.Eth.TransactionReceipt(ctx, txHash)
+			utils.ExitOnError(err)
 
-		fmt.Printf("GasPrice: %s\tGasUsed: %d\tStatus:%d\n", tx.GasPrice(), receipt.GasUsed, receipt.Status)
+			fmt.Printf("GasPrice: %s\tGasUsed: %d\tStatus:%d\n", tx.GasPrice(), receipt.GasUsed, receipt.Status)
+		}
 		fmt.Println("Operations")
 		for _, op := range rtx.Operations {
 			fmt.Printf("\tAddr: %s  SubAccount: %v\t  Amount: %s\tType: %s\n", op.Account.Address, op.Account.SubAccount, op.Amount.Value, op.Type)
@@ -116,5 +118,4 @@ func printBlockContext(rosettabBlock *types.Block) {
 	}
 
 	// fmt.Printf("Coinbase:\t%s\n", gpm)
-
 }
