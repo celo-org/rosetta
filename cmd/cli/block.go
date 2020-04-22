@@ -69,7 +69,17 @@ func printBlockContext(rosettabBlock *types.Block) {
 	gpm, err := celoStore.GasPriceMinimumFor(ctx, blockNumber)
 	utils.ExitOnError(err)
 
-	addresses, err := celoStore.RegistryAddressesStartOf(ctx, blockNumber, 0, "Governance", "GasPriceMinimum", "LockedGold", "Election", "EpochRewards")
+	addressNames := []string{
+		"Governance",
+		"GasPriceMinimum",
+		"LockedGold",
+		"Election",
+		"EpochRewards",
+		"Reserve",
+		//"CarbonOffset",
+	}
+
+	addresses, err := celoStore.RegistryAddressesStartOf(ctx, blockNumber, 0, addressNames...)
 
 	block, err := cc.Eth.BlockByNumber(ctx, blockNumber)
 	utils.ExitOnError(err)
@@ -78,25 +88,12 @@ func printBlockContext(rosettabBlock *types.Block) {
 	w := tabwriter.NewWriter(os.Stdout, 20, 5, 3, ' ', tabwriter.TabIndent)
 	fmt.Fprintf(w, "GasPriceMinimum:\t%s\n", gpm)
 	fmt.Fprintf(w, "Coinbase:\t%s\n", block.Coinbase().Hex())
-	if addr, ok := addresses["Governance"]; ok {
-		fmt.Fprintf(w, "Governance:\t%s\n", addr.Hex())
-	} else {
-		fmt.Fprintf(w, "Governance:\t%s\n", "Not Deployed")
-	}
-	if addr, ok := addresses["GasPriceMinimum"]; ok {
-		fmt.Fprintf(w, "GasPriceMinimum:\t%s\n", addr.Hex())
-	} else {
-		fmt.Fprintf(w, "GasPriceMinimum:\t%s\n", "Not Deployed")
-	}
-	if addr, ok := addresses["LockedGold"]; ok {
-		fmt.Fprintf(w, "LockedGold:\t%s\n", addr.Hex())
-	} else {
-		fmt.Fprintf(w, "LockedGold:\t%s\n", "Not Deployed")
-	}
-	if addr, ok := addresses["Election"]; ok {
-		fmt.Fprintf(w, "Election:\t%s\n", addr.Hex())
-	} else {
-		fmt.Fprintf(w, "Election:\t%s\n", "Not Deployed")
+	for _, name := range addressNames {
+		if addr, ok := addresses[name]; ok {
+			fmt.Fprintf(w, "%s:\t%s\n", name, addr.Hex())
+		} else {
+			fmt.Fprintf(w, "%s:\t%s\n", name, "Not Deployed")
+		}
 	}
 	w.Flush()
 
@@ -110,7 +107,7 @@ func printBlockContext(rosettabBlock *types.Block) {
 			utils.ExitOnError(err)
 
 			fmt.Printf("GasPrice: %s\tGasUsed: %d\tStatus:%d\n", tx.GasPrice(), receipt.GasUsed, receipt.Status)
-		}
+		} //TODO(Alec): See if epochrewards operations can go in there actual txs...
 		fmt.Println("Operations")
 		for _, op := range rtx.Operations {
 			fmt.Printf("\tAddr: %s  SubAccount: %v\t  Amount: %s\tType: %s\n", op.Account.Address, op.Account.SubAccount, op.Amount.Value, op.Type)
