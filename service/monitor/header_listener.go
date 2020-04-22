@@ -165,7 +165,8 @@ func (listener *listener) syncNewBlocks(firstBlockToFetch *big.Int) (*big.Int, e
 // syncBlockRange will fetch & write all blocks in range [start,end] incluse
 func (listener *listener) syncBlockRange(start, end *big.Int) error {
 
-	for curr := new(big.Int).Set(start); end.Cmp(curr) > 0; curr.Add(curr, utils.Big1) {
+	// curr <= end => curr.Cmp(end) <= 0
+	for curr := new(big.Int).Set(start); curr.Cmp(end) <= 0; curr.Add(curr, utils.Big1) {
 		h, err := listener.cc.Eth.HeaderByNumber(listener.ctx, curr)
 		if err != nil {
 			return err
