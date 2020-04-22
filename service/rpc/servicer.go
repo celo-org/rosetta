@@ -37,9 +37,6 @@ func NewServicer(celoClient *client.CeloClient, db db.RosettaDBReader, cp *celo.
 
 // Mempool - Get All Mempool Transactions
 func (s *Servicer) Mempool(ctx context.Context, request *types.MempoolRequest) (*types.MempoolResponse, *types.Error) {
-	if errResp := s.validateNetworkId(request.NetworkIdentifier); errResp != nil {
-		return nil, errResp
-	}
 
 	content, err := s.cc.TxPool.Content(ctx)
 	if err != nil {
@@ -129,9 +126,6 @@ func (s *Servicer) NetworkStatus(ctx context.Context, request *types.NetworkRequ
 
 // AccountBalance - Get an Account Balance
 func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBalanceRequest) (*types.AccountBalanceResponse, *types.Error) {
-	if errResp := s.validateNetworkId(request.NetworkIdentifier); errResp != nil {
-		return nil, errResp
-	}
 
 	accountAddr := common.HexToAddress(request.AccountIdentifier.Address)
 
@@ -228,20 +222,18 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 		return nil, LogErrCeloClient("GetAccountElectionVotes", err)
 	}
 
-	if subAccount.Metadata != nil {
-		if groupStr, ok := (*subAccount.Metadata)["group"]; ok {
-			groupAddr := common.HexToAddress(groupStr.(string))
-			pendingAmt, ok := electionVotes.Pending[groupAddr]
-			if !ok {
-				pendingAmt = utils.Big0
-			}
-			activeAmt, ok := electionVotes.Active[groupAddr]
-			if !ok {
-				activeAmt = utils.Big0
-			}
-			total := new(big.Int).Add(pendingAmt, activeAmt)
-			return createReponse(NewAmount(total, CeloGold)), nil
+	if groupStr, ok := subAccount.Metadata["group"]; ok {
+		groupAddr := common.HexToAddress(groupStr.(string))
+		pendingAmt, ok := electionVotes.Pending[groupAddr]
+		if !ok {
+			pendingAmt = utils.Big0
 		}
+		activeAmt, ok := electionVotes.Active[groupAddr]
+		if !ok {
+			activeAmt = utils.Big0
+		}
+		total := new(big.Int).Add(pendingAmt, activeAmt)
+		return createReponse(NewAmount(total, CeloGold)), nil
 	}
 
 	// On RC0 we can't track pending vs active votes, so we sum them up as "pending"
@@ -262,9 +254,6 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 
 // Block - Get a Block
 func (s *Servicer) Block(ctx context.Context, request *types.BlockRequest) (*types.BlockResponse, *types.Error) {
-	if errResp := s.validateNetworkId(request.NetworkIdentifier); errResp != nil {
-		return nil, errResp
-	}
 
 	blockHeader, err := s.blockHeader(ctx, request.BlockIdentifier)
 	if err != nil {
@@ -282,7 +271,7 @@ func (s *Servicer) Block(ctx context.Context, request *types.BlockRequest) (*typ
 		Block: &types.Block{
 			BlockIdentifier:       HeaderToBlockIdentifier(&blockHeader.Header),
 			ParentBlockIdentifier: HeaderToParentBlockIdentifier(&blockHeader.Header),
-			Timestamp:             int64(blockHeader.Time), // TODO unsafe casting from uint to int 64
+			Timestamp:             int64(blockHeader.Time * 1000), // TODO unsafe casting from uint to int 64
 		},
 		OtherTransactions: transactions,
 	}, nil
@@ -291,9 +280,6 @@ func (s *Servicer) Block(ctx context.Context, request *types.BlockRequest) (*typ
 
 // BlockTransaction - Get a Block Transaction
 func (s *Servicer) BlockTransaction(ctx context.Context, request *types.BlockTransactionRequest) (*types.BlockTransactionResponse, *types.Error) {
-	if errResp := s.validateNetworkId(request.NetworkIdentifier); errResp != nil {
-		return nil, errResp
-	}
 
 	blockHeader, err := s.blockHeader(ctx, FullToPartialBlockIdentifier(request.BlockIdentifier))
 	if err != nil {
@@ -374,11 +360,8 @@ func (s *Servicer) getTxMetadata(ctx context.Context, address common.Address) (*
 }
 
 func (s *Servicer) ConstructionMetadata(ctx context.Context, request *types.ConstructionMetadataRequest) (*types.ConstructionMetadataResponse, *types.Error) {
-	if errResp := s.validateNetworkId(request.NetworkIdentifier); errResp != nil {
-		return nil, errResp
-	}
 
-	options := *request.Options
+	options := request.Options
 	account := fmt.Sprintf("%v", options["account"])
 	address := common.HexToAddress(account)
 
@@ -418,7 +401,7 @@ func (s *Servicer) ConstructionMetadata(ctx context.Context, request *types.Cons
 	// }
 
 	response := types.ConstructionMetadataResponse{
-		Metadata: &metadata,
+		Metadata: metadata,
 	}
 	return &response, nil
 }
@@ -440,18 +423,6 @@ func (s *Servicer) ConstructionSubmit(ctx context.Context, request *types.Constr
 // ----------------------------------------------------------------------------------------
 // Private Functions
 // ----------------------------------------------------------------------------------------
-
-func (s *Servicer) validateNetworkId(id *types.NetworkIdentifier) *types.Error {
-	if id.Blockchain != BlockchainName {
-		return LogErrValidation(fmt.Errorf("Expected blockchain id %s to be %s", id.Blockchain, BlockchainName))
-	}
-
-	if s.chainParams.ChainId.String() != id.Network {
-		return LogErrValidation(fmt.Errorf("Expected network id %s to be %s", id.Network, s.chainParams.ChainId.String()))
-	}
-
-	return nil
-}
 
 func (s *Servicer) blockHeader(ctx context.Context, blockIdentifier *types.PartialBlockIdentifier) (*ethclient.HeaderAndTxnHashes, *types.Error) {
 	var err error

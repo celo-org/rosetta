@@ -3,7 +3,7 @@ module github.com/celo-org/rosetta
 go 1.13
 
 require (
-	github.com/coinbase/rosetta-sdk-go v0.1.5
+	github.com/coinbase/rosetta-sdk-go v0.1.6
 	github.com/ethereum/go-ethereum v1.9.8
 	github.com/felixge/httpsnoop v1.0.1
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
