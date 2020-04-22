@@ -140,7 +140,7 @@ func (listener *listener) syncNewBlocks(firstBlockToFetch *big.Int) (*big.Int, e
 
 		// If overflowed, first flush the subscription
 		if err == rpc.ErrSubscriptionQueueOverflow {
-			listener.logger.Error("Header Subscription overflowed. Flushing remaining headers")
+			listener.logger.Warn("Header Subscription overflowed. Flushing remaining headers")
 			closeOnce.Do(func() { close(subscriptionHeaders) })
 
 			for h := range subscriptionHeaders {
