@@ -120,7 +120,7 @@ func (s *Servicer) NetworkStatus(ctx context.Context, request *types.NetworkRequ
 
 	response := types.NetworkStatusResponse{
 		CurrentBlockIdentifier: HeaderToBlockIdentifier(latestHeader),
-		CurrentBlockTimestamp:  int64(latestHeader.Time),
+		CurrentBlockTimestamp:  int64(latestHeader.Time * 1000),
 		GenesisBlockIdentifier: HeaderToBlockIdentifier(genesisHeader),
 		Peers:                  PeersFromInfo(peersInfo),
 	}
