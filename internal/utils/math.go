@@ -12,3 +12,11 @@ func Sum(values ...*big.Int) *big.Int {
 	}
 	return acc
 }
+
+func Inc(val *big.Int) *big.Int {
+	return new(big.Int).Add(val, Big1)
+}
+
+func Dec(val *big.Int) *big.Int {
+	return new(big.Int).Sub(val, Big1)
+}

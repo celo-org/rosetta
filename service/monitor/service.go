@@ -3,12 +3,12 @@ package monitor
 import (
 	"context"
 	"errors"
-	"math/big"
 
 	"sync"
 
 	"github.com/celo-org/rosetta/celo/client"
 	"github.com/celo-org/rosetta/db"
+	"github.com/celo-org/rosetta/internal/utils"
 	"github.com/celo-org/rosetta/service"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/log"
@@ -56,8 +56,7 @@ func (ms *monitorService) Start(ctx context.Context) error {
 	}
 
 	ms.logger.Info("Resuming operation from last persisted  block", "block", startBlock)
-
-	startBlock.Add(startBlock, big.NewInt(1))
+	startBlock = utils.Inc(startBlock)
 
 	ctx, stopAll := context.WithCancel(ctx)
 
