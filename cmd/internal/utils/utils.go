@@ -22,8 +22,8 @@ func PrettyPrint(value interface{}) {
 }
 
 // WaitUntil returns a bool indicating whether the check succeeded before the timeout.
-func WaitUntil(ctx context.Context, retryPeriod, timeout time.Duration, check func() bool) bool {
-	waitCtx, stop := context.WithTimeout(ctx, timeout)
+func WaitUntil(retryPeriod, timeout time.Duration, check func() bool) bool {
+	ctx, stop := context.WithTimeout(context.Background(), timeout)
 	defer stop()
 	for {
 		select {
@@ -31,7 +31,7 @@ func WaitUntil(ctx context.Context, retryPeriod, timeout time.Duration, check fu
 			if check() {
 				return true
 			}
-		case <-waitCtx.Done():
+		case <-ctx.Done():
 			return false
 		}
 	}
