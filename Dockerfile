@@ -64,8 +64,8 @@ RUN go build -o rosetta .
 # Outputs: rosetta & geth binaries on /usr/loca/bin
 #---------------------------------------------------------------------
 
-# 7eb9ee81ad888cbe9b781dbf4e2288cc8684e6ad is celo-blockchain commit for RC0
-FROM us.gcr.io/celo-testnet/geth:7eb9ee81ad888cbe9b781dbf4e2288cc8684e6ad
+# 97a0b37cd4fe469a468b928f74506246c18dc855 is the latest image from celo-blockchain mc/rosetta-rc0
+FROM us.gcr.io/celo-testnet/geth:97a0b37cd4fe469a468b928f74506246c18dc855
 ARG COMMIT_SHA
 
 RUN apk add --no-cache ca-certificates
@@ -77,6 +77,6 @@ ENV ROSETTA_DATADIR="/data"
 ENV ROSETTA_GETH="/usr/local/bin/geth"
 ENV ROSETTA_GENESIS="/data/genesis.json"
 ENTRYPOINT ["/usr/local/bin/rosetta"]
-CMD ["serve", "local"]
+CMD ["run"]
 
 

@@ -92,5 +92,5 @@ Rosetta requires a few Celo Core Contracts
 
 Commands:
   * `make docker-build`
-  * `makde docker-publish`
+  * `make docker-publish`
 
