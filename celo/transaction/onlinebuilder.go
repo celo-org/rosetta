@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math/big"
 
 	"github.com/celo-org/rosetta/celo/client"
 	"github.com/celo-org/rosetta/celo/contract"
@@ -35,32 +34,30 @@ func NewTransactionBuilder(client *client.CeloClient) (*TransactionBuilder, erro
 	return builder, nil
 }
 
-func (b *TransactionBuilder) populateCache(key *wrapper.RegistryKey) error {
-	_, present := b.abiCache[key]
-	if present {
-		return nil
-	}
-
+func (b *TransactionBuilder) getAbi(key *wrapper.RegistryKey) (*abi.ABI, error) {
 	var abi *abi.ABI
-	var err error
+	abi, present := b.abiCache[key]
 
-	switch key {
-	case &wrapper.AccountsRegistryId:
-		abi, err = contract.ParseAccountsABI()
-	case &wrapper.ElectionRegistryId:
-		abi, err = contract.ParseElectionABI()
-	case &wrapper.LockedGoldRegistryId:
-		abi, err = contract.ParseLockedGoldABI()
-	default:
-		err = fmt.Errorf("Unimplemented ABI parsing for %s", key)
+	var err error
+	if !present {
+		switch key {
+		case &wrapper.AccountsRegistryId:
+			abi, err = contract.ParseAccountsABI()
+		case &wrapper.ElectionRegistryId:
+			abi, err = contract.ParseElectionABI()
+		case &wrapper.LockedGoldRegistryId:
+			abi, err = contract.ParseLockedGoldABI()
+		default:
+			err = fmt.Errorf("Unimplemented ABI parsing for %s", key)
+		}
 	}
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	b.abiCache[key] = abi
-	return nil
+	return abi, err
 }
 
 func (b *TransactionBuilder) fetchGenericMetadata(ctx context.Context, address common.Address) (*GenericMetadata, error) {
@@ -68,14 +65,6 @@ func (b *TransactionBuilder) fetchGenericMetadata(ctx context.Context, address c
 	if err != nil {
 		return nil, err
 	}
-
-	gatewayFeeRecipient, err := b.celoClient.Eth.Coinbase(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO: consider fetching from node
-	gatewayFee := big.NewInt(0)
 
 	gasPrice, err := b.celoClient.Eth.SuggestGasPrice(ctx)
 	if err != nil {
@@ -85,8 +74,8 @@ func (b *TransactionBuilder) fetchGenericMetadata(ctx context.Context, address c
 	metadata := GenericMetadata{
 		From:                address,
 		Nonce:               nonce,
-		GatewayFeeRecipient: gatewayFeeRecipient,
-		GatewayFee:          gatewayFee,
+		GatewayFeeRecipient: nil,
+		GatewayFee:          nil,
 		GasPrice:            gasPrice,
 	}
 	return &metadata, nil
@@ -114,13 +103,9 @@ func (b *TransactionBuilder) FetchTransactionMetadata(ctx context.Context, optio
 			return nil, err
 		}
 
-		contractABI, abiPresent := b.abiCache[registryKey]
-		if !abiPresent {
-			err := b.populateCache(registryKey)
-			if err != nil {
-				return nil, err
-			}
-			contractABI = b.abiCache[registryKey]
+		contractABI, err := b.getAbi(registryKey)
+		if err != nil {
+			return nil, err
 		}
 
 		packedData, err := contractABI.Pack(options.Method.String(), options.Args...)
