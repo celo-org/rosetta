@@ -39,7 +39,7 @@ func ComputeEpochRewards(ctx context.Context, cc *client.CeloClient, db db.Roset
 		return NewEpochRewards(rewards), nil
 	}
 
-	if err := rctx.computeRewards(&rewards, goldToken); err != nil {
+	if err := rctx.computeRewards(rewards, goldToken); err != nil {
 		return nil, err
 	}
 
