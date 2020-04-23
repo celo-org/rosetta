@@ -69,7 +69,7 @@ func printBlockContext(rosettabBlock *types.Block) {
 	gpm, err := celoStore.GasPriceMinimumFor(ctx, blockNumber)
 	utils.ExitOnError(err)
 
-	addressNames := []string{
+	contractNames := []string{
 		"Governance",
 		"GasPriceMinimum",
 		"LockedGold",
@@ -78,13 +78,11 @@ func printBlockContext(rosettabBlock *types.Block) {
 		"Reserve",
 	}
 
-	addresses, err := celoStore.RegistryAddressesStartOf(ctx, blockNumber, 0, addressNames...)
+	contractAddresses, err := celoStore.RegistryAddressesStartOf(ctx, blockNumber, 0, contractNames...)
 	utils.ExitOnError(err)
 
 	carbonOffsetPartner, err := celoStore.CarbonOffsetPartnerStartOf(ctx, blockNumber, 0)
 	utils.ExitOnError(err)
-
-	addresses["CarbonOffsetPartner"] = carbonOffsetPartner
 
 	block, err := cc.Eth.BlockByNumber(ctx, blockNumber)
 	utils.ExitOnError(err)
@@ -93,8 +91,11 @@ func printBlockContext(rosettabBlock *types.Block) {
 	w := tabwriter.NewWriter(os.Stdout, 20, 5, 3, ' ', tabwriter.TabIndent)
 	fmt.Fprintf(w, "GasPriceMinimum:\t%s\n", gpm)
 	fmt.Fprintf(w, "Coinbase:\t%s\n", block.Coinbase().Hex())
-	for _, name := range addressNames {
-		if addr, ok := addresses[name]; ok {
+	if carbonOffsetPartner != common.ZeroAddress {
+		fmt.Fprintf(w, "CarbonOffsetPartner:\t%s\n", carbonOffsetPartner.Hex())
+	}
+	for _, name := range contractNames {
+		if addr, ok := contractAddresses[name]; ok {
 			fmt.Fprintf(w, "%s:\t%s\n", name, addr.Hex())
 		} else {
 			fmt.Fprintf(w, "%s:\t%s\n", name, "Not Deployed")

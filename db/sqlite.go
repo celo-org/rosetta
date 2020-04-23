@@ -112,7 +112,7 @@ func NewSqliteDb(dbpath string) (*rosettaSqlDb, error) {
 	getCarbonOffsetPartnerStmt, err := db.Prepare(`
 		SELECT address 
 			FROM carbonOffsetPartner 
-			WHERE fromBlock < $1 OR (fromBlock = $1 AND fromTx < $2))
+			WHERE fromBlock < $1 OR (fromBlock = $1 AND fromTx < $2)
 			ORDER BY fromblock DESC, fromTx DESC 
 			LIMIT 1
 	`)
@@ -223,7 +223,7 @@ func (cs *rosettaSqlDb) CarbonOffsetPartnerStartOf(ctx context.Context, block *b
 
 	if err := cs.getCarbonOffsetPartnerStmt.QueryRowContext(ctx, block.Uint64(), txIndex).Scan(&addr); err != nil {
 		if err == sql.ErrNoRows {
-			return common.ZeroAddress, ErrCarbonOffsetPartnerNotFound
+			return common.ZeroAddress, nil
 		}
 		return common.ZeroAddress, err
 	}

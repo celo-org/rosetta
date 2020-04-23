@@ -80,7 +80,7 @@ func (rctx *rewardsContext) computeRewards(rewardsMap map[common.Address]*big.In
 	}
 
 	for iter.Next() {
-		if iter.Event.Raw.TxIndex == txCount-1 {
+		if iter.Event.Raw.TxIndex == txCount {
 			rewardsMap[iter.Event.To] = iter.Event.Value
 		}
 	}

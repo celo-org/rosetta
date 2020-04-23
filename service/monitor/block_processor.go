@@ -223,6 +223,7 @@ func (bp *processor) carbonOffsetPartner(bcs *db.BlockChangeSet) error {
 	}
 
 	for iter.Next() {
+		bp.logger.Info("CarbonOffsetPartner Changed", "address", iter.Event.Partner.Hex(), "txIndex", iter.Event.Raw.TxIndex)
 		bcs.CarbonOffsetPartnerChange = db.CarbonOffsetPartnerChange{
 			Address: iter.Event.Partner,
 			TxIndex: iter.Event.Raw.TxIndex,
