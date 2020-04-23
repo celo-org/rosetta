@@ -15,130 +15,223 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 )
 
+type processor struct {
+	ctx                 context.Context
+	headers             <-chan *types.Header
+	changes             chan<- *db.BlockChangeSet
+	cc                  *client.CeloClient
+	registry            *wrapper.RegistryWrapper
+	epochRewardsAddress common.Address
+	gpmAddress          common.Address
+	gpm                 *big.Int
+	logger              log.Logger
+}
+
 var ErrMultipleGasPriceMinimumUpdates = errors.New("Error multiple GasPriceMinimumUpdated events emmitted in same block")
 
 func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes chan<- *db.BlockChangeSet, cc *client.CeloClient, db_ db.RosettaDBReader, logger log.Logger) error {
-	logger = logger.New("pipe", "processor")
-
-	registry, err := wrapper.NewRegistry(cc)
+	bp, err := newProcessor(ctx, headers, changes, cc, db_, logger)
 	if err != nil {
 		return err
 	}
-	lastProcessedBlock, err := db_.LastPersistedBlock(ctx)
-	if err != nil {
-		return err
-	}
-	gpmAddress, err := db_.RegistryAddressStartOf(ctx, lastProcessedBlock, 0, "GasPriceMinimum")
-	if err != nil && err != db.ErrContractNotFound {
-		return err
-	}
-	gpm, err := db_.GasPriceMinimumFor(ctx, new(big.Int).Add(lastProcessedBlock, big.NewInt(1)))
-	if err != nil {
-		return err
-	}
-
-	var h *types.Header
 
 	for {
-
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case h = <-headers:
-		}
-
-		bcs := db.BlockChangeSet{
-			BlockNumber: h.Number,
-		}
-
-		blockNumber := h.Number.Uint64()
-
-		iter, err := registry.Contract().FilterRegistryUpdated(&bind.FilterOpts{
-			End:     &blockNumber,
-			Start:   blockNumber,
-			Context: ctx,
-		}, nil, nil)
+		h, err := bp.nextHeader()
 		if err != nil {
 			return err
 		}
 
-		registryChanges := make([]db.RegistryChange, 0)
-		for iter.Next() {
-			if iter.Event.Identifier == "GasPriceMinimum" {
-				gpmAddress = iter.Event.Addr
-			}
-			registryChanges = append(registryChanges, db.RegistryChange{
-				TxIndex:    iter.Event.Raw.TxIndex,
-				Contract:   iter.Event.Identifier,
-				NewAddress: iter.Event.Addr,
-			})
-			logger.Info("Core Contract Address Changed", "name", iter.Event.Identifier, "newAddress", iter.Event.Addr.Hex(), "txIndex", iter.Event.Raw.TxIndex)
+		bcs := &db.BlockChangeSet{
+			BlockNumber: h.Number,
 		}
-		if err := iter.Error(); err != nil {
+
+		if err := bp.registryChanges(bcs); err != nil {
 			return err
 		}
 
-		bcs.RegistryChanges = registryChanges
-
-		if gpmAddress != common.ZeroAddress {
-			gpmContract, err := contract.NewGasPriceMinimum(gpmAddress, cc.Eth)
-			if err != nil {
-				return err
-			}
-
-			iter, err := gpmContract.FilterGasPriceMinimumUpdated(&bind.FilterOpts{
-				End:     &blockNumber,
-				Start:   blockNumber,
-				Context: ctx,
-			})
-			if err != nil {
-				return err
-			}
-
-			// iter should only have 1 event, as gpm can only be updated once per block.
-			for multipleUpdates := false; iter.Next(); {
-				if multipleUpdates {
-					return ErrMultipleGasPriceMinimumUpdates
-				}
-				gpmNew := iter.Event.GasPriceMinimum
-
-				// We only add GasPriceMinimum to bcs if there's a change.
-				if gpm.Cmp(gpmNew) != 0 {
-					logger.Info("Gas Price Minimum Updated", "from", gpm, "to", gpmNew, "block", h.Number)
-					gpm = gpmNew
-					bcs.GasPriceMinimum = gpm
-				}
-				multipleUpdates = true
-			}
-
-			if err := iter.Error(); err != nil {
-				return err
-			}
+		if err := bp.gasPriceMinimum(bcs); err != nil {
+			return err
 		}
 
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case changes <- &bcs:
+		if err := bp.carbonOffsetPartner(bcs); err != nil {
+			return err
+		}
+
+		if err := bp.writeChanges(bcs); err != nil {
+			return err
 		}
 	}
 }
 
-func getGasPriceMinimumFromEthCall(ctx context.Context, cc *client.CeloClient, gpmAddress common.Address, block *big.Int) (*big.Int, error) {
-	gpmContract, err := contract.NewGasPriceMinimum(gpmAddress, cc.Eth)
+func newProcessor(ctx context.Context, headers <-chan *types.Header, changes chan<- *db.BlockChangeSet, cc *client.CeloClient, db_ db.RosettaDBReader, logger log.Logger) (*processor, error) {
+	registry, err := wrapper.NewRegistry(cc)
 	if err != nil {
 		return nil, err
 	}
 
-	callOpts := &bind.CallOpts{
-		BlockNumber: block,
-		Context:     ctx,
-	}
-
-	gpm, err := gpmContract.GetGasPriceMinimum(callOpts, common.ZeroAddress)
+	lastProcessedBlock, err := db_.LastPersistedBlock(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return gpm, nil
+	epochRewardsAddress, err := db_.RegistryAddressStartOf(ctx, lastProcessedBlock, 0, "EpochRewards")
+	if err != nil && err != db.ErrContractNotFound {
+		return nil, err
+	}
+
+	gpmAddress, err := db_.RegistryAddressStartOf(ctx, lastProcessedBlock, 0, "GasPriceMinimum")
+	if err != nil && err != db.ErrContractNotFound {
+		return nil, err
+	}
+
+	gpm, err := db_.GasPriceMinimumFor(ctx, new(big.Int).Add(lastProcessedBlock, big.NewInt(1)))
+	if err != nil {
+		return nil, err
+	}
+
+	return &processor{
+		ctx:                 ctx,
+		headers:             headers,
+		changes:             changes,
+		cc:                  cc,
+		registry:            registry,
+		epochRewardsAddress: epochRewardsAddress,
+		gpmAddress:          gpmAddress,
+		gpm:                 gpm,
+		logger:              logger.New("pipe", "processor"),
+	}, nil
+}
+
+func (bp *processor) writeChanges(bcs *db.BlockChangeSet) error {
+	select {
+	case <-bp.ctx.Done():
+		return bp.ctx.Err()
+	case bp.changes <- bcs:
+		return nil
+	}
+}
+
+func (bp *processor) nextHeader() (*types.Header, error) {
+	select {
+	case <-bp.ctx.Done():
+		return nil, bp.ctx.Err()
+	case h := <-bp.headers:
+		return h, nil
+	}
+}
+
+func (bp *processor) registryChanges(bcs *db.BlockChangeSet) error {
+	blockNumber := bcs.BlockNumber.Uint64()
+
+	iter, err := bp.registry.Contract().FilterRegistryUpdated(&bind.FilterOpts{
+		End:     &blockNumber,
+		Start:   blockNumber,
+		Context: bp.ctx,
+	}, nil, nil)
+	if err != nil {
+		return err
+	}
+
+	registryChanges := make([]db.RegistryChange, 0)
+
+	for iter.Next() {
+		if iter.Event.Identifier == "GasPriceMinimum" {
+			bp.gpmAddress = iter.Event.Addr
+		}
+		if iter.Event.Identifier == "EpochRewards" {
+			bp.epochRewardsAddress = iter.Event.Addr
+		}
+		registryChanges = append(registryChanges, db.RegistryChange{
+			TxIndex:    iter.Event.Raw.TxIndex,
+			Contract:   iter.Event.Identifier,
+			NewAddress: iter.Event.Addr,
+		})
+		bp.logger.Info("Core Contract Address Changed", "name", iter.Event.Identifier, "newAddress", iter.Event.Addr.Hex(), "txIndex", iter.Event.Raw.TxIndex)
+	}
+	if err := iter.Error(); err != nil {
+		return err
+	}
+
+	bcs.RegistryChanges = registryChanges
+
+	return nil
+}
+
+func (bp *processor) gasPriceMinimum(bcs *db.BlockChangeSet) error {
+	if bp.gpmAddress == common.ZeroAddress {
+		return nil
+	}
+
+	blockNumber := bcs.BlockNumber.Uint64()
+
+	gpmContract, err := contract.NewGasPriceMinimum(bp.gpmAddress, bp.cc.Eth)
+	if err != nil {
+		return err
+	}
+
+	iter, err := gpmContract.FilterGasPriceMinimumUpdated(&bind.FilterOpts{
+		End:     &blockNumber,
+		Start:   blockNumber,
+		Context: bp.ctx,
+	})
+	if err != nil {
+		return err
+	}
+
+	// iter should only have 1 event, as gpm can only be updated once per block.
+	for multipleUpdates := false; iter.Next(); {
+		if multipleUpdates {
+			return ErrMultipleGasPriceMinimumUpdates
+		}
+		gpmNew := iter.Event.GasPriceMinimum
+
+		// We only add GasPriceMinimum to bcs if there's a change.
+		if bp.gpm.Cmp(gpmNew) != 0 {
+			bp.logger.Info("Gas Price Minimum Updated", "from", bp.gpm, "to", gpmNew, "block", blockNumber)
+			bcs.GasPriceMinimum = new(big.Int).Set(gpmNew)
+			bp.gpm = new(big.Int).Set(gpmNew)
+		}
+		multipleUpdates = true
+	}
+
+	if err := iter.Error(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (bp *processor) carbonOffsetPartner(bcs *db.BlockChangeSet) error {
+	if bp.epochRewardsAddress == common.ZeroAddress {
+		return nil
+	}
+
+	blockNumber := bcs.BlockNumber.Uint64()
+
+	epochRewards, err := contract.NewEpochRewards(bp.epochRewardsAddress, bp.cc.Eth)
+	if err != nil {
+		return err
+	}
+
+	iter, err := epochRewards.FilterCarbonOffsettingFundSet(&bind.FilterOpts{
+		End:     &blockNumber,
+		Start:   blockNumber,
+		Context: bp.ctx,
+	}, nil)
+	if err != nil {
+		return err
+	}
+
+	for iter.Next() {
+		bcs.CarbonOffsetPartnerChange = db.CarbonOffsetPartnerChange{
+			Address: iter.Event.Partner,
+			TxIndex: iter.Event.Raw.TxIndex,
+		}
+	}
+
+	if err := iter.Error(); err != nil {
+		return err
+	}
+
+	return nil
 }

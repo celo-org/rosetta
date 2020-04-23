@@ -76,10 +76,15 @@ func printBlockContext(rosettabBlock *types.Block) {
 		"Election",
 		"EpochRewards",
 		"Reserve",
-		//"CarbonOffset",
 	}
 
 	addresses, err := celoStore.RegistryAddressesStartOf(ctx, blockNumber, 0, addressNames...)
+	utils.ExitOnError(err)
+
+	carbonOffsetPartner, err := celoStore.CarbonOffsetPartnerStartOf(ctx, blockNumber, 0)
+	utils.ExitOnError(err)
+
+	addresses["CarbonOffsetPartner"] = carbonOffsetPartner
 
 	block, err := cc.Eth.BlockByNumber(ctx, blockNumber)
 	utils.ExitOnError(err)

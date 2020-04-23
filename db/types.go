@@ -9,8 +9,9 @@ import (
 )
 
 var (
-	ErrContractNotFound = errors.New("db: contract record not found")
-	ErrFutureBlock      = errors.New("db: block number is greater than last persisted block")
+	ErrContractNotFound            = errors.New("db: contract record not found")
+	ErrCarbonOffsetPartnerNotFound = errors.New("db: carbon offset partner has not been set")
+	ErrFutureBlock                 = errors.New("db: block number is greater than last persisted block")
 )
 
 type RosettaDBReader interface {
@@ -46,8 +47,14 @@ type RegistryChange struct {
 	NewAddress common.Address
 }
 
+type CarbonOffsetPartnerChange struct {
+	TxIndex uint
+	Address common.Address
+}
+
 type BlockChangeSet struct {
-	BlockNumber     *big.Int
-	GasPriceMinimum *big.Int
-	RegistryChanges []RegistryChange
+	BlockNumber               *big.Int
+	GasPriceMinimum           *big.Int
+	RegistryChanges           []RegistryChange
+	CarbonOffsetPartnerChange CarbonOffsetPartnerChange
 }
