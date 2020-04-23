@@ -38,7 +38,7 @@ RUN cd /bls-zexe && $HOME/.cargo/bin/cargo build --target x86_64-unknown-linux-m
 #---------------------------------------------------------------------
 FROM golang:1.13-alpine as builder
 WORKDIR /rosetta
-RUN apk add --no-cache make gcc musl-dev linux-headers git
+RUN apk add --no-cache make gcc musl-dev linux-headers git curl
 
 
 
@@ -56,6 +56,7 @@ RUN go mod download
 #  (this saves to redownload everything when go.mod/sum didn't change)
 COPY . .
 RUN go build -o rosetta .
+RUN make rc0-env
 
 
 #---------------------------------------------------------------------
@@ -69,14 +70,15 @@ FROM us.gcr.io/celo-testnet/geth:97a0b37cd4fe469a468b928f74506246c18dc855
 ARG COMMIT_SHA
 
 RUN apk add --no-cache ca-certificates
-COPY --from=builder /rosetta/rosetta /usr/local/bin/
 RUN echo $COMMIT_SHA > /version.txt
-RUN mkdir /data
+COPY --from=builder /rosetta/rosetta /usr/local/bin/
+COPY --from=builder /rosetta/envs/rc0/genesis.json /data/
+#RUN mkdir /data
 EXPOSE 8080/tcp
 ENV ROSETTA_DATADIR="/data"
 ENV ROSETTA_GETH="/usr/local/bin/geth"
 ENV ROSETTA_GENESIS="/data/genesis.json"
 ENTRYPOINT ["/usr/local/bin/rosetta"]
-CMD ["serve", "local"]
+CMD ["run", "--staticNode", "enode://33ac194052ccd10ce54101c8340dbbe7831de02a3e7dcbca7fd35832ff8c53a72fd75e57ce8c8e73a0ace650dc2c2ec1e36f0440e904bc20a3cf5927f2323e85@34.83.199.225:30303"]
 
 
