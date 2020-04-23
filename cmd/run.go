@@ -151,8 +151,13 @@ func runAllServices(ctx context.Context, gethDataDir, genesisPath, sqlitePath st
 
 	sm.Add(gethSrv)
 
-	// Wait for geth to start
-	time.Sleep(5 * time.Second)
+	gethStarted := utils.WaitUntil(500*time.Millisecond, 30*time.Second, func() bool {
+		return fileutils.FileExists(gethSrv.IpcFilePath())
+	})
+
+	if !gethStarted {
+		return fmt.Errorf("geth service failed to start before timeout: %d", time.Millisecond)
+	}
 
 	chainParams := gethSrv.ChainParameters()
 	log.Info("Detected Chain Parameters", "chainId", chainParams.ChainId, "epochSize", chainParams.EpochSize)
