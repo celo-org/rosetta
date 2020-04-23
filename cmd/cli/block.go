@@ -22,9 +22,7 @@ import (
 	"os"
 	"text/tabwriter"
 
-	"github.com/celo-org/rosetta/celo/client"
 	"github.com/celo-org/rosetta/cmd/internal/utils"
-	"github.com/celo-org/rosetta/db"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
@@ -58,18 +56,16 @@ func printTitle(title string) {
 
 func printBlockContext(rosettabBlock *types.Block) {
 	ctx := context.Background()
-	celoStore, err := db.NewSqliteDb("./envs/rc0/rosetta.db")
-	utils.ExitOnError(err)
-
-	cc, err := client.Dial("http://localhost:8545")
-	utils.ExitOnError(err)
+	db := getDb()
+	cc := getCeloClient()
 
 	blockNumber := big.NewInt(rosettabBlock.BlockIdentifier.Index)
 
-	gpm, err := celoStore.GasPriceMinimumFor(ctx, blockNumber)
+	gpm, err := db.GasPriceMinimumFor(ctx, blockNumber)
 	utils.ExitOnError(err)
 
-	addresses, err := celoStore.RegistryAddressesStartOf(ctx, blockNumber, 0, "Governance", "GasPriceMinimum", "LockedGold", "Election")
+	names := []string{"Governance", "GasPriceMinimum", "LockedGold", "Election", "StableToken", "Validators", "EpochRewards"}
+	addresses, err := db.RegistryAddressesStartOf(ctx, blockNumber, 0, names...)
 
 	block, err := cc.Eth.BlockByNumber(ctx, blockNumber)
 	utils.ExitOnError(err)
@@ -78,25 +74,13 @@ func printBlockContext(rosettabBlock *types.Block) {
 	w := tabwriter.NewWriter(os.Stdout, 20, 5, 3, ' ', tabwriter.TabIndent)
 	fmt.Fprintf(w, "GasPriceMinimum:\t%s\n", gpm)
 	fmt.Fprintf(w, "Coinbase:\t%s\n", block.Coinbase().Hex())
-	if addr, ok := addresses["Governance"]; ok {
-		fmt.Fprintf(w, "Governance:\t%s\n", addr.Hex())
-	} else {
-		fmt.Fprintf(w, "Governance:\t%s\n", "Not Deployed")
-	}
-	if addr, ok := addresses["GasPriceMinimum"]; ok {
-		fmt.Fprintf(w, "GasPriceMinimum:\t%s\n", addr.Hex())
-	} else {
-		fmt.Fprintf(w, "GasPriceMinimum:\t%s\n", "Not Deployed")
-	}
-	if addr, ok := addresses["LockedGold"]; ok {
-		fmt.Fprintf(w, "LockedGold:\t%s\n", addr.Hex())
-	} else {
-		fmt.Fprintf(w, "LockedGold:\t%s\n", "Not Deployed")
-	}
-	if addr, ok := addresses["Election"]; ok {
-		fmt.Fprintf(w, "Election:\t%s\n", addr.Hex())
-	} else {
-		fmt.Fprintf(w, "Election:\t%s\n", "Not Deployed")
+
+	for _, name := range names {
+		if addr, ok := addresses[name]; ok {
+			fmt.Fprintf(w, "%s:\t%s\n", name, addr.Hex())
+		} else {
+			fmt.Fprintf(w, "%s:\t%s\n", name, "Not Deployed")
+		}
 	}
 	w.Flush()
 
@@ -110,9 +94,20 @@ func printBlockContext(rosettabBlock *types.Block) {
 
 		fmt.Printf("GasPrice: %s\tGasUsed: %d\tStatus:%d\n", tx.GasPrice(), receipt.GasUsed, receipt.Status)
 		fmt.Println("Operations")
+		w = tabwriter.NewWriter(os.Stdout, 20, 5, 3, ' ', tabwriter.TabIndent)
+		fmt.Fprintf(w, "Account\tAmount\tType\tStatus\n")
 		for _, op := range rtx.Operations {
-			fmt.Printf("\tAddr: %s  SubAccount: %v\t  Amount: %s\tType: %s\n", op.Account.Address, op.Account.SubAccount, op.Amount.Value, op.Type)
+			var acc string
+			if op.Account.SubAccount == nil {
+				acc = op.Account.Address
+			} else if group, ok := op.Account.SubAccount.Metadata["group"]; ok {
+				acc = fmt.Sprintf("%s - %s(%s)", op.Account.Address, op.Account.SubAccount.Address, group)
+			} else {
+				acc = fmt.Sprintf("%s - %s", op.Account.Address, op.Account.SubAccount.Address)
+			}
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", acc, op.Amount.Value, op.Type, op.Status)
 		}
+		w.Flush()
 	}
 
 	// fmt.Printf("Coinbase:\t%s\n", gpm)
