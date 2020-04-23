@@ -85,7 +85,7 @@ func NewAccountIdentifier(addr common.Address, subAccount *rosettaTypes.SubAccou
 func NewSubAccountIdentifier(name string, id string, value string) *rosettaTypes.SubAccountIdentifier {
 	return &rosettaTypes.SubAccountIdentifier{
 		Address:  name,
-		Metadata: &map[string]interface{}{id: value},
+		Metadata: map[string]interface{}{id: value},
 	}
 }
 
@@ -113,7 +113,7 @@ func AccountFromAnalyzer(acc analyzer.Account) *rosettaTypes.AccountIdentifier {
 		Address: acc.Address.Hex(),
 		SubAccount: &rosettaTypes.SubAccountIdentifier{
 			Address:  string(acc.SubAccount.Identifier),
-			Metadata: &acc.SubAccount.Metadata,
+			Metadata: acc.SubAccount.Metadata,
 		},
 	}
 }

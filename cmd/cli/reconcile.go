@@ -116,7 +116,7 @@ func runReconciler(cmd *cobra.Command, args []string) {
 
 		blocks = make([]*types.Block, to-curr+1)
 		for num, block := range blockMap {
-			blocks[num-curr] = block.Block
+			blocks[num-curr] = block
 		}
 
 		reconcileRange(blocks, checkDifferences)
@@ -167,14 +167,12 @@ func HashAccount(acc *types.AccountIdentifier) common.Hash {
 	if acc.SubAccount != nil {
 		h.Write([]byte(acc.SubAccount.Address))
 
-		if acc.SubAccount.Metadata != nil {
-			val, ok := (*acc.SubAccount.Metadata)["group"]
-			if ok {
-				valStr := val.(string)
-				h.Write([]byte("group:"))
-				h.Write([]byte(valStr))
-			}
+		if val, ok := acc.SubAccount.Metadata["group"]; ok {
+			valStr := val.(string)
+			h.Write([]byte("group:"))
+			h.Write([]byte(valStr))
 		}
+
 	}
 	var hash []byte
 	hash = h.Sum(hash)
