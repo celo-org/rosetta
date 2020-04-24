@@ -15,7 +15,6 @@ GITHUB_REPO?=rosetta
 CARGO_exists := $(shell command -v cargo 2> /dev/null)
 LSB_exists := $(shell command -v lsb_release 2> /dev/null)
 GOLANGCI_exists := $(shell command -v golangci-lint 2> /dev/null)
-OPENAPIGEN_exists := $(shell command -v openapi-generator 2> /dev/null)
 
 COMMIT_SHA=$(shell git rev-parse HEAD)
 
@@ -49,19 +48,6 @@ endif
 
 gen-contracts:
 	go run scripts/gen-contracts.go -gcelo $(CELO_BLOCKCHAIN_PATH) -monorepo $(CELO_MONOREPO_PATH)
-
-gen-rpc:
-ifeq ("$(OPENAPIGEN_exists)","")
-	$(error "No openapi-generator in PATH, consult https://github.com/OpenAPITools/openapi-generator#1---installation")
-else
-	GO_POST_PROCESS_FILE="$(GOPATH)/bin/goimports -w" \
-	openapi-generator generate -g go-server \
-	--input-spec swagger.json \
-	--git-user-id $(GITHUB_ORG) --git-repo-id $(GITHUB_REPO) \
-	--package-name "api" --additional-properties "sourceFolder=api" \
-	--template-dir ./templates \
-	--enable-post-process-file
-endif
 
 test: 
 	go test ./...

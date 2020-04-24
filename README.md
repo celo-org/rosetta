@@ -69,15 +69,8 @@ Important commands:
 
 * `make all`: Builds project (compiles go project, compiles bls-zexe)
 * `make gen-contracts`: Regenerates contract wrappers
-* `make gen-rpc`: Regenerates server scaffold based on `swagger.json` spec
 * `make test` or `go test ./...` to run unit tests
 * `go build ./...` to build all modules (only compiles, doesn't generate or compile rust library)
-
-### Changing Generated Files
-
-* The `templates` folder contains all mustache templates for the scaffold.
-* Do changes to the templates and run `make gen-rpc`
-* If you modify a generated file, and want to avoid to overwrite it. Add it to `.openapi-generator-ignore`
 
 ### Managing Generated Contracts
 
