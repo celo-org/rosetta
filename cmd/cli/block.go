@@ -69,6 +69,9 @@ func printBlockContext(rosettabBlock *types.Block) {
 	gpm, err := celoStore.GasPriceMinimumFor(ctx, blockNumber)
 	utils.ExitOnError(err)
 
+	tobinTax, err := celoStore.TobinTaxFor(ctx, blockNumber)
+	utils.ExitOnError(err)
+
 	contractNames := []string{
 		"Governance",
 		"GasPriceMinimum",
@@ -90,6 +93,7 @@ func printBlockContext(rosettabBlock *types.Block) {
 	printTitle("Block Context")
 	w := tabwriter.NewWriter(os.Stdout, 20, 5, 3, ' ', tabwriter.TabIndent)
 	fmt.Fprintf(w, "GasPriceMinimum:\t%s\n", gpm)
+	fmt.Fprintf(w, "TobinTax:\t%s\n", tobinTax)
 	fmt.Fprintf(w, "Coinbase:\t%s\n", block.Coinbase().Hex())
 	if carbonOffsetPartner != common.ZeroAddress {
 		fmt.Fprintf(w, "CarbonOffsetPartner:\t%s\n", carbonOffsetPartner.Hex())
@@ -113,7 +117,7 @@ func printBlockContext(rosettabBlock *types.Block) {
 			utils.ExitOnError(err)
 
 			fmt.Printf("GasPrice: %s\tGasUsed: %d\tStatus:%d\n", tx.GasPrice(), receipt.GasUsed, receipt.Status)
-		} //TODO(Alec): See if epochrewards operations can go in there actual txs...
+		}
 		fmt.Println("Operations")
 		for _, op := range rtx.Operations {
 			fmt.Printf("\tAddr: %s  SubAccount: %v\t  Amount: %s\tType: %s\n", op.Account.Address, op.Account.SubAccount, op.Amount.Value, op.Type)

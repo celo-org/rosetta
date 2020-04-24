@@ -16,8 +16,10 @@ type rosettaSqlDb struct {
 	updateLastBlockStmt           *sql.Stmt
 	getRegistryAddressStmt        *sql.Stmt
 	getGasPriceMinimumStmt        *sql.Stmt
+	getTobinTaxStmt               *sql.Stmt
 	getCarbonOffsetPartnerStmt    *sql.Stmt
 	insertGasPriceMinimumStmt     *sql.Stmt
+	insertTobinTaxStmt            *sql.Stmt
 	insertRegistryAddressStmt     *sql.Stmt
 	insertCarbonOffsetPartnerStmt *sql.Stmt
 }
@@ -26,6 +28,7 @@ func initDatabase(db *sql.DB) error {
 	schema := []string{
 		"CREATE table IF NOT EXISTS registry (contract text, fromBlock integer, fromTx integer, address blob)",
 		"CREATE table IF NOT EXISTS gasPriceMinimum (fromBlock integer, val blob)",
+		"CREATE table IF NOT EXISTS tobinTax (fromBlock integer, val integer)",
 		"CREATE table IF NOT EXISTS carbonOffsetPartner (fromBlock integer, fromTx integer, address blob)",
 		"CREATE table IF NOT EXISTS stats (lastBlock integer not null DEFAULT 0)",
 	}
@@ -72,6 +75,11 @@ func NewSqliteDb(dbpath string) (*rosettaSqlDb, error) {
 		return nil, err
 	}
 
+	insertTobinTaxStmt, err := db.Prepare("INSERT INTO tobinTax (fromBlock, val) VALUES (?, ?)")
+	if err != nil {
+		return nil, err
+	}
+
 	insertRegistryAddressStmt, err := db.Prepare("INSERT INTO registry (contract, fromBlock, fromTx, address) VALUES (?, ?, ?, ?)")
 	if err != nil {
 		return nil, err
@@ -109,6 +117,17 @@ func NewSqliteDb(dbpath string) (*rosettaSqlDb, error) {
 		return nil, err
 	}
 
+	getTobinTaxStmt, err := db.Prepare(`
+		SELECT val 
+			FROM tobinTax 
+			WHERE fromBlock <= $1 
+			ORDER BY fromblock DESC
+			LIMIT 1
+	`)
+	if err != nil {
+		return nil, err
+	}
+
 	getCarbonOffsetPartnerStmt, err := db.Prepare(`
 		SELECT address 
 			FROM carbonOffsetPartner 
@@ -126,8 +145,10 @@ func NewSqliteDb(dbpath string) (*rosettaSqlDb, error) {
 		updateLastBlockStmt:           updateLastBlockStmt,
 		getRegistryAddressStmt:        getRegistryAddressStmt,
 		getGasPriceMinimumStmt:        getGasPriceMinimumStmt,
+		getTobinTaxStmt:               getTobinTaxStmt,
 		getCarbonOffsetPartnerStmt:    getCarbonOffsetPartnerStmt,
 		insertGasPriceMinimumStmt:     insertGasPriceMinimumStmt,
+		insertTobinTaxStmt:            insertTobinTaxStmt,
 		insertRegistryAddressStmt:     insertRegistryAddressStmt,
 		insertCarbonOffsetPartnerStmt: insertCarbonOffsetPartnerStmt,
 	}, nil
@@ -177,6 +198,23 @@ func (cs *rosettaSqlDb) GasPriceMinimumFor(ctx context.Context, block *big.Int) 
 	}
 
 	return new(big.Int).SetBytes(gpmBytes), nil
+}
+
+func (cs *rosettaSqlDb) TobinTaxFor(ctx context.Context, block *big.Int) (*big.Int, error) {
+	if err := cs.CheckBlockNumber(ctx, block); err != nil {
+		return nil, err
+	}
+
+	var tobinTax uint64
+
+	if err := cs.getTobinTaxStmt.QueryRowContext(ctx, block.Uint64()).Scan(&tobinTax); err != nil {
+		if err == sql.ErrNoRows {
+			return big.NewInt(0), nil
+		}
+		return nil, err
+	}
+
+	return new(big.Int).SetUint64(tobinTax), nil
 }
 
 func (cs *rosettaSqlDb) RegistryAddressStartOf(ctx context.Context, block *big.Int, txIndex uint, contractName string) (common.Address, error) {
@@ -259,6 +297,15 @@ func (cs *rosettaSqlDb) ApplyChanges(ctx context.Context, changeSet *BlockChange
 
 	if changeSet.GasPriceMinimum != nil {
 		if _, err = tx.StmtContext(ctx, cs.insertGasPriceMinimumStmt).ExecContext(ctx, changeSet.BlockNumber.Int64(), changeSet.GasPriceMinimum.Bytes()); err != nil {
+			if rollbackErr := tx.Rollback(); rollbackErr != nil {
+				return rollbackErr
+			}
+			return err
+		}
+	}
+
+	if changeSet.TobinTax != nil {
+		if _, err = tx.StmtContext(ctx, cs.insertTobinTaxStmt).ExecContext(ctx, changeSet.BlockNumber.Int64(), changeSet.TobinTax.Int64()); err != nil {
 			if rollbackErr := tx.Rollback(); rollbackErr != nil {
 				return rollbackErr
 			}

@@ -23,7 +23,9 @@ type processor struct {
 	registry            *wrapper.RegistryWrapper
 	epochRewardsAddress common.Address
 	gpmAddress          common.Address
+	reserveAddress      common.Address
 	gpm                 *big.Int
+	tobinTax            *big.Int
 	logger              log.Logger
 }
 
@@ -36,13 +38,9 @@ func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes c
 	}
 
 	for {
-		h, err := bp.nextHeader()
+		bcs, err := bp.initNextBlockChangeSet()
 		if err != nil {
 			return err
-		}
-
-		bcs := &db.BlockChangeSet{
-			BlockNumber: h.Number,
 		}
 
 		if err := bp.registryChanges(bcs); err != nil {
@@ -54,6 +52,10 @@ func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes c
 		}
 
 		if err := bp.carbonOffsetPartner(bcs); err != nil {
+			return err
+		}
+
+		if err := bp.tobinTaxChange(bcs); err != nil {
 			return err
 		}
 
@@ -84,7 +86,15 @@ func newProcessor(ctx context.Context, headers <-chan *types.Header, changes cha
 		return nil, err
 	}
 
+	// GasPriceMinimum is updated at the end of each block and applied to the following block.
+	// So, to get the gpm that was SET at the end of the lastProcessedBlock we query the gpm
+	// used FOR the next block.
 	gpm, err := db_.GasPriceMinimumFor(ctx, new(big.Int).Add(lastProcessedBlock, big.NewInt(1)))
+	if err != nil {
+		return nil, err
+	}
+
+	tobinTax, err := db_.TobinTaxFor(ctx, lastProcessedBlock)
 	if err != nil {
 		return nil, err
 	}
@@ -98,6 +108,7 @@ func newProcessor(ctx context.Context, headers <-chan *types.Header, changes cha
 		epochRewardsAddress: epochRewardsAddress,
 		gpmAddress:          gpmAddress,
 		gpm:                 gpm,
+		tobinTax:            tobinTax,
 		logger:              logger.New("pipe", "processor"),
 	}, nil
 }
@@ -118,6 +129,17 @@ func (bp *processor) nextHeader() (*types.Header, error) {
 	case h := <-bp.headers:
 		return h, nil
 	}
+}
+
+func (bp *processor) initNextBlockChangeSet() (*db.BlockChangeSet, error) {
+	h, err := bp.nextHeader()
+	if err != nil {
+		return nil, err
+	}
+
+	return &db.BlockChangeSet{
+		BlockNumber: h.Number,
+	}, nil
 }
 
 func (bp *processor) registryChanges(bcs *db.BlockChangeSet) error {
@@ -232,6 +254,38 @@ func (bp *processor) carbonOffsetPartner(bcs *db.BlockChangeSet) error {
 
 	if err := iter.Error(); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (bp *processor) tobinTaxChange(bcs *db.BlockChangeSet) error {
+	if bp.reserveAddress == common.ZeroAddress {
+		return nil
+	}
+
+	reserve, err := contract.NewReserve(bp.reserveAddress, bp.cc.Eth)
+	if err != nil {
+		return err
+	}
+
+	tobinTaxCache, err := reserve.TobinTaxCache(&bind.CallOpts{
+		Pending:     false,
+		BlockNumber: bcs.BlockNumber,
+		Context:     bp.ctx,
+	})
+	if err != nil {
+		return err
+	}
+
+	// TODO: Add event for tobinTaxCache update to monorepo and use that instead of eth call.
+
+	tobinTaxNew := tobinTaxCache.Numerator //TODO(Alec): this will need conversion
+
+	if bp.tobinTax.Cmp(tobinTaxNew) != 0 {
+		bp.logger.Info("Tobin Tax Updated", "from", bp.tobinTax, "to", tobinTaxNew, "block", bcs.BlockNumber)
+		bcs.TobinTax = new(big.Int).Set(tobinTaxNew)
+		bp.tobinTax = new(big.Int).Set(tobinTaxNew)
 	}
 
 	return nil

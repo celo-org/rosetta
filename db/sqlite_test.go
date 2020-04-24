@@ -165,6 +165,63 @@ func TestGasPriceMinimum(t *testing.T) {
 
 }
 
+func TestTobinTax(t *testing.T) {
+	RegisterTestingT(t)
+	ctx := context.Background()
+
+	celoDb, err := NewSqliteDb(":memory:")
+	Ω(err).ShouldNot(HaveOccurred())
+
+	err = celoDb.ApplyChanges(ctx, &BlockChangeSet{
+		BlockNumber: big.NewInt(10),
+		TobinTax:    big.NewInt(50000),
+	})
+	Ω(err).ShouldNot(HaveOccurred())
+
+	err = celoDb.ApplyChanges(ctx, &BlockChangeSet{
+		BlockNumber: big.NewInt(15),
+		TobinTax:    big.NewInt(100000),
+	})
+	Ω(err).ShouldNot(HaveOccurred())
+
+	var tobinTax *big.Int
+
+	t.Run("Before", func(t *testing.T) {
+		RegisterTestingT(t)
+		tobinTax, err = celoDb.TobinTaxFor(ctx, big.NewInt(9))
+		Ω(err).ShouldNot(HaveOccurred())
+		Ω(tobinTax.Uint64()).Should(Equal(uint64(0)))
+	})
+
+	t.Run("Same Block", func(t *testing.T) {
+		RegisterTestingT(t)
+		tobinTax, err = celoDb.TobinTaxFor(ctx, big.NewInt(10))
+		Ω(err).ShouldNot(HaveOccurred())
+		Ω(tobinTax.Uint64()).Should(Equal(uint64(50000)))
+	})
+
+	t.Run("After Block", func(t *testing.T) {
+		RegisterTestingT(t)
+		tobinTax, err = celoDb.TobinTaxFor(ctx, big.NewInt(11))
+		Ω(err).ShouldNot(HaveOccurred())
+		Ω(tobinTax.Uint64()).Should(Equal(uint64(50000)))
+	})
+
+	t.Run("On Next Change", func(t *testing.T) {
+		RegisterTestingT(t)
+		tobinTax, err = celoDb.TobinTaxFor(ctx, big.NewInt(15))
+		Ω(err).ShouldNot(HaveOccurred())
+		Ω(tobinTax.Uint64()).Should(Equal(uint64(100000)))
+	})
+
+	t.Run("After Last Persisted Change", func(t *testing.T) {
+		RegisterTestingT(t)
+		tobinTax, err = celoDb.TobinTaxFor(ctx, big.NewInt(17))
+		Ω(err).Should(Equal(ErrFutureBlock))
+	})
+
+}
+
 func TestGasPriceMinimum_VeryLargeNumber(t *testing.T) {
 	RegisterTestingT(t)
 	ctx := context.Background()
