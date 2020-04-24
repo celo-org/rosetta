@@ -36,14 +36,6 @@ const (
 	OperationFailed  OperationResult = "failed"
 )
 
-const (
-	OptionsFromKey   = "from"
-	OptionsToKey     = "to"
-	OptionsValueKey  = "value"
-	OptionsMethodKey = "method"
-	OptionsArgsKey   = "args"
-)
-
 func (or OperationResult) String() string { return string(or) }
 
 func (or OperationResult) ToOperationStatus() *types.OperationStatus {

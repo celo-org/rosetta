@@ -394,18 +394,17 @@ func (s *Servicer) ConstructionSubmit(ctx context.Context, request *types.Constr
 // Private Functions
 // ----------------------------------------------------------------------------------------
 
-// TODO:(yorke) replace with jsonDecode
 func (s *Servicer) validateTxConstructionOptions(options map[string]interface{}) (*transaction.TransactionOptions, *types.Error) {
-	from, fromPresent := options[OptionsFromKey]
+	from, fromPresent := options["from"]
 	if !fromPresent {
-		return nil, LogErrValidation(fmt.Errorf("No '%s' provided on tx construction options", OptionsFromKey))
+		return nil, LogErrValidation(fmt.Errorf("No 'from' provided on tx construction options"))
 	}
 	fromAddress, ok := from.(common.Address)
 	if !ok {
 		return nil, LogErrValidation(fmt.Errorf("From must be a common.address"))
 	}
 
-	to, toPresent := options[OptionsToKey]
+	to, toPresent := options["to"]
 	var toAddress *common.Address
 	if toPresent {
 		toAddress, ok = to.(*common.Address)
@@ -414,7 +413,7 @@ func (s *Servicer) validateTxConstructionOptions(options map[string]interface{})
 		}
 	}
 
-	method, methodPresent := options[OptionsMethodKey]
+	method, methodPresent := options["method"]
 	var celoMethod *transaction.CeloMethod
 	if methodPresent {
 		celoMethod, ok = method.(*transaction.CeloMethod)
@@ -423,7 +422,7 @@ func (s *Servicer) validateTxConstructionOptions(options map[string]interface{})
 		}
 	}
 
-	args, argsPresent := options[OptionsArgsKey]
+	args, argsPresent := options["args"]
 	var argsArray []interface{}
 	if argsPresent {
 		arr, ok := args.([]interface{})
@@ -433,7 +432,7 @@ func (s *Servicer) validateTxConstructionOptions(options map[string]interface{})
 		argsArray = arr
 	}
 
-	value, valuePresent := options[OptionsValueKey]
+	value, valuePresent := options["value"]
 	var valueBigInt *big.Int
 	if valuePresent {
 		valueBigInt, ok = value.(*big.Int)
@@ -451,18 +450,6 @@ func (s *Servicer) validateTxConstructionOptions(options map[string]interface{})
 	}
 
 	return &txOptions, nil
-}
-
-func (s *Servicer) validateNetworkId(id *types.NetworkIdentifier) *types.Error {
-	if id.Blockchain != BlockchainName {
-		return LogErrValidation(fmt.Errorf("Expected blockchain id %s to be %s", id.Blockchain, BlockchainName))
-	}
-
-	if s.chainParams.ChainId.String() != id.Network {
-		return LogErrValidation(fmt.Errorf("Expected network id %s to be %s", id.Network, s.chainParams.ChainId.String()))
-	}
-
-	return nil
 }
 
 func (s *Servicer) blockHeader(ctx context.Context, blockIdentifier *types.PartialBlockIdentifier) (*ethclient.HeaderAndTxnHashes, *types.Error) {
