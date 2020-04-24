@@ -26,7 +26,7 @@ func main() {
 
 	// step 2: query rosetta for network/api information ONLINE
 	ctx := context.Background()
-	fetcherInstance := fetcher.New(ctx, "http://localhost:8080")
+	fetcherInstance := fetcher.New("http://localhost:8080")
 	networkId, _, err := fetcherInstance.InitializeAsserter(ctx)
 	if err != nil {
 		log.Fatalf("Error initializing ")
@@ -42,17 +42,24 @@ func main() {
 	// generalizes tx flow
 	submitSigned := func(txOptions *transaction.TransactionOptions) error {
 		// step 1: decide options OFFLINE
-		optionsMap := client.SerializeTransactionOptions(txOptions)
+		optionsMap := map[string]interface{}{
+			"from":   txOptions.From,
+			"to":     txOptions.To,
+			"value":  txOptions.Value,
+			"method": txOptions.Method,
+			"args":   txOptions.Args,
+		}
+		// optionsMap := client.SerializeTransactionOptions(txOptions)
 
 		// step 2: fetch metadata ONLINE
-		metadataMap, err := fetcherInstance.ConstructionMetadata(ctx, networkId, &optionsMap)
+		metadataMap, err := fetcherInstance.ConstructionMetadata(ctx, networkId, optionsMap)
 		if err != nil {
 			return err
 		}
 
 		// step 3: sign transaction OFFLINE
-		txMetadata := (*metadataMap)["tx"].(transaction.TransactionMetadata)
-		tx := client.ConstructTxFromMetadata(&txMetadata)
+		txMetadata := metadataMap["tx"].(transaction.TransactionMetadata)
+		tx := txMetadata.AsTransaction()
 		signedTx, err := client.SignTransaction(tx, privKey, &signer)
 		if err != nil {
 			return err

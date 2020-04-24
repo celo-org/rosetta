@@ -5,6 +5,7 @@ import (
 
 	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 )
 
 type CeloMethod string
@@ -25,22 +26,10 @@ var (
 	// EpochRewards         TransactionType = "epochRewards"
 )
 
-var AllCeloMethods = []*CeloMethod{
-	&CreateAccount,
-	&LockGold,
-	&UnlockGold,
-	&RelockGold,
-	&WithdrawGold,
-	&Vote,
-	&ActivateVotes,
-	&RevokeActiveVotes,
-	&RevokePendingVotes,
-}
-
 func (tt CeloMethod) String() string { return string(tt) }
 
 var (
-	CeloMethodToContract = map[*CeloMethod]*wrapper.RegistryKey{
+	CeloMethodToRegistryKey = map[*CeloMethod]*wrapper.RegistryKey{
 		&CreateAccount:      &wrapper.AccountsRegistryId,
 		&LockGold:           &wrapper.LockedGoldRegistryId,
 		&UnlockGold:         &wrapper.LockedGoldRegistryId,
@@ -79,4 +68,18 @@ type TransactionMetadata struct {
 	Value   *big.Int
 	Gas     uint64
 	Data    []byte
+}
+
+func (tm *TransactionMetadata) AsTransaction() *types.Transaction {
+	return types.NewTransaction(
+		tm.Generic.Nonce,
+		*tm.To,
+		tm.Value,
+		tm.Gas,
+		tm.Generic.GasPrice,
+		nil, // non-cGLD fees not supported
+		tm.Generic.GatewayFeeRecipient,
+		tm.Generic.GatewayFee,
+		tm.Data,
+	)
 }

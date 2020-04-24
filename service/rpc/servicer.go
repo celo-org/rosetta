@@ -39,15 +39,22 @@ type Servicer struct {
 	cc          *client.CeloClient
 	db          db.RosettaDBReader
 	chainParams *celo.ChainParameters
+	txBuilder   *transaction.OnlineBuilder
 }
 
 // NewServicer creates a default api service
-func NewServicer(celoClient *client.CeloClient, db db.RosettaDBReader, cp *celo.ChainParameters) *Servicer {
+func NewServicer(celoClient *client.CeloClient, db db.RosettaDBReader, cp *celo.ChainParameters) (*Servicer, error) {
+	tb, err := transaction.NewOnlineBuilder(celoClient)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Servicer{
 		cc:          celoClient,
 		db:          db,
 		chainParams: cp,
-	}
+		txBuilder:   tb,
+	}, nil
 }
 
 // Mempool - Get All Mempool Transactions
@@ -356,12 +363,7 @@ func (s *Servicer) ConstructionMetadata(ctx context.Context, request *types.Cons
 		return nil, errResp
 	}
 
-	builder, err := transaction.NewTransactionBuilder(s.cc)
-	if err != nil {
-		return nil, LogErrInternal(fmt.Errorf("Failed to instantiate tx builder"))
-	}
-
-	txMetadata, err := builder.FetchTransactionMetadata(ctx, txOptions)
+	txMetadata, err := s.txBuilder.FetchTransactionMetadata(ctx, txOptions)
 	if err != nil {
 		return nil, LogErrInternal(fmt.Errorf("Failed to fetch tx metadata"))
 	}
