@@ -280,7 +280,7 @@ func (bp *processor) tobinTaxChange(bcs *db.BlockChangeSet) error {
 
 	// TODO: Add event for tobinTaxCache update to monorepo and use that instead of eth call.
 
-	tobinTaxNew := tobinTaxCache.Numerator //TODO(Alec): this will need conversion
+	tobinTaxNew := tobinTaxCache.Numerator
 
 	if bp.tobinTax.Cmp(tobinTaxNew) != 0 {
 		bp.logger.Info("Tobin Tax Updated", "from", bp.tobinTax, "to", tobinTaxNew, "block", bcs.BlockNumber)

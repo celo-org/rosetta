@@ -22,7 +22,8 @@ type RosettaDBReader interface {
 	// In case of no value, will return with fallbackValue which is 0
 	GasPriceMinimumFor(ctx context.Context, block *big.Int) (*big.Int, error)
 
-	// TobinTaxFor returns the tobinTax applied to txs in that block
+	// TobinTaxFor returns the tobinTax applied to txs in that block.
+	// More specifically, it returns the numerator of the tobin tax.
 	// In case of no value, will return with fallbackValue which is 0
 	TobinTaxFor(ctx context.Context, block *big.Int) (*big.Int, error)
 

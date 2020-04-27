@@ -28,7 +28,7 @@ func initDatabase(db *sql.DB) error {
 	schema := []string{
 		"CREATE table IF NOT EXISTS registry (contract text, fromBlock integer, fromTx integer, address blob)",
 		"CREATE table IF NOT EXISTS gasPriceMinimum (fromBlock integer, val blob)",
-		"CREATE table IF NOT EXISTS tobinTax (fromBlock integer, val integer)",
+		"CREATE table IF NOT EXISTS tobinTax (fromBlock integer, val blob)",
 		"CREATE table IF NOT EXISTS carbonOffsetPartner (fromBlock integer, fromTx integer, address blob)",
 		"CREATE table IF NOT EXISTS stats (lastBlock integer not null DEFAULT 0)",
 	}
@@ -200,21 +200,23 @@ func (cs *rosettaSqlDb) GasPriceMinimumFor(ctx context.Context, block *big.Int) 
 	return new(big.Int).SetBytes(gpmBytes), nil
 }
 
+//TODO(Alec): What about "Error calling getOrComputeTobinTaxFunctionSelector" in Geth?
+
 func (cs *rosettaSqlDb) TobinTaxFor(ctx context.Context, block *big.Int) (*big.Int, error) {
 	if err := cs.CheckBlockNumber(ctx, block); err != nil {
 		return nil, err
 	}
 
-	var tobinTax uint64
+	var tobinTaxNumerator []byte
 
-	if err := cs.getTobinTaxStmt.QueryRowContext(ctx, block.Uint64()).Scan(&tobinTax); err != nil {
+	if err := cs.getTobinTaxStmt.QueryRowContext(ctx, block.Uint64()).Scan(&tobinTaxNumerator); err != nil {
 		if err == sql.ErrNoRows {
 			return big.NewInt(0), nil
 		}
 		return nil, err
 	}
 
-	return new(big.Int).SetUint64(tobinTax), nil
+	return new(big.Int).SetBytes(tobinTaxNumerator), nil
 }
 
 func (cs *rosettaSqlDb) RegistryAddressStartOf(ctx context.Context, block *big.Int, txIndex uint, contractName string) (common.Address, error) {
@@ -305,7 +307,7 @@ func (cs *rosettaSqlDb) ApplyChanges(ctx context.Context, changeSet *BlockChange
 	}
 
 	if changeSet.TobinTax != nil {
-		if _, err = tx.StmtContext(ctx, cs.insertTobinTaxStmt).ExecContext(ctx, changeSet.BlockNumber.Int64(), changeSet.TobinTax.Int64()); err != nil {
+		if _, err = tx.StmtContext(ctx, cs.insertTobinTaxStmt).ExecContext(ctx, changeSet.BlockNumber.Int64(), changeSet.TobinTax.Bytes()); err != nil {
 			if rollbackErr := tx.Rollback(); rollbackErr != nil {
 				return rollbackErr
 			}
