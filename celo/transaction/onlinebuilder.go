@@ -78,6 +78,8 @@ func (b *OnlineBuilder) FetchTransactionMetadata(ctx context.Context, options *T
 		data = nil
 		to = options.To
 	} else if options.Method != nil {
+		// TODO: mutate options.args for wrapper logic
+
 		data, err = b.getData(options)
 		if err != nil {
 			return nil, err
@@ -109,11 +111,11 @@ func (b *OnlineBuilder) FetchTransactionMetadata(ctx context.Context, options *T
 	}
 
 	txMetadata := TransactionMetadata{
-		Generic: generic,
-		To:      to,
-		Value:   options.Value,
-		Data:    data,
-		Gas:     estimatedGas,
+		GenericMetadata: generic,
+		To:              to,
+		Value:           options.Value,
+		Data:            data,
+		Gas:             estimatedGas,
 	}
 
 	return &txMetadata, nil

@@ -22,6 +22,7 @@ import (
 	"github.com/celo-org/rosetta/internal/utils"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 )
 
 type ElectionWrapper struct {
@@ -72,4 +73,48 @@ func (w *ElectionWrapper) GetAccountElectionVotes(opts *bind.CallOpts, account c
 	}
 
 	return votes, nil
+}
+
+type AddressLesserGreater struct {
+	Lesser  common.Address
+	Greater common.Address
+}
+
+func (w *ElectionWrapper) VoteMetadata(opts *bind.CallOpts, group common.Address, value *big.Int) (*AddressLesserGreater, error) {
+	votes, err := w.Election.GetTotalVotesForEligibleValidatorGroups(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	var voteTotal *big.Int = value
+	for idx, currGroup := range votes.Groups {
+		if group == currGroup {
+			voteTotal.Add(voteTotal, votes.Values[idx])
+			break
+		}
+	}
+
+	var result AddressLesserGreater
+	// relies on votes.Groups being sorted
+	for idx, currGroup := range votes.Groups {
+		if group != currGroup {
+			currValue := votes.Values[idx]
+			if currValue.Cmp(voteTotal) < 1 {
+				result.Lesser = currGroup
+				break
+			}
+			result.Greater = currGroup
+		}
+	}
+
+	return &result, nil
+}
+
+func (w *ElectionWrapper) Vote(opts *bind.TransactOpts, group common.Address, value *big.Int) (*types.Transaction, error) {
+	meta, err := w.VoteMetadata(CallOptsFromTxOpts(opts), group, value)
+	if err != nil {
+		return nil, err
+	}
+
+	return w.Election.Vote(opts, group, value, meta.Lesser, meta.Greater)
 }

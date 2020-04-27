@@ -19,6 +19,7 @@ import (
 
 	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 )
 
 type CeloMethod string
@@ -85,9 +86,23 @@ type GenericMetadata struct {
 }
 
 type TransactionMetadata struct {
-	Generic *GenericMetadata
-	To      *common.Address
-	Value   *big.Int
-	Gas     uint64
-	Data    []byte
+	*GenericMetadata
+	To    *common.Address
+	Value *big.Int
+	Gas   uint64
+	Data  []byte
+}
+
+func (tm *TransactionMetadata) AsTransaction() *types.Transaction {
+	return types.NewTransaction(
+		tm.Nonce,
+		*tm.To,
+		tm.Value,
+		tm.Gas,
+		tm.GasPrice,
+		nil, // non-cGLD fees not supported
+		tm.GatewayFeeRecipient,
+		tm.GatewayFee,
+		tm.Data,
+	)
 }
