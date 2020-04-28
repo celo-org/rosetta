@@ -22,17 +22,17 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 )
 
-type OfflineBuilder struct {
+type AbiBuilder struct {
 	abiCache map[*wrapper.RegistryKey]*abi.ABI
 }
 
-func NewOfflineBuilder() *OfflineBuilder {
-	return &OfflineBuilder{
+func NewAbiBuilder() *AbiBuilder {
+	return &AbiBuilder{
 		abiCache: make(map[*wrapper.RegistryKey]*abi.ABI),
 	}
 }
 
-func (b *OfflineBuilder) getAbi(key *wrapper.RegistryKey) (*abi.ABI, error) {
+func (b *AbiBuilder) getAbi(key *wrapper.RegistryKey) (*abi.ABI, error) {
 	var abi *abi.ABI
 	abi, present := b.abiCache[key]
 
@@ -57,7 +57,7 @@ func (b *OfflineBuilder) getAbi(key *wrapper.RegistryKey) (*abi.ABI, error) {
 	return abi, nil
 }
 
-func (b *OfflineBuilder) getData(method *CeloMethod, args ...interface{}) ([]byte, error) {
+func (b *AbiBuilder) GetData(method *CeloMethod, args ...interface{}) ([]byte, error) {
 	if method == nil {
 		return nil, fmt.Errorf("'Method' required for building tx data")
 	}

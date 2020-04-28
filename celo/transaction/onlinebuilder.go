@@ -28,7 +28,7 @@ type OnlineBuilder struct {
 	celoClient      *client.CeloClient
 	registry        *wrapper.RegistryWrapper
 	resolverLocator *ResolverLocator
-	*OfflineBuilder
+	abiBuilder      *AbiBuilder
 }
 
 func NewOnlineBuilder(client *client.CeloClient) (*OnlineBuilder, error) {
@@ -46,7 +46,7 @@ func NewOnlineBuilder(client *client.CeloClient) (*OnlineBuilder, error) {
 		registry:        registry,
 		celoClient:      client,
 		resolverLocator: locator,
-		OfflineBuilder:  NewOfflineBuilder(),
+		abiBuilder:      NewAbiBuilder(),
 	}
 
 	return builder, nil
@@ -86,7 +86,7 @@ func (b *OnlineBuilder) FetchMethodMetadata(ctx context.Context, method *CeloMet
 		return nil, err
 	}
 
-	data, err := b.getData(method, resolvedArgs)
+	data, err := b.abiBuilder.GetData(method, resolvedArgs)
 	if err != nil {
 		return nil, err
 	}
