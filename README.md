@@ -19,10 +19,10 @@ Where rosetta is the binary.
 ### Example for RC0:
 
 Prerequisites:
+  * Download `celo-monorepo` branch `rc0` and `yarn && yarn build`
+  * Download `celo-blockchain` branch `mc/rosetta-rc0` and `make all`
+  * Download `rosetta` branch `rc0` update go.mod and `make gen-contracts && make all`
   * Run `make rc0-env` to create an empty datadir with the genesis block
-  * Download & build `celo-blockchain` use `mc/rosetta-rc0` to connect to RC0
-
-This assumes `celo-blockchain` can be found ad `../celo-blockchain`
 
 ```bash
 rosetta run \
@@ -30,6 +30,22 @@ rosetta run \
   --geth ../celo-blockchain/build/bin/geth \
   --staticNode "enode://33ac194052ccd10ce54101c8340dbbe7831de02a3e7dcbca7fd35832ff8c53a72fd75e57ce8c8e73a0ace650dc2c2ec1e36f0440e904bc20a3cf5927f2323e85@34.83.199.225:30303" \
   --datadir "./envs/rc0"
+```
+
+### Example for Alfajors:
+
+Prerequisites:
+  * Download `celo-monorepo` branch `rc0` and `yarn && yarn build`
+  * Download `celo-blockchain` branch `mc/rosetta-rc0` and `make all`
+  * Download `rosetta` branch `master` update go.mod and `make gen-contracts && make all`
+  * Run `make alfajores-env` to create an empty datadir with the genesis block
+
+```bash
+rosetta run \
+  --genesis ./envs/alfajores/genesis.json \
+  --geth ../celo-blockchain/build/bin/geth \
+  --staticNode "enode://05977f6b7d3e16a99d27b714f8a029a006e41ec7732167d373dd920d31f72b3a1776650798d8763560854369d36867e9564dad13b4b60a90c347feeb491d83a9@34.83.42.50:30303"
+  --datadir "./envs/alfajores"
 ```
 
 ## Running with the docker image
@@ -86,4 +102,14 @@ Rosetta requires a few Celo Core Contracts
 Commands:
   * `make docker-build`
   * `make docker-publish`
+
+## How to run rosetta-validator
+
+```
+go get -u github.com/coinbase/rosetta-validator@v0.1.2
+cd rosetta-validator
+go run ../rosetta/examples/generate_balances/main.go https://storage.googleapis.com/genesis_blocks/alfajores
+mkdir validator-data && cp ./bootstrap_balances.csv ./validator-data
+rosetta-validator check:quick
+```
 
