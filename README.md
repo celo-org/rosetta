@@ -107,8 +107,7 @@ Commands:
 
 ```
 go get -u github.com/coinbase/rosetta-validator@v0.1.2
-cd rosetta-validator
-go run ../rosetta/examples/generate_balances/main.go https://storage.googleapis.com/genesis_blocks/alfajores
+go run examples/generate_balances/main.go https://storage.googleapis.com/genesis_blocks/alfajores
 mkdir validator-data && cp ./bootstrap_balances.csv ./validator-data
 rosetta-validator check:quick
 ```
