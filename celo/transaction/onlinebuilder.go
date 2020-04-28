@@ -16,7 +16,6 @@ package transaction
 
 import (
 	"context"
-	"errors"
 
 	"github.com/celo-org/rosetta/celo/client"
 	"github.com/celo-org/rosetta/celo/wrapper"
@@ -53,20 +52,13 @@ func NewOnlineBuilder(client *client.CeloClient) (*OnlineBuilder, error) {
 	return builder, nil
 }
 
-func (b *OnlineBuilder) fetchGenericMetadata(ctx context.Context, address common.Address) (*GenericMetadata, error) {
-	nonce, err := b.celoClient.Eth.NonceAt(ctx, address, nil) // nil == latest
-	if err != nil {
-		return nil, err
-	}
-
+func (b *OnlineBuilder) FetchNodeMetadata(ctx context.Context) (*NodeMetadata, error) {
 	gasPrice, err := b.celoClient.Eth.SuggestGasPrice(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	metadata := GenericMetadata{
-		From:                address,
-		Nonce:               nonce,
+	metadata := NodeMetadata{
 		GatewayFeeRecipient: nil,
 		GatewayFee:          nil,
 		GasPrice:            gasPrice,
@@ -74,47 +66,76 @@ func (b *OnlineBuilder) fetchGenericMetadata(ctx context.Context, address common
 	return &metadata, nil
 }
 
-func (b *OnlineBuilder) FetchTransactionMetadata(ctx context.Context, options *TransactionOptions) (*TransactionMetadata, error) {
-	generic, err := b.fetchGenericMetadata(ctx, options.From)
+func (b *OnlineBuilder) FetchAccountMetadata(ctx context.Context, address common.Address) (*AccountMetadata, error) {
+	nonce, err := b.celoClient.Eth.NonceAt(ctx, address, nil) // nil == latest
 	if err != nil {
 		return nil, err
 	}
 
-	var data []byte
-	var to *common.Address
-	if options.To != nil && options.Method == nil {
-		data = nil
-		to = options.To
-	} else if options.Method != nil {
-		argResolver := b.resolverLocator.GetResolver(options.Method)
-		resolvedArgs, err := argResolver(options.Args, ctx)
-		if err != nil {
-			return nil, err
-		}
+	metadata := AccountMetadata{
+		From:  address,
+		Nonce: nonce,
+	}
+	return &metadata, nil
+}
 
-		data, err = b.getData(options.Method, resolvedArgs)
-		if err != nil {
-			return nil, err
-		}
+func (b *OnlineBuilder) FetchMethodMetadata(ctx context.Context, method *CeloMethod, args []interface{}) (*MethodMetadata, error) {
+	argResolver := b.resolverLocator.GetResolver(method)
+	resolvedArgs, err := argResolver(args, ctx)
+	if err != nil {
+		return nil, err
+	}
 
-		contractAddress, err := b.registry.GetAddressForString(&bind.CallOpts{Context: ctx}, CeloMethodToRegistryKey[options.Method].String())
+	data, err := b.getData(method, resolvedArgs)
+	if err != nil {
+		return nil, err
+	}
+
+	contractAddress, err := b.registry.GetAddressForString(&bind.CallOpts{Context: ctx}, CeloMethodToRegistryKey[method].String())
+	if err != nil {
+		return nil, err
+	}
+
+	meta := MethodMetadata{
+		Data: data,
+		To:   &contractAddress,
+	}
+	return &meta, nil
+}
+
+func (b *OnlineBuilder) FetchTransactionMetadata(ctx context.Context, options *TransactionOptions) (*TransactionMetadata, error) {
+	accountMetadata, err := b.FetchAccountMetadata(ctx, options.From)
+	if err != nil {
+		return nil, err
+	}
+
+	nodeMetadata, err := b.FetchNodeMetadata(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	methodMetadata := &MethodMetadata{
+		Data: nil,
+		To:   options.To,
+	}
+
+	if options.Method != nil {
+		meta, err := b.FetchMethodMetadata(ctx, options.Method, options.Args)
 		if err != nil {
 			return nil, err
 		}
-		to = &contractAddress
-	} else {
-		return nil, errors.New("Options 'To' and 'Method' required and mutually exclusive")
+		methodMetadata = meta
 	}
 
 	msg := ethereum.CallMsg{
-		From:                generic.From,
-		GatewayFee:          generic.GatewayFee,
-		GatewayFeeRecipient: generic.GatewayFeeRecipient,
-		GasPrice:            generic.GasPrice,
-		FeeCurrency:         nil, // only cGLD fees currently supported
+		From:                accountMetadata.From,
+		GatewayFee:          nodeMetadata.GatewayFee,
+		GatewayFeeRecipient: nodeMetadata.GatewayFeeRecipient,
+		GasPrice:            nodeMetadata.GasPrice,
+		To:                  methodMetadata.To,
+		Data:                methodMetadata.Data,
 		Value:               options.Value,
-		To:                  to,
-		Data:                data,
+		FeeCurrency:         nil, // only cGLD fees currently supported
 	}
 
 	estimatedGas, err := b.celoClient.Eth.EstimateGas(ctx, msg)
@@ -123,10 +144,10 @@ func (b *OnlineBuilder) FetchTransactionMetadata(ctx context.Context, options *T
 	}
 
 	txMetadata := TransactionMetadata{
-		GenericMetadata: generic,
-		To:              to,
+		AccountMetadata: accountMetadata,
+		NodeMetadata:    nodeMetadata,
+		MethodMetadata:  methodMetadata,
 		Value:           options.Value,
-		Data:            data,
 		Gas:             estimatedGas,
 	}
 

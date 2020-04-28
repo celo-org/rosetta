@@ -37,22 +37,10 @@ var (
 	RevokeActiveVotes  CeloMethod = "revokeActive"
 )
 
-var AllCeloMethods = []*CeloMethod{
-	&CreateAccount,
-	&LockGold,
-	&UnlockGold,
-	&RelockGold,
-	&WithdrawGold,
-	&Vote,
-	&ActivateVotes,
-	&RevokeActiveVotes,
-	&RevokePendingVotes,
-}
-
 func (tt CeloMethod) String() string { return string(tt) }
 
 var (
-	CeloMethodToContract = map[*CeloMethod]*wrapper.RegistryKey{
+	CeloMethodToRegistryKey = map[*CeloMethod]*wrapper.RegistryKey{
 		&CreateAccount:      &wrapper.AccountsRegistryId,
 		&LockGold:           &wrapper.LockedGoldRegistryId,
 		&UnlockGold:         &wrapper.LockedGoldRegistryId,
@@ -74,20 +62,28 @@ type TransactionOptions struct {
 }
 
 // [note]: non cGLD fee currencies currently unsupported
-type GenericMetadata struct {
-	From                *common.Address
-	Nonce               uint64          `json:"nonce"    `
-	GasPrice            *big.Int        `json:"gasPrice" `
-	GatewayFeeRecipient *common.Address `json:"gatewayFeeRecipient" rlp:"nil"` // nil means no gateway fee is paid
-	GatewayFee          *big.Int        `json:"gatewayFee" rlp:"nil"`          // nil means no gateway fee is paid
+type AccountMetadata struct {
+	From  common.Address
+	Nonce uint64
+}
+
+type NodeMetadata struct {
+	GasPrice            *big.Int
+	GatewayFeeRecipient *common.Address
+	GatewayFee          *big.Int
+}
+
+type MethodMetadata struct {
+	To   *common.Address
+	Data []byte
 }
 
 type TransactionMetadata struct {
-	*GenericMetadata
-	To    *common.Address
+	*AccountMetadata
+	*NodeMetadata
+	*MethodMetadata
 	Value *big.Int
 	Gas   uint64
-	Data  []byte
 }
 
 func (tm *TransactionMetadata) AsTransaction() *types.Transaction {
