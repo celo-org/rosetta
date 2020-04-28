@@ -15,7 +15,7 @@ import (
 
 func MatchOperation(account common.Address, value int, currency *types.Currency, status OperationResult, kind analyzer.OperationType) gtypes.GomegaMatcher {
 	return gs.MatchFields(gs.IgnoreExtras, gs.Fields{
-		"Account": Equal(NewAccountIdentifier(account)),
+		"Account": Equal(NewAccountIdentifier(account, nil)), // TODO: Fix this
 		"Amount": gs.MatchAllFields(gs.Fields{
 			"Value":    Equal(strconv.Itoa(value)),
 			"Currency": Equal(currency),

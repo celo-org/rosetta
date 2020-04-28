@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -120,13 +121,22 @@ func runRunCmd(cmd *cobra.Command, args []string) {
 		stopServices()
 	}()
 
-	celoStore, err := db.NewSqliteDb(sqlitePath)
-	if err != nil {
-		log.Error("Error opening CeloStore", "err", err)
+	if err := runAllServices(srvCtx, gethDataDir, genesisPath, sqlitePath); err != nil {
+		log.Error("Rosetta run failed", "err", err)
 		os.Exit(1)
 	}
+}
 
-	sm := service.NewServiceManager(srvCtx)
+func runAllServices(ctx context.Context, gethDataDir, genesisPath, sqlitePath string) error {
+	ctx, stopServices := context.WithCancel(ctx)
+	defer stopServices()
+
+	celoStore, err := db.NewSqliteDb(sqlitePath)
+	if err != nil {
+		return fmt.Errorf("can't open rosetta.db: %w", err)
+	}
+
+	sm := service.NewServiceManager(ctx)
 
 	gethSrv := geth.NewGethService(
 		gethBinary,
@@ -135,24 +145,34 @@ func runRunCmd(cmd *cobra.Command, args []string) {
 		staticNodes,
 	)
 
+	if err := gethSrv.Setup(); err != nil {
+		return fmt.Errorf("error on geth setup: %w", err)
+	}
+
 	sm.Add(gethSrv)
 
-	time.Sleep(5 * time.Second)
+	gethStarted := utils.WaitUntil(500*time.Millisecond, 30*time.Second, func() bool {
+		return fileutils.FileExists(gethSrv.IpcFilePath())
+	})
+
+	if !gethStarted {
+		return fmt.Errorf("geth service failed to start before timeout: %d", time.Millisecond)
+	}
 
 	chainParams := gethSrv.ChainParameters()
 	log.Info("Detected Chain Parameters", "chainId", chainParams.ChainId, "epochSize", chainParams.EpochSize)
 
 	cc, err := client.Dial(gethSrv.IpcFilePath())
 	if err != nil {
-		log.Error("Error on client connection to geth", "err", err)
-		os.Exit(1)
+		return fmt.Errorf("can't connect to geth: %w", err)
 	}
 
-	sm.Add(rpc.NewRosettaServer(cc, celoStore, &rosettaRpcConfig, chainParams))
+	rpcService, err := rpc.NewRosettaServer(cc, celoStore, &rosettaRpcConfig, chainParams)
+	if err != nil {
+		return fmt.Errorf("can't create rpc server: %w", err)
+	}
+
+	sm.Add(rpcService)
 	sm.Add(monitor.NewMonitorService(cc, celoStore))
-
-	if err := sm.Wait(); err != nil {
-		log.Error("Error running services", "err", err)
-		os.Exit(1)
-	}
+	return sm.Wait()
 }

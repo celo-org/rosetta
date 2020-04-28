@@ -37,7 +37,7 @@ func EncodeAccount(publicKey *ecdsa.PublicKey, address *common.Address) *types.A
 	publicKeyBytes := crypto.FromECDSAPub(publicKey)
 	return &types.AccountIdentifier{
 		Address: address.String(),
-		Metadata: &map[string]interface{}{
+		Metadata: map[string]interface{}{
 			"publicKey": string(publicKeyBytes),
 		},
 	}

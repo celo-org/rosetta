@@ -20,9 +20,12 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/celo-org/rosetta/celo/client"
 	"github.com/celo-org/rosetta/cmd/internal/utils"
+	"github.com/celo-org/rosetta/db"
 	"github.com/coinbase/rosetta-sdk-go/fetcher"
 	"github.com/coinbase/rosetta-sdk-go/types"
+
 	"github.com/spf13/cobra"
 )
 
@@ -33,17 +36,20 @@ var CliCmd = &cobra.Command{
 }
 
 var serverUrl string
+var dbPath string
 
 func init() {
 	CliCmd.AddCommand(blockCmd)
 	CliCmd.AddCommand(reconcileCmd)
 
 	CliCmd.PersistentFlags().StringVar(&serverUrl, "url", "http://localhost:8080", "Base url for rosetta rpc")
+	CliCmd.PersistentFlags().StringVar(&dbPath, "db", "./envs/alfajores/rosetta.db", "RosettaDb path")
+	CliCmd.PersistentFlags().StringVar(&dbPath, "nodeUrl", "http://localhost:8545", "Geth Node url")
 }
 
 func getFetcher() (*fetcher.Fetcher, *types.NetworkIdentifier, *types.NetworkStatusResponse) {
 	ctx := context.Background()
-	fetcher := fetcher.New(ctx, serverUrl, fetcher.WithBlockConcurrency(50))
+	fetcher := fetcher.New(serverUrl, fetcher.WithBlockConcurrency(50))
 
 	// Step 2: Initialize the fetcher's asserter
 	//
@@ -54,6 +60,18 @@ func getFetcher() (*fetcher.Fetcher, *types.NetworkIdentifier, *types.NetworkSta
 	utils.ExitOnError(err)
 
 	return fetcher, primaryNetwork, networkStatus
+}
+
+func getDb() db.RosettaDB {
+	celoStore, err := db.NewSqliteDb("./envs/alfajores/rosetta.db")
+	utils.ExitOnError(err)
+	return celoStore
+}
+
+func getCeloClient() *client.CeloClient {
+	cc, err := client.Dial("http://localhost:8545")
+	utils.ExitOnError(err)
+	return cc
 }
 
 func toBlockIdentifier(arg string) (blockIdentifier *types.PartialBlockIdentifier) {
