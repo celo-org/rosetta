@@ -32,11 +32,11 @@ rosetta run \
   --datadir "./envs/rc0"
 ```
 
-### Example for Alfajors:
+### Example for Alfajores:
 
 Prerequisites:
-  * Download `celo-monorepo` branch `rc0` and `yarn && yarn build`
-  * Download `celo-blockchain` branch `mc/rosetta-rc0` and `make all`
+  * Download `celo-monorepo` branch `alfajores` and `yarn && yarn build`
+  * Download `celo-blockchain` branch `alfajores-tracing-fix` and `make all`
   * Download `rosetta` branch `master` update go.mod and `make gen-contracts && make all`
   * Run `make alfajores-env` to create an empty datadir with the genesis block
 
