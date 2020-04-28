@@ -61,6 +61,27 @@ func TestStakingOps(t *testing.T) {
 		data, err := builder.getData(&Vote, common.ZeroAddress, big.NewInt(1), common.ZeroAddress, common.ZeroAddress)
 		g.Expect(err).ToNot(HaveOccurred())
 		t.Log(data)
+
+		t.Run("TooFewArgs", func(t *testing.T) {
+			data, err := builder.getData(&Vote, common.ZeroAddress, big.NewInt(1), common.ZeroAddress)
+			g.Expect(err).To(HaveOccurred())
+			g.Expect(err.Error()).To(Equal("argument count mismatch: 3 for 4"))
+			t.Log(data)
+		})
+
+		t.Run("TooManyArgs", func(t *testing.T) {
+			data, err := builder.getData(&Vote, common.ZeroAddress, big.NewInt(1), common.ZeroAddress, common.ZeroAddress, common.ZeroAddress)
+			g.Expect(err).To(HaveOccurred())
+			g.Expect(err.Error()).To(Equal("argument count mismatch: 5 for 4"))
+			t.Log(data)
+		})
+
+		t.Run("WrongTypes", func(t *testing.T) {
+			data, err := builder.getData(&Vote, big.NewInt(1), big.NewInt(1), common.ZeroAddress, common.ZeroAddress)
+			g.Expect(err).To(HaveOccurred())
+			g.Expect(err.Error()).To(Equal("abi: cannot use ptr as type array as argument"))
+			t.Log(data)
+		})
 	})
 
 	t.Run("ActivateVotes", func(t *testing.T) {
