@@ -35,9 +35,6 @@ var (
 	ActivateVotes      CeloMethod = "activate"
 	RevokePendingVotes CeloMethod = "revokePending"
 	RevokeActiveVotes  CeloMethod = "revokeActive"
-	// RevokeAllActiveVotes TransactionType = "revokeAllActiveVotes"
-	// Slash                TransactionType = "slash"
-	// EpochRewards         TransactionType = "epochRewards"
 )
 
 var AllCeloMethods = []*CeloMethod{

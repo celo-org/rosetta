@@ -25,8 +25,9 @@ import (
 )
 
 type OnlineBuilder struct {
-	celoClient *client.CeloClient
-	registry   *wrapper.RegistryWrapper
+	celoClient      *client.CeloClient
+	registry        *wrapper.RegistryWrapper
+	resolverLocator *ResolverLocator
 	*OfflineBuilder
 }
 
@@ -36,10 +37,16 @@ func NewOnlineBuilder(client *client.CeloClient) (*OnlineBuilder, error) {
 		return nil, err
 	}
 
+	locator, err := NewResolverLocator(registry, client)
+	if err != nil {
+		return nil, err
+	}
+
 	builder := &OnlineBuilder{
-		registry:       registry,
-		celoClient:     client,
-		OfflineBuilder: NewOfflineBuilder(),
+		registry:        registry,
+		celoClient:      client,
+		resolverLocator: locator,
+		OfflineBuilder:  NewOfflineBuilder(),
 	}
 
 	return builder, nil
@@ -78,9 +85,13 @@ func (b *OnlineBuilder) FetchTransactionMetadata(ctx context.Context, options *T
 		data = nil
 		to = options.To
 	} else if options.Method != nil {
-		// TODO: mutate options.args for wrapper logic
+		argResolver := b.resolverLocator.GetResolver(options.Method)
+		resolvedArgs, err := argResolver(options.Args, ctx)
+		if err != nil {
+			return nil, err
+		}
 
-		data, err = b.getData(options)
+		data, err = b.getData(options.Method, resolvedArgs)
 		if err != nil {
 			return nil, err
 		}

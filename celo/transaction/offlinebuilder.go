@@ -57,17 +57,17 @@ func (b *OfflineBuilder) getAbi(key *wrapper.RegistryKey) (*abi.ABI, error) {
 	return abi, nil
 }
 
-func (b *OfflineBuilder) getData(options *TransactionOptions) ([]byte, error) {
-	if options.Method == nil {
-		return nil, fmt.Errorf("Method' required for building tx data")
+func (b *OfflineBuilder) getData(method *CeloMethod, args []interface{}) ([]byte, error) {
+	if method == nil {
+		return nil, fmt.Errorf("'Method' required for building tx data")
 	}
 
-	contractABI, err := b.getAbi(CeloMethodToRegistryKey[options.Method])
+	contractABI, err := b.getAbi(CeloMethodToRegistryKey[method])
 	if err != nil {
 		return nil, err
 	}
 
-	packedData, err := contractABI.Pack(options.Method.String(), options.Args...)
+	packedData, err := contractABI.Pack(method.String(), args...)
 	if err != nil {
 		return nil, err
 	}

@@ -89,7 +89,7 @@ func (w *ElectionWrapper) VoteMetadata(opts *bind.CallOpts, group common.Address
 	var voteTotal *big.Int = value
 	for idx, currGroup := range votes.Groups {
 		if group == currGroup {
-			voteTotal.Add(voteTotal, votes.Values[idx])
+			voteTotal = utils.Add(voteTotal, votes.Values[idx])
 			break
 		}
 	}
@@ -217,7 +217,7 @@ func (w *ElectionWrapper) RevokeAll(opts *bind.TransactOpts, account common.Addr
 	return &result, nil
 }
 
-func (w *ElectionWrapper) ActivateMetadata(opts *bind.CallOpts, account common.Address) ([]common.Address, error) {
+func (w *ElectionWrapper) ActivateAllMetadata(opts *bind.CallOpts, account common.Address) ([]common.Address, error) {
 	groups, err := w.Election.GetGroupsVotedForByAccount(opts, account)
 	if err != nil {
 		return nil, err
@@ -237,7 +237,7 @@ func (w *ElectionWrapper) ActivateMetadata(opts *bind.CallOpts, account common.A
 }
 
 func (w *ElectionWrapper) ActivateAll(opts *bind.TransactOpts) ([]*types.Transaction, error) {
-	groups, err := w.ActivateMetadata(CallOptsFromTxOpts(opts), opts.From)
+	groups, err := w.ActivateAllMetadata(CallOptsFromTxOpts(opts), opts.From)
 	if err != nil {
 		return nil, err
 	}
