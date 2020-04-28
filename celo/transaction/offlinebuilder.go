@@ -57,7 +57,7 @@ func (b *OfflineBuilder) getAbi(key *wrapper.RegistryKey) (*abi.ABI, error) {
 	return abi, nil
 }
 
-func (b *OfflineBuilder) getData(method *CeloMethod, args []interface{}) ([]byte, error) {
+func (b *OfflineBuilder) getData(method *CeloMethod, args ...interface{}) ([]byte, error) {
 	if method == nil {
 		return nil, fmt.Errorf("'Method' required for building tx data")
 	}

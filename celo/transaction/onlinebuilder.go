@@ -21,6 +21,7 @@ import (
 	"github.com/celo-org/rosetta/celo/client"
 	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -96,7 +97,7 @@ func (b *OnlineBuilder) FetchTransactionMetadata(ctx context.Context, options *T
 			return nil, err
 		}
 
-		contractAddress, err := b.registry.GetAddressForString(nil, CeloMethodToRegistryKey[options.Method].String())
+		contractAddress, err := b.registry.GetAddressForString(&bind.CallOpts{Context: ctx}, CeloMethodToRegistryKey[options.Method].String())
 		if err != nil {
 			return nil, err
 		}

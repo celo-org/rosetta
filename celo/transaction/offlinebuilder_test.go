@@ -27,92 +27,56 @@ func TestStakingOps(t *testing.T) {
 
 	builder := NewOfflineBuilder()
 
-	from := common.HexToAddress("0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef")
-
 	t.Run("CreateAccount", func(t *testing.T) {
-		data, err := builder.getData(&TransactionOptions{
-			From:   from,
-			Method: &CreateAccount,
-		})
+		data, err := builder.getData(&CreateAccount)
 		g.Expect(err).ToNot(HaveOccurred())
 		t.Log(data)
 	})
 
 	t.Run("LockGold", func(t *testing.T) {
-		data, err := builder.getData(&TransactionOptions{
-			From:   from,
-			Method: &LockGold,
-		})
+		data, err := builder.getData(&LockGold)
 		g.Expect(err).ToNot(HaveOccurred())
 		t.Log(data)
 	})
 
 	t.Run("UnlockGold", func(t *testing.T) {
-		data, err := builder.getData(&TransactionOptions{
-			From:   from,
-			Method: &UnlockGold,
-			Args:   []interface{}{big.NewInt(100)},
-		})
+		data, err := builder.getData(&UnlockGold, big.NewInt(100))
 		g.Expect(err).ToNot(HaveOccurred())
 		t.Log(data)
 	})
 
 	t.Run("RelockGold", func(t *testing.T) {
-		data, err := builder.getData(&TransactionOptions{
-			From:   from,
-			Method: &RelockGold,
-			Args:   []interface{}{big.NewInt(1), big.NewInt(100)},
-		})
+		data, err := builder.getData(&RelockGold, big.NewInt(1), big.NewInt(100))
 		g.Expect(err).ToNot(HaveOccurred())
 		t.Log(data)
 	})
 
 	t.Run("WithdrawGold", func(t *testing.T) {
-		data, err := builder.getData(&TransactionOptions{
-			From:   from,
-			Method: &WithdrawGold,
-			Args:   []interface{}{big.NewInt(1)},
-		})
+		data, err := builder.getData(&WithdrawGold, big.NewInt(1))
 		g.Expect(err).ToNot(HaveOccurred())
 		t.Log(data)
 	})
 
 	t.Run("Vote", func(t *testing.T) {
-		data, err := builder.getData(&TransactionOptions{
-			From:   from,
-			Method: &Vote,
-			Args:   []interface{}{common.ZeroAddress, big.NewInt(1), common.ZeroAddress, common.ZeroAddress},
-		})
+		data, err := builder.getData(&Vote, common.ZeroAddress, big.NewInt(1), common.ZeroAddress, common.ZeroAddress)
 		g.Expect(err).ToNot(HaveOccurred())
 		t.Log(data)
 	})
 
 	t.Run("ActivateVotes", func(t *testing.T) {
-		data, err := builder.getData(&TransactionOptions{
-			From:   from,
-			Method: &ActivateVotes,
-			Args:   []interface{}{common.ZeroAddress},
-		})
+		data, err := builder.getData(&ActivateVotes, common.ZeroAddress)
 		g.Expect(err).ToNot(HaveOccurred())
 		t.Log(data)
 	})
 
 	t.Run("RevokePendingVotes", func(t *testing.T) {
-		data, err := builder.getData(&TransactionOptions{
-			From:   from,
-			Method: &RevokePendingVotes,
-			Args:   []interface{}{common.ZeroAddress, big.NewInt(1), common.ZeroAddress, common.ZeroAddress, big.NewInt(1)},
-		})
+		data, err := builder.getData(&RevokePendingVotes, common.ZeroAddress, big.NewInt(1), common.ZeroAddress, common.ZeroAddress, big.NewInt(1))
 		g.Expect(err).ToNot(HaveOccurred())
 		t.Log(data)
 	})
 
 	t.Run("RevokeActiveVotes", func(t *testing.T) {
-		data, err := builder.getData(&TransactionOptions{
-			From:   from,
-			Method: &RevokeActiveVotes,
-			Args:   []interface{}{common.ZeroAddress, big.NewInt(1), common.ZeroAddress, common.ZeroAddress, big.NewInt(1)},
-		})
+		data, err := builder.getData(&RevokeActiveVotes, common.ZeroAddress, big.NewInt(1), common.ZeroAddress, common.ZeroAddress, big.NewInt(1))
 		g.Expect(err).ToNot(HaveOccurred())
 		t.Log(data)
 	})
