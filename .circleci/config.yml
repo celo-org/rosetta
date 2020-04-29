@@ -6,7 +6,8 @@ executors:
         user: root
     working_directory: /go/src/github.com/celo-org/rosetta
     environment:
-      - GO111MODULE: "on"
+      GO111MODULE: "on"
+      GO_VERSION: "1.13.7"
 
 jobs:
   setup:
