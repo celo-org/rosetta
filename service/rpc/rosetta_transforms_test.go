@@ -1,30 +1,30 @@
-package rpc
+// package rpc
 
-import (
-	"strconv"
+// import (
+// 	"strconv"
 
-	"github.com/celo-org/rosetta/analyzer"
-	"github.com/coinbase/rosetta-sdk-go/types"
-	"github.com/ethereum/go-ethereum/common"
-	. "github.com/onsi/gomega"
-	gs "github.com/onsi/gomega/gstruct"
-	gtypes "github.com/onsi/gomega/types"
-)
+// 	"github.com/celo-org/rosetta/analyzer"
+// 	"github.com/coinbase/rosetta-sdk-go/types"
+// 	"github.com/ethereum/go-ethereum/common"
+// 	. "github.com/onsi/gomega"
+// 	gs "github.com/onsi/gomega/gstruct"
+// 	gtypes "github.com/onsi/gomega/types"
+// )
 
-func MatchOperation(account common.Address, value int, currency *types.Currency, status OperationResult, kind analyzer.OperationType) gtypes.GomegaMatcher {
-	return gs.MatchFields(gs.IgnoreExtras, gs.Fields{
-		"Account": Equal(NewAccountIdentifier(account)),
-		"Amount": gs.MatchAllFields(gs.Fields{
-			"Value":    Equal(strconv.Itoa(value)),
-			"Currency": Equal(currency),
-			"Metadata": BeNil(),
-		}),
-		"Status": Equal(status.String()),
-		"Type":   Equal(kind.String()),
-	})
-}
+// func MatchOperation(account common.Address, value int, currency *types.Currency, status OperationResult, kind analyzer.OperationType) gtypes.GomegaMatcher {
+// 	return gs.MatchFields(gs.IgnoreExtras, gs.Fields{
+// 		"Account": Equal(NewAccountIdentifier(account)),
+// 		"Amount": gs.MatchAllFields(gs.Fields{
+// 			"Value":    Equal(strconv.Itoa(value)),
+// 			"Currency": Equal(currency),
+// 			"Metadata": BeNil(),
+// 		}),
+// 		"Status": Equal(status.String()),
+// 		"Type":   Equal(kind.String()),
+// 	})
+// }
 
-// func TestMapTxHashesToTransaction(t *testing.T) {
+// // func TestMapTxHashesToTransaction(t *testing.T) {
 // 	g := NewGomegaWithT(t)
 
 // 	txHashes := []common.Hash{common.HexToHash("1"), common.HexToHash("2"), common.HexToHash("3")}
