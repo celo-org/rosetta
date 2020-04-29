@@ -1,19 +1,48 @@
-version: 2
-jobs:
-  build:
+version: 2.1
+executors:
+  golang:
     docker:
       - image: circleci/golang:1.13
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/postgres:9.4
-
-    working_directory: /go/src/github.com/celo-org/rosetta
+    working_directory: ~/repos/rosetta
+jobs:
+  build-bls-zexe:
+    docker:
+      - image: circleci/rust:1.41.0
+    working_directory: ~/repos/rosetta
     steps:
       - checkout
-
-      # specify any bash command here prefixed with `run: `
-      - run: make gen-contracts
-      - run: make env-rc0
-      - run: make all
+      - run:
+          name: Setup Rust language
+          command: |
+            rustup install 1.41.0
+            rustup default 1.41.0
+      - run:
+          name: Compile bls-zexe
+          command: |
+            export PATH=$PATH:~/.cargo/bin
+            make bls-zexe
+  build-rosetta:
+    executor: golang
+    steps:
+      - attach_workspace:
+          at: ~/repos
+      - run: make rc0-env
+      - run: make rosetta
+  unit-tests:
+    executor: golang
+    steps:
+      - attach_workspace:
+          at: ~/repos
       - run: make test
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build-bls-zexe
+      - build-rosetta:
+          requires:
+            - build-bls-zexe
+      - unit-tests:
+          requires:
+            - build-bls-zexe
