@@ -67,6 +67,14 @@ clean-bls-zexe:
 
 clean: clean-geth clean-bls-zexe
 
+rc1-env:
+	mkdir -p ./envs/rc1
+	curl 'https://storage.googleapis.com/genesis_blocks/rc1' > ./envs/rc1/genesis.json
+
+alfajores-env:
+	mkdir -p ./envs/alfajores
+	curl 'https://storage.googleapis.com/genesis_blocks/alfajores' > ./envs/alfajores/genesis.json
+
 rc0-env:
 	mkdir -p ./envs/rc0
 	curl 'https://storage.googleapis.com/genesis_blocks/rc0' > ./envs/rc0/genesis.json

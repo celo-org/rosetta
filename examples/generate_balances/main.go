@@ -1,18 +1,13 @@
 package main
 
 import (
-	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"github.com/coinbase/rosetta-sdk-go/types"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"strings"
-)
-
-const (
-	bootstrapHeader = "AccountIdentifier_address,Amount_value,Currency_symbol,Currency_decimals"
 )
 
 type genesis struct {
@@ -21,14 +16,19 @@ type genesis struct {
 type genesisAllocation struct {
 	Balance string `json:"balance"`
 }
+type BootstrapBalance struct {
+	Account  *types.AccountIdentifier `json:"account_identifier,omitempty"`
+	Currency *types.Currency          `json:"currency,omitempty"`
+	Value    string                   `json:"value,omitempty"`
+}
 
 func main() {
-	if len(os.Args) != 2 {
-		fmt.Println("Usage: generate_balances <genesisURL>")
+	if len(os.Args) != 3 {
+		fmt.Println("Usage: generate_balances <genesisURL> <outputFile>")
 		os.Exit(1)
 	}
-
 	genesisURL := os.Args[1]
+	bootstrapBalancesFile := os.Args[2]
 	// Get Genesis File
 	resp, err := http.Get(genesisURL)
 	if err != nil {
@@ -44,26 +44,29 @@ func main() {
 		log.Fatalln(err)
 	}
 	log.Printf("%+v\n", genesisAllocations)
-	// Prepare data
-	data := [][]string{strings.Split(bootstrapHeader, ",")}
+	// Write to file
+	balances := []*BootstrapBalance{}
 	for k, v := range genesisAllocations.Alloc {
 		if v.Balance == "0" {
 			continue
 		}
-		data = append(data, []string{k, v.Balance, "cGLD", "18"})
+		balances = append(balances, &BootstrapBalance{
+			Account: &types.AccountIdentifier{
+				Address: k,
+			},
+			Value: v.Balance,
+			Currency: &types.Currency{
+				Symbol:   "cGLD",
+				Decimals: 18,
+			},
+		})
 	}
-	// Write to CSV
-	file, err := os.Create("bootstrap_balances.csv")
+	file, err := json.MarshalIndent(balances, "", " ")
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal(err)
 	}
-	defer file.Close()
-	writer := csv.NewWriter(file)
-	defer writer.Flush()
-	for _, value := range data {
-		err := writer.Write(value)
-		if err != nil {
-			log.Fatalln(err)
-		}
+	if err := ioutil.WriteFile(bootstrapBalancesFile, file, os.FileMode(0600)); err != nil {
+		log.Fatal(err)
 	}
+	log.Printf("Bootstrap file contains %d balances\n", len(balances))
 }
