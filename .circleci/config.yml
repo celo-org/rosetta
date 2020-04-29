@@ -1,10 +1,11 @@
 version: 2.1
+
 executors:
   golang:
     docker:
       - image: circleci/golang:1.13
         user: root
-    working_directory: /go/src/github.com/celo-org/rosetta
+    working_directory: ~/go/src/github.com/celo-org/rosetta
     environment:
       GO111MODULE: "on"
       GO_VERSION: "1.13.7"
@@ -13,7 +14,7 @@ jobs:
   setup:
     docker:
       - image: circleci/rust:1.41.0
-    working_directory: /go/src/github.com/celo-org/rosetta
+    working_directory: ~/go/src/github.com/celo-org/rosetta
     steps:
       - checkout
       - run:
@@ -27,7 +28,7 @@ jobs:
             export PATH=$PATH:~/.cargo/bin
             make bls-zexe
       - persist_to_workspace:
-          root: /go
+          root: ~/go
           paths:
             - src
             - bin
@@ -36,14 +37,14 @@ jobs:
     executor: golang
     steps:
       - attach_workspace:
-          at: /go
+          at: ~/go
       - run: make rc0-env
       - run: make rosetta
   unit-tests:
     executor: golang
     steps:
       - attach_workspace:
-          at: /go
+          at: ~/go
       - run: make test
 
 workflows:
