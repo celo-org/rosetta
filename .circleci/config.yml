@@ -51,6 +51,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/go
+      - run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.25.1
       - run: make lint
   coverage:
     executor: golang

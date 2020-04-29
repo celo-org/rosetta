@@ -60,6 +60,8 @@ github.com/btcsuite/websocket v0.0.0-20150119174127-31079b680792/go.mod h1:ghJtE
 github.com/btcsuite/winsvc v1.0.0/go.mod h1:jsenWakMcC0zFBFurPLEAyrnc/teJEM1O46fmI40EZs=
 github.com/celo-org/celo-blockchain v0.0.0-20200408223849-d021a14a4676 h1:yfcubyleqI/EyM5UxLB2WiTcRgGDanNycexiNRqH5Js=
 github.com/celo-org/celo-blockchain v0.0.0-20200408223849-d021a14a4676/go.mod h1:fjbKeebYSb0akEY16ozvWV9kKOTr1LpVIzjqrNidz44=
+github.com/celo-org/celo-blockchain v0.0.0-20200415002329-97a0b37cd4fe h1:aHP3Zr8XfWZNarjnWgC8dGptrjx7dxLzUKXIU1uekTk=
+github.com/celo-org/celo-blockchain v0.0.0-20200415002329-97a0b37cd4fe/go.mod h1:fjbKeebYSb0akEY16ozvWV9kKOTr1LpVIzjqrNidz44=
 github.com/cenkalti/backoff v2.2.1+incompatible h1:tNowT99t7UNflLxfYYSlKYsBpXdEet03Pg2g16Swow4=
 github.com/cenkalti/backoff v2.2.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/cespare/cp v0.1.0 h1:SE+dxFebS7Iik5LK0tsi1k9ZCxEaFX4AjQmoyA+1dJk=
