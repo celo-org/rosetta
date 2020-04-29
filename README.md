@@ -42,7 +42,7 @@ Docker image is configured by default to:
 
 To run the docker image do:
 ```bash 
-docker run -v "${PWD}/envs/rc0:/data" -p 8080:8080--name rosetta gcr.io/celo-testnet/rosetta:0.1 run \
+docker run -v "${PWD}/envs/rc0:/data" -p 8080:8080 --name rosetta gcr.io/celo-testnet/rosetta:0.1 run \
   --staticNode "enode://33ac194052ccd10ce54101c8340dbbe7831de02a3e7dcbca7fd35832ff8c53a72fd75e57ce8c8e73a0ace650dc2c2ec1e36f0440e904bc20a3cf5927f2323e85@34.83.199.225:30303"
 ```
 
