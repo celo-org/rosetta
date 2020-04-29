@@ -52,6 +52,9 @@ gen-contracts:
 test: 
 	go test ./...
 
+test-cover:
+	go test ./... -covermode=count
+
 lint: ## Run linters.
 ifeq ("$(GOLANGCI_exists)","")
 	$(error "No golangci in PATH, consult https://github.com/golangci/golangci-lint#install")

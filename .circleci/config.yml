@@ -46,6 +46,19 @@ jobs:
       - attach_workspace:
           at: ~/go
       - run: make test
+  lint:
+    executor: golang
+    steps:
+      - attach_workspace:
+          at: ~/go
+      - run: make lint
+  coverage:
+    executor: golang
+    steps:
+      - attach_workspace:
+          at: ~/go
+      - run: make test-cover
+      - run: bash <(curl -s https://codecov.io/bash)
 
 workflows:
   version: 2
@@ -56,5 +69,11 @@ workflows:
           requires:
             - setup
       - unit-tests:
+          requires:
+            - setup
+      - lint:
+          requires:
+            - setup
+      - coverage:
           requires:
             - setup
