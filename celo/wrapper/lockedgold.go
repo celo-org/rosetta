@@ -30,13 +30,7 @@ type LockedGoldWrapper struct {
 
 func NewLockedGold(celoClient *client.CeloClient, registryWrapper *RegistryWrapper) (*LockedGoldWrapper, error) {
 	lockedgold, err := registryWrapper.GetLockedGold(nil, celoClient.Eth)
-	if err != nil {
-		return nil, err
-	}
-
-	return &LockedGoldWrapper{
-		lockedgold,
-	}, nil
+	return &LockedGoldWrapper{lockedgold}, err
 }
 
 type PendingWithdrawal struct {

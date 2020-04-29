@@ -31,13 +31,7 @@ type ElectionWrapper struct {
 
 func NewElection(celoClient *client.CeloClient, registryWrapper *RegistryWrapper) (*ElectionWrapper, error) {
 	election, err := registryWrapper.GetElection(nil, celoClient.Eth)
-	if err != nil {
-		return nil, err
-	}
-
-	return &ElectionWrapper{
-		election,
-	}, nil
+	return &ElectionWrapper{election}, err
 }
 
 type VotesByGroup map[common.Address]*big.Int
@@ -47,7 +41,7 @@ type ElectionVotes struct {
 }
 
 func (w *ElectionWrapper) GetAccountElectionVotes(opts *bind.CallOpts, account common.Address) (*ElectionVotes, error) {
-	groups, err := w.GetGroupsVotedForByAccount(opts, account)
+	groups, err := w.Election.GetGroupsVotedForByAccount(opts, account)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +49,7 @@ func (w *ElectionWrapper) GetAccountElectionVotes(opts *bind.CallOpts, account c
 	var votes *ElectionVotes
 	for _, groupAddr := range groups {
 		// TODO(yorke): dedup
-		pendingAmt, err := w.GetPendingVotesForGroupByAccount(opts, groupAddr, account)
+		pendingAmt, err := w.Election.GetPendingVotesForGroupByAccount(opts, groupAddr, account)
 		if err != nil {
 			return nil, err
 		}
@@ -63,7 +57,7 @@ func (w *ElectionWrapper) GetAccountElectionVotes(opts *bind.CallOpts, account c
 			votes.Pending[groupAddr] = pendingAmt
 		}
 
-		activeAmt, err := w.GetActiveVotesForGroupByAccount(opts, groupAddr, account)
+		activeAmt, err := w.Election.GetActiveVotesForGroupByAccount(opts, groupAddr, account)
 		if err != nil {
 			return nil, err
 		}

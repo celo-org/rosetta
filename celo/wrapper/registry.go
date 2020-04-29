@@ -46,13 +46,7 @@ var (
 func NewRegistry(celoClient *client.CeloClient) (*RegistryWrapper, error) {
 	registry, err := contract.NewRegistry(params.RegistrySmartContractAddress, celoClient.Eth)
 	err = client.WrapRpcError(err)
-	if err != nil {
-		return nil, err
-	}
-
-	return &RegistryWrapper{
-		contract: registry,
-	}, nil
+	return &RegistryWrapper{contract: registry}, err
 }
 
 func (w *RegistryWrapper) Contract() *contract.Registry {

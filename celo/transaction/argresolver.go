@@ -14,9 +14,9 @@ import (
 type ArgResolver func([]interface{}, context.Context) ([]interface{}, error)
 
 type ResolverLocator struct {
-	registry   *wrapper.RegistryWrapper
 	election   *wrapper.ElectionWrapper
 	lockedGold *wrapper.LockedGoldWrapper
+	accounts   *wrapper.AccountsWrapper
 }
 
 func NewResolverLocator(registry *wrapper.RegistryWrapper, celoClient *client.CeloClient) (*ResolverLocator, error) {
@@ -30,10 +30,15 @@ func NewResolverLocator(registry *wrapper.RegistryWrapper, celoClient *client.Ce
 		return nil, err
 	}
 
+	accounts, err := wrapper.NewAccounts(celoClient, registry)
+	if err != nil {
+		return nil, err
+	}
+
 	return &ResolverLocator{
-		registry:   registry,
 		election:   election,
 		lockedGold: lockedGold,
+		accounts:   accounts,
 	}, nil
 }
 
@@ -45,6 +50,8 @@ func (rl *ResolverLocator) GetResolver(method *CeloMethod) ArgResolver {
 		fallthrough
 	case &RevokeActiveVotes:
 		return rl.revokeVoteResolver
+	case &AuthorizeVoteSigner:
+		return rl.authorizeSigner
 	default:
 		return rl.defaultResolver
 	}
@@ -59,6 +66,7 @@ type argType string
 var (
 	addressType argType = "common.Address"
 	bigIntType  argType = "*big.Int"
+	bytesType   argType = "[]byte"
 )
 
 func (at argType) String() string { return string(at) }
@@ -81,6 +89,14 @@ func assertBigIntType(args []interface{}, index int) (*big.Int, error) {
 		return nil, argTypeErr(args, index, bigIntType)
 	}
 	return bigInt, nil
+}
+
+func assertBytesType(args []interface{}, index int) ([]byte, error) {
+	bytes, ok := args[index].([]byte)
+	if !ok {
+		return nil, argTypeErr(args, index, bytesType)
+	}
+	return bytes, nil
 }
 
 func assertLength(args []interface{}, length int) error {
@@ -145,6 +161,33 @@ func (rl *ResolverLocator) revokeVoteResolver(args []interface{}, ctx context.Co
 		return nil, err
 	}
 
-	args = append(args, keys.Lesser, keys.Greater)
-	return args, nil
+	resolvedArgs := []interface{}{group, value, keys.Lesser, keys.Greater}
+
+	return resolvedArgs, nil
+}
+
+func (rl *ResolverLocator) authorizeSigner(args []interface{}, ctx context.Context) ([]interface{}, error) {
+	err := assertLength(args, 2)
+	if err != nil {
+		return nil, err
+	}
+
+	signer, err := assertAddressType(args, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	pop, err := assertBytesType(args, 1)
+	if err != nil {
+		return nil, err
+	}
+
+	encodedSig, err := rl.accounts.AuthorizeMetadata(pop)
+	if err != nil {
+		return nil, err
+	}
+
+	resolvedArgs := []interface{}{signer, encodedSig.V, encodedSig.R, encodedSig.S}
+
+	return resolvedArgs, nil
 }

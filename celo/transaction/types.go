@@ -26,30 +26,32 @@ type CeloMethod string
 
 // values taken from contract method names for ABI usage
 var (
-	CreateAccount      CeloMethod = "createAccount"
-	LockGold           CeloMethod = "lock"
-	UnlockGold         CeloMethod = "unlock"
-	RelockGold         CeloMethod = "relock"
-	WithdrawGold       CeloMethod = "withdraw"
-	Vote               CeloMethod = "vote"
-	ActivateVotes      CeloMethod = "activate"
-	RevokePendingVotes CeloMethod = "revokePending"
-	RevokeActiveVotes  CeloMethod = "revokeActive"
+	CreateAccount       CeloMethod = "createAccount"
+	AuthorizeVoteSigner CeloMethod = "authorizeVoteSigner"
+	LockGold            CeloMethod = "lock"
+	UnlockGold          CeloMethod = "unlock"
+	RelockGold          CeloMethod = "relock"
+	WithdrawGold        CeloMethod = "withdraw"
+	Vote                CeloMethod = "vote"
+	ActivateVotes       CeloMethod = "activate"
+	RevokePendingVotes  CeloMethod = "revokePending"
+	RevokeActiveVotes   CeloMethod = "revokeActive"
 )
 
 func (tt CeloMethod) String() string { return string(tt) }
 
 var (
 	CeloMethodToRegistryKey = map[*CeloMethod]*wrapper.RegistryKey{
-		&CreateAccount:      &wrapper.AccountsRegistryId,
-		&LockGold:           &wrapper.LockedGoldRegistryId,
-		&UnlockGold:         &wrapper.LockedGoldRegistryId,
-		&RelockGold:         &wrapper.LockedGoldRegistryId,
-		&WithdrawGold:       &wrapper.LockedGoldRegistryId,
-		&Vote:               &wrapper.ElectionRegistryId,
-		&ActivateVotes:      &wrapper.ElectionRegistryId,
-		&RevokePendingVotes: &wrapper.ElectionRegistryId,
-		&RevokeActiveVotes:  &wrapper.ElectionRegistryId,
+		&CreateAccount:       &wrapper.AccountsRegistryId,
+		&AuthorizeVoteSigner: &wrapper.AccountsRegistryId,
+		&LockGold:            &wrapper.LockedGoldRegistryId,
+		&UnlockGold:          &wrapper.LockedGoldRegistryId,
+		&RelockGold:          &wrapper.LockedGoldRegistryId,
+		&WithdrawGold:        &wrapper.LockedGoldRegistryId,
+		&Vote:                &wrapper.ElectionRegistryId,
+		&ActivateVotes:       &wrapper.ElectionRegistryId,
+		&RevokePendingVotes:  &wrapper.ElectionRegistryId,
+		&RevokeActiveVotes:   &wrapper.ElectionRegistryId,
 	}
 )
 
