@@ -109,8 +109,8 @@ ci-lint:
 	golangci-lint run --config .golangci.yml --out-format junit-xml ./... | tee /tmp/test-results/go-lint-report.xml
 
 add-license:
-	${LICENCE_SCRIPT} analyzer celo client cmd db examples internal prueba service main.go
+	${LICENCE_SCRIPT} analyzer celo client cmd db examples internal service main.go
 
 
 check-license:
-	${LICENCE_SCRIPT} -check analyzer celo client cmd db examples internal prueba service main.go
+	${LICENCE_SCRIPT} -check analyzer celo client cmd db examples internal service main.go
