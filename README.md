@@ -16,13 +16,45 @@ Where rosetta is the binary.
 
   * If on development you can replace rosetta by `go run main.go`
 
+### Example for RC1:
+
+Prerequisites:
+  * Download `celo-monorepo` branch `rc1` and `yarn && yarn build`
+  * Download `celo-blockchain` branch `rc1-tracing-fix` and `make all`
+  * Download `rosetta` branch `master` update go.mod and `make gen-contracts && make all`
+  * Run `make rc1-env` to create an empty datadir with the genesis block
+
+```bash
+rosetta run \
+  --genesis ./envs/rc1/genesis.json \
+  --geth ../celo-blockchain/build/bin/geth \
+  --staticNode "enode://5e0f4e3aaa096e2a2db76622b335cab4d3224d08d16cb11e8855a3a5f30c19d35d81a74b21271562e459495ab203c2f3a5a5747a83eb53ba046aeeb09aa240ff@34.83.110.24:30303"
+  --datadir "./envs/rc1"
+```
+
+### Example for Alfajores:
+
+Prerequisites:
+  * Download `celo-monorepo` branch `alfajores` and `yarn && yarn build`
+  * Download `celo-blockchain` branch `alfajores-tracing-fix` and `make all`
+  * Download `rosetta` branch `master` update go.mod and `make gen-contracts && make all`
+  * Run `make alfajores-env` to create an empty datadir with the genesis block
+
+```bash
+rosetta run \
+  --genesis ./envs/alfajores/genesis.json \
+  --geth ../celo-blockchain/build/bin/geth \
+  --staticNode "enode://05977f6b7d3e16a99d27b714f8a029a006e41ec7732167d373dd920d31f72b3a1776650798d8763560854369d36867e9564dad13b4b60a90c347feeb491d83a9@34.83.42.50:30303"
+  --datadir "./envs/alfajores"
+```
+
 ### Example for RC0:
 
 Prerequisites:
+  * Download `celo-monorepo` branch `rc0` and `yarn && yarn build`
+  * Download `celo-blockchain` branch `mc/rosetta-rc0` and `make all`
+  * Download `rosetta` branch `rc0` update go.mod and `make gen-contracts && make all`
   * Run `make rc0-env` to create an empty datadir with the genesis block
-  * Download & build `celo-blockchain` use `mc/rosetta-rc0` to connect to RC0
-
-This assumes `celo-blockchain` can be found ad `../celo-blockchain`
 
 ```bash
 rosetta run \
@@ -87,3 +119,13 @@ Commands:
   * `make docker-build`
   * `make docker-publish`
 
+## How to run rosetta-validator
+
+```
+go get -u github.com/coinbase/rosetta-validator@v0.1.2
+mkdir validator-data 
+go run examples/generate_balances/main.go \
+  https://storage.googleapis.com/genesis_blocks/alfajores \
+  validator-data/bootstrap_balances.json
+rosetta-validator check:complete
+```
