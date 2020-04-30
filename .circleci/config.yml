@@ -31,11 +31,11 @@ jobs:
     working_directory: /go/src/github.com/celo-org/rosetta
     steps:
       - checkout
-      - run:
-          name: Setup Rust language
-          command: |
-            rustup install 1.41.0
-            rustup default 1.41.0
+      # - run:
+      #     name: Setup Rust language
+      #     command: |
+      #       rustup install 1.41.0
+      #       rustup default 1.41.0
       - restore_cache:
           keys:
             - cargo-cache-v1-{{ arch }}-{{ checksum "external/bls-zexe/Cargo.lock" }}
