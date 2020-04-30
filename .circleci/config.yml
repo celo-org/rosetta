@@ -5,16 +5,16 @@ executors:
     docker:
       - image: circleci/golang:1.13
         user: root
-    working_directory: ~/go/src/github.com/celo-org/rosetta
-    environment:
-      GO111MODULE: "on"
-      GO_VERSION: "1.13.7"
-
+    working_directory: /go/src/github.com/celo-org/rosetta
+attach: &attach
+  attach_workspace:
+    at: /go
 jobs:
-  setup:
+  build-rust:
     docker:
       - image: circleci/rust:1.41.0
-    working_directory: ~/go/src/github.com/celo-org/rosetta
+        user: root
+    working_directory: /go/src/github.com/celo-org/rosetta
     steps:
       - checkout
       - run:
@@ -28,36 +28,45 @@ jobs:
             export PATH=$PATH:~/.cargo/bin
             make bls-zexe
       - persist_to_workspace:
-          root: ~/go
+          root: /go
+          paths:
+            - src/github.com/celo-org/rosetta
+  build-go:
+    executor: golang
+    steps:
+      - *attach
+      - restore_cache:
+          keys:
+            - go-mod-v1-{{ checksum "go.sum" }}          
+      - run: make rosetta
+      - save_cache:
+          key: go-mod-v1-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"      
+            - "/go/build"
+      - persist_to_workspace:
+          root: /go
           paths:
             - src
             - bin
             - pkg/mod/cache
-  build-rosetta:
-    executor: golang
-    steps:
-      - attach_workspace:
-          at: ~/go
-      - run: make rc0-env
-      - run: make rosetta
   unit-tests:
     executor: golang
     steps:
-      - attach_workspace:
-          at: ~/go
+      - *attach
       - run: make test
   lint:
     executor: golang
     steps:
       - attach_workspace:
-          at: ~/go
+          at: /go
       - run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.25.1
       - run: make lint
   coverage:
     executor: golang
     steps:
       - attach_workspace:
-          at: ~/go
+          at: /go
       - run: make test-cover
       - run: bash <(curl -s https://codecov.io/bash)
 
@@ -65,16 +74,16 @@ workflows:
   version: 2
   build:
     jobs:
-      - setup
-      - build-rosetta:
+      - build-rust
+      - build-go:
           requires:
-            - setup
+            - build-rust
       - unit-tests:
           requires:
-            - setup
+            - build-go
       - lint:
           requires:
-            - setup
+            - build-go
       - coverage:
           requires:
-            - setup
+            - build-go
