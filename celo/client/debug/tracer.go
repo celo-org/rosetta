@@ -65,7 +65,7 @@ var transferTracer = `
         createTransfer.status = ret.equals(0) ? this.statusRevert : this.statusSuccess;
       }
 
-      // Propogate transfers made during the successful call.
+      // Propagate transfers made during the successful call.
       this.pushTransfers(this.topCall().transfers, finishedCall.transfers,
                          finishedCall.reverted ? this.statusRevert : this.statusSuccess);
     }

@@ -63,6 +63,7 @@ type TransactionMetadata struct {
 	GatewayFee          *big.Int        `json:"gatewayFee" rlp:"nil"`          // nil means no gateway fee is paid
 }
 
+////nolint:unused
 func (txm *TransactionMetadata) asMessage() *ethereum.CallMsg {
 	return &ethereum.CallMsg{
 		GasPrice:            txm.GasPrice,

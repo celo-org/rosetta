@@ -28,7 +28,6 @@ type gethService struct {
 	cmd     *exec.Cmd
 	running service.RunningLock
 	logger  log.Logger
-	errors  chan error
 }
 
 func NewGethService(
@@ -112,8 +111,9 @@ func (gs *gethService) Start(ctx context.Context) error {
 }
 
 func (gs *gethService) gethCmd(args ...string) *exec.Cmd {
-	fullArgs := append([]string{"--datadir", gs.paths.Datadir()}, args...)
-	return exec.Command(gs.gethBinary, fullArgs...)
+	datadir := gs.paths.Datadir()
+	fullArgs := append([]string{"--datadir", datadir}, args...)
+	return exec.Command(gs.gethBinary, fullArgs...) //nolint:gosec
 }
 
 func (gs *gethService) setupStaticNodes() error {
@@ -124,6 +124,7 @@ func (gs *gethService) setupStaticNodes() error {
 		return fmt.Errorf("Can't serialize static nodes: %w", err)
 	}
 
+	//nolint:gosec
 	if err = ioutil.WriteFile(gs.paths.StaticNodesFile(), staticNodesRaw, 0644); err != nil {
 		return fmt.Errorf("Can't serialize static nodes: %w", err)
 	}

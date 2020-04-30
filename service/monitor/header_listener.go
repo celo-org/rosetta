@@ -162,7 +162,7 @@ func (listener *listener) syncNewBlocks(firstBlockToFetch *big.Int) (*big.Int, e
 	}
 }
 
-// syncBlockRange will fetch & write all blocks in range [start,end] incluse
+// syncBlockRange will fetch & write all blocks in range [start,end] inclusive
 func (listener *listener) syncBlockRange(start, end *big.Int) error {
 
 	// curr <= end => curr.Cmp(end) <= 0
