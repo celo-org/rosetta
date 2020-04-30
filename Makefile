@@ -18,6 +18,8 @@ GOLANGCI_exists := $(shell command -v golangci-lint 2> /dev/null)
 
 COMMIT_SHA=$(shell git rev-parse HEAD)
 
+LICENCE_SCRIPT=addlicense -c "Celo Org" -l "apache" -v
+
 .PHONY:
 	gen-rpc 
 	ifdef CARGO_exists
@@ -30,6 +32,14 @@ ifeq ("$(LSB_exists)","")
 else
 	OS = linux
 endif
+
+deps:
+	go get ./...
+	go get github.com/google/addlicense
+	# used in CI
+	go get github.com/jstemmer/go-junit-report 
+	# go get github.com/segmentio/golines
+	# go get github.com/mattn/goveralls	
 
 all: bls-zexe
 	go build ./...
@@ -80,3 +90,19 @@ docker-publish: docker-build
 docker-build:
 	echo "Creating docker image with commit: $(COMMIT_SHA)"
 	docker build --build-arg COMMIT_SHA=$(COMMIT_SHA) -t us.gcr.io/celo-testnet/rosetta:$(COMMIT_SHA) .
+
+ci-test:
+	mkdir -p /tmp/test-results
+	trap "go-junit-report < /tmp/test-results/go-test.out > /tmp/test-results/go-test-report.xml" EXIT
+	go test -v ./... | tee /tmp/test-results/go-test.out
+
+ci-lint:
+	mkdir -p /tmp/test-results
+	golangci-lint run --config .golangci.yml --out-format junit-xml ./... | tee /tmp/test-results/go-lint-report.xml
+
+add-license:
+	${LICENCE_SCRIPT} analyzer celo client cmd db examples internal prueba service main.go
+
+
+check-license:
+	${LICENCE_SCRIPT} -check analyzer celo client cmd db examples internal prueba service main.go
