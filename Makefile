@@ -80,6 +80,14 @@ clean-bls-zexe:
 
 clean: clean-geth clean-bls-zexe
 
+rc1-env:
+	mkdir -p ./envs/rc1
+	curl 'https://storage.googleapis.com/genesis_blocks/rc1' > ./envs/rc1/genesis.json
+
+alfajores-env:
+	mkdir -p ./envs/alfajores
+	curl 'https://storage.googleapis.com/genesis_blocks/alfajores' > ./envs/alfajores/genesis.json
+
 rc0-env:
 	mkdir -p ./envs/rc0
 	curl 'https://storage.googleapis.com/genesis_blocks/rc0' > ./envs/rc0/genesis.json
@@ -101,8 +109,8 @@ ci-lint:
 	golangci-lint run --config .golangci.yml --out-format junit-xml ./... | tee /tmp/test-results/go-lint-report.xml
 
 add-license:
-	${LICENCE_SCRIPT} analyzer celo client cmd db examples internal prueba service main.go
+	${LICENCE_SCRIPT} analyzer celo client cmd db examples internal service main.go
 
 
 check-license:
-	${LICENCE_SCRIPT} -check analyzer celo client cmd db examples internal prueba service main.go
+	${LICENCE_SCRIPT} -check analyzer celo client cmd db examples internal service main.go
