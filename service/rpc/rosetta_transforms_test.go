@@ -1,19 +1,16 @@
 package rpc
 
-// import (
-// 	"strconv"
+import (
+	"testing"
 
-// 	"github.com/celo-org/rosetta/analyzer"
-// 	"github.com/coinbase/rosetta-sdk-go/types"
-// 	"github.com/ethereum/go-ethereum/common"
-// 	. "github.com/onsi/gomega"
-// 	gs "github.com/onsi/gomega/gstruct"
-// 	gtypes "github.com/onsi/gomega/types"
-// )
+	"github.com/coinbase/rosetta-sdk-go/types"
+	"github.com/ethereum/go-ethereum/common"
+	. "github.com/onsi/gomega"
+)
 
 // func MatchOperation(account common.Address, value int, currency *types.Currency, status OperationResult, kind analyzer.OperationType) gtypes.GomegaMatcher {
 // 	return gs.MatchFields(gs.IgnoreExtras, gs.Fields{
-// 		"Account": Equal(NewAccountIdentifier(account)),
+// 		"Account": Equal(NewAccountIdentifier(account, nil)),
 // 		"Amount": gs.MatchAllFields(gs.Fields{
 // 			"Value":    Equal(strconv.Itoa(value)),
 // 			"Currency": Equal(currency),
@@ -24,22 +21,24 @@ package rpc
 // 	})
 // }
 
-// // func TestMapTxHashesToTransaction(t *testing.T) {
-// 	g := NewGomegaWithT(t)
+func TestMapTxHashesToTransaction(t *testing.T) {
+	RegisterTestingT(t)
 
-// 	txHashes := []common.Hash{common.HexToHash("1"), common.HexToHash("2"), common.HexToHash("3")}
+	txHashes := []common.Hash{common.HexToHash("1"), common.HexToHash("2"), common.HexToHash("3")}
 
-// 	getHash := func(t types.TransactionIdentifier) common.Hash { return common.HexToHash(t.Hash) }
-// 	g.Expect(MapTxHashesToTransaction(txHashes)).To(And(
-// 		HaveLen(len(txHashes)),
-// 		ConsistOf(
-// 			WithTransform(getHash, Equal(txHashes[0])),
-// 			WithTransform(getHash, Equal(txHashes[1])),
-// 			WithTransform(getHash, Equal(txHashes[2])),
-// 		),
-// 	))
+	getHashesFromIds := func(txIds []*types.TransactionIdentifier) []common.Hash {
+		txHashes := make([]common.Hash, len(txIds))
+		for i, t := range txIds {
+			txHashes[i] = common.HexToHash(t.Hash)
+		}
+		return txHashes
+	}
 
-// }
+	Ω(MapTxHashesToTransaction(txHashes)).To(And(
+		HaveLen(len(txHashes)),
+		WithTransform(getHashesFromIds, ConsistOf(txHashes)),
+	))
+}
 
 // func TestTransferToOperations(t *testing.T) {
 // 	g := NewGomegaWithT(t)
