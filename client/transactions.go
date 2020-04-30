@@ -26,7 +26,7 @@ func NewSigner(chainId *big.Int) types.EIP155Signer {
 	return types.NewEIP155Signer(chainId)
 }
 
-func SignTransaction(transaction *types.Transaction, privateKey *ecdsa.PrivateKey, signer *types.EIP155Signer) (*types.Transaction, error) {
+func SignTransaction(transaction *types.Transaction, privateKey *ecdsa.PrivateKey, signer types.Signer) (*types.Transaction, error) {
 	return types.SignTx(transaction, signer, privateKey)
 }
 

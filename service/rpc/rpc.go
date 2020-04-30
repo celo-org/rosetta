@@ -115,7 +115,10 @@ func requestLogHandler(handler http.Handler) http.Handler {
 }
 
 func createRouter(celoClient *client.CeloClient, db db.RosettaDBReader, chainParams *celo.ChainParameters) (http.Handler, error) {
-	servicer := NewServicer(celoClient, db, chainParams)
+	servicer, err := NewServicer(celoClient, db, chainParams)
+	if err != nil {
+		return nil, err
+	}
 
 	network := &types.NetworkIdentifier{
 		Blockchain: BlockchainName,

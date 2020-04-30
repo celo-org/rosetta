@@ -18,18 +18,14 @@ import (
 	"crypto/ecdsa"
 
 	"github.com/coinbase/rosetta-sdk-go/types"
+	rosettaTypes "github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/ethereum/go-ethereum/common"
+	gethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
 )
 
-func NewAccountIdentifier(addr *common.Address) *types.AccountIdentifier {
-	return &types.AccountIdentifier{
-		Address: addr.Hex(),
-	}
-}
-
-func EncodeTransaction(transaction *types.Transaction) (string, error) {
+func EncodeTransaction(transaction *gethTypes.Transaction) (string, error) {
 	bytes, err := rlp.EncodeToBytes(transaction)
 	if err != nil {
 		return "", err
@@ -37,9 +33,9 @@ func EncodeTransaction(transaction *types.Transaction) (string, error) {
 	return string(bytes), nil
 }
 
-func DecodeTransaction(transaction *types.ConstructionSubmitRequest) (*types.Transaction, error) {
+func DecodeTransaction(transaction *rosettaTypes.ConstructionSubmitRequest) (*gethTypes.Transaction, error) {
 	bytes := []byte(transaction.SignedTransaction)
-	var tx types.Transaction
+	var tx gethTypes.Transaction
 	err := rlp.DecodeBytes(bytes, tx)
 	if err != nil {
 		return nil, err
