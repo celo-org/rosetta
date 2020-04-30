@@ -94,7 +94,7 @@ docker-build:
 ci-test:
 	mkdir -p /tmp/test-results
 	trap "go-junit-report < /tmp/test-results/go-test.out > /tmp/test-results/go-test-report.xml" EXIT
-	go test -v | tee /tmp/test-results/go-test.out
+	go test -v ./... | tee /tmp/test-results/go-test.out
 
 ci-lint:
 	mkdir -p /tmp/test-results
