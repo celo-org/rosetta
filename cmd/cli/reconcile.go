@@ -161,6 +161,7 @@ func reconcileRange(blocks []*types.Block, checkDifferences func(id string, chan
 
 }
 
+//nolint:errcheck
 func HashAccount(acc *types.AccountIdentifier) common.Hash {
 	h := sha256.New()
 	h.Write([]byte(acc.Address))
