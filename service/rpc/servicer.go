@@ -36,24 +36,24 @@ import (
 // This service should implement the business logic for every endpoint for the AccountApi API.
 // Include any external packages or services that will be required by this service.
 type Servicer struct {
-	cc          *client.CeloClient
-	db          db.RosettaDBReader
-	chainParams *celo.ChainParameters
-	txBuilder   *transaction.OnlineBuilder
+	cc              *client.CeloClient
+	db              db.RosettaDBReader
+	chainParams     *celo.ChainParameters
+	metadataFetcher transaction.TxMetadataFetcher
 }
 
 // NewServicer creates a default api service
 func NewServicer(celoClient *client.CeloClient, db db.RosettaDBReader, cp *celo.ChainParameters) (*Servicer, error) {
-	tb, err := transaction.NewOnlineBuilder(celoClient)
+	tb, err := transaction.NewTxMetadataFetcher(celoClient)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Servicer{
-		cc:          celoClient,
-		db:          db,
-		chainParams: cp,
-		txBuilder:   tb,
+		cc:              celoClient,
+		db:              db,
+		chainParams:     cp,
+		metadataFetcher: tb,
 	}, nil
 }
 
@@ -192,7 +192,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 
 	if subAccount.Address == string(analyzer.AccLockedGoldNonVoting) {
 		// Fetch LockedGold Balances
-		lockedGoldWrapper, err := wrapper.NewLockedGold(s.cc, registryWrapper)
+		lockedGoldWrapper, err := registryWrapper.GetLockedGoldWrapper(ctx, nil)
 		if err == client.ErrContractNotDeployed {
 			// Nothing is deployed => ignore lockedGold & election balances
 			return emptyResponse, nil
@@ -210,7 +210,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 
 	if subAccount.Address == string(analyzer.AccLockedGoldPending) {
 		// Fetch LockedGold Balances
-		lockedGoldWrapper, err := wrapper.NewLockedGold(s.cc, registryWrapper)
+		lockedGoldWrapper, err := registryWrapper.GetLockedGoldWrapper(ctx, nil)
 		if err == client.ErrContractNotDeployed {
 			// Nothing is deployed => ignore lockedGold & election balances
 			return emptyResponse, nil
@@ -229,7 +229,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 	// If we are here need to be election based
 
 	// Fetch Election (Votes) Balances
-	electionWrapper, err := wrapper.NewElection(s.cc, registryWrapper)
+	electionWrapper, err := registryWrapper.GetElectionWrapper(ctx, nil)
 	if err == client.ErrContractNotDeployed {
 		// Nothing is deployed => ignore lockedGold & election balances
 		return emptyResponse, nil
@@ -363,7 +363,7 @@ func (s *Servicer) ConstructionMetadata(ctx context.Context, request *types.Cons
 		return nil, errResp
 	}
 
-	txMetadata, err := s.txBuilder.FetchTransactionMetadata(ctx, txOptions)
+	txMetadata, err := s.metadataFetcher.FetchTransactionMetadata(ctx, txOptions)
 	if err != nil {
 		return nil, LogErrInternal(fmt.Errorf("Failed to fetch tx metadata"))
 	}

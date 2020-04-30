@@ -23,54 +23,43 @@ import (
 )
 
 type AbiBuilder struct {
-	abiCache map[*wrapper.RegistryKey]*abi.ABI
+	abiMap map[wrapper.RegistryKey]*abi.ABI
 }
 
-func NewAbiBuilder() *AbiBuilder {
-	return &AbiBuilder{
-		abiCache: make(map[*wrapper.RegistryKey]*abi.ABI),
-	}
-}
+func NewAbiBuilder() (*AbiBuilder, error) {
+	abiMap := make(map[wrapper.RegistryKey]*abi.ABI)
 
-func (b *AbiBuilder) getAbi(key *wrapper.RegistryKey) (*abi.ABI, error) {
 	var abi *abi.ABI
-	abi, present := b.abiCache[key]
+	var err error
 
-	if !present {
-		var err error
-		switch key {
-		case &wrapper.AccountsRegistryId:
-			abi, err = contract.ParseAccountsABI()
-		case &wrapper.ElectionRegistryId:
-			abi, err = contract.ParseElectionABI()
-		case &wrapper.LockedGoldRegistryId:
-			abi, err = contract.ParseLockedGoldABI()
-		default:
-			err = fmt.Errorf("Unimplemented ABI parsing for %s", key)
-		}
-		if err != nil {
-			return nil, err
-		}
+	abi, err = contract.ParseAccountsABI()
+	if err != nil {
+		return nil, err
 	}
+	abiMap[wrapper.AccountsRegistryId] = abi
 
-	b.abiCache[key] = abi
-	return abi, nil
+	abi, err = contract.ParseElectionABI()
+	if err != nil {
+		return nil, err
+	}
+	abiMap[wrapper.ElectionRegistryId] = abi
+
+	abi, err = contract.ParseLockedGoldABI()
+	if err != nil {
+		return nil, err
+	}
+	abiMap[wrapper.LockedGoldRegistryId] = abi
+
+	return &AbiBuilder{
+		abiMap: abiMap,
+	}, nil
 }
 
-func (b *AbiBuilder) GetData(method *CeloMethod, args ...interface{}) ([]byte, error) {
-	if method == nil {
-		return nil, fmt.Errorf("'Method' required for building tx data")
+func (b *AbiBuilder) GetData(method CeloMethod, args ...interface{}) ([]byte, error) {
+	contractABI, ok := b.abiMap[CeloMethodToRegistryKey[method]]
+	if !ok {
+		return nil, fmt.Errorf("No abi registered for method: %s", method)
 	}
 
-	contractABI, err := b.getAbi(CeloMethodToRegistryKey[method])
-	if err != nil {
-		return nil, err
-	}
-
-	packedData, err := contractABI.Pack(method.String(), args...)
-	if err != nil {
-		return nil, err
-	}
-
-	return packedData, nil
+	return contractABI.Pack(method.String(), args...)
 }

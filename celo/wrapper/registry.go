@@ -17,6 +17,7 @@ package wrapper
 import (
 	"context"
 	"errors"
+	"math/big"
 
 	"github.com/celo-org/rosetta/celo/client"
 	"github.com/celo-org/rosetta/celo/contract"
@@ -26,6 +27,7 @@ import (
 )
 
 type RegistryWrapper struct {
+	cc       *client.CeloClient
 	contract *contract.Registry
 }
 
@@ -43,10 +45,13 @@ var (
 	ErrRegistryNotDeployed = errors.New("Registry Not Deployed")
 )
 
-func NewRegistry(celoClient *client.CeloClient) (*RegistryWrapper, error) {
-	registry, err := contract.NewRegistry(params.RegistrySmartContractAddress, celoClient.Eth)
+func NewRegistry(cc *client.CeloClient) (*RegistryWrapper, error) {
+	registry, err := contract.NewRegistry(params.RegistrySmartContractAddress, cc.Eth)
 	err = client.WrapRpcError(err)
-	return &RegistryWrapper{contract: registry}, err
+	return &RegistryWrapper{
+		cc:       cc,
+		contract: registry,
+	}, err
 }
 
 func (w *RegistryWrapper) Contract() *contract.Registry {
@@ -73,8 +78,11 @@ func (w *RegistryWrapper) GetAddressFor(opts *bind.CallOpts, identifierHash [32]
 	return address, nil
 }
 
-func (w *RegistryWrapper) GetAddressForString(opts *bind.CallOpts, identifier string) (common.Address, error) {
-	address, err := w.contract.GetAddressForString(opts, identifier)
+func (w *RegistryWrapper) GetAddressForString(ctx context.Context, block *big.Int, identifier string) (common.Address, error) {
+	address, err := w.contract.GetAddressForString(&bind.CallOpts{
+		BlockNumber: block,
+		Context:     ctx,
+	}, identifier)
 	err = client.WrapRpcError(err)
 
 	if err == client.ErrContractNotDeployed {
@@ -92,13 +100,13 @@ func (w *RegistryWrapper) GetAddressForString(opts *bind.CallOpts, identifier st
 	return address, nil
 }
 
-func (w *RegistryWrapper) GetLockedGold(opts *bind.CallOpts, backend bind.ContractBackend) (*contract.LockedGold, error) {
-	addr, err := w.GetAddressForString(opts, LockedGoldRegistryId.String())
+func (w *RegistryWrapper) GetLockedGold(ctx context.Context, block *big.Int) (*contract.LockedGold, error) {
+	addr, err := w.GetAddressForString(ctx, block, LockedGoldRegistryId.String())
 	if err != nil {
 		return nil, err
 	}
 
-	lockedGold, err := contract.NewLockedGold(addr, backend)
+	lockedGold, err := contract.NewLockedGold(addr, w.cc.Eth)
 	if err != nil {
 		return nil, err
 	}
@@ -106,13 +114,21 @@ func (w *RegistryWrapper) GetLockedGold(opts *bind.CallOpts, backend bind.Contra
 	return lockedGold, nil
 }
 
-func (w *RegistryWrapper) GetAccounts(opts *bind.CallOpts, backend bind.ContractBackend) (*contract.Accounts, error) {
-	addr, err := w.GetAddressForString(opts, AccountsRegistryId.String())
+func (w *RegistryWrapper) GetLockedGoldWrapper(ctx context.Context, block *big.Int) (*LockedGoldWrapper, error) {
+	contract, err := w.GetLockedGold(ctx, block)
+	if err != nil {
+		return nil, err
+	}
+	return NewLockedGold(contract), nil
+}
+
+func (w *RegistryWrapper) GetAccounts(ctx context.Context, block *big.Int) (*contract.Accounts, error) {
+	addr, err := w.GetAddressForString(ctx, block, AccountsRegistryId.String())
 	if err != nil {
 		return nil, err
 	}
 
-	accounts, err := contract.NewAccounts(addr, backend)
+	accounts, err := contract.NewAccounts(addr, w.cc.Eth)
 	if err != nil {
 		return nil, err
 	}
@@ -120,13 +136,21 @@ func (w *RegistryWrapper) GetAccounts(opts *bind.CallOpts, backend bind.Contract
 	return accounts, nil
 }
 
-func (w *RegistryWrapper) GetElection(opts *bind.CallOpts, backend bind.ContractBackend) (*contract.Election, error) {
-	addr, err := w.GetAddressForString(opts, ElectionRegistryId.String())
+func (w *RegistryWrapper) GetAccountsWrapper(ctx context.Context, block *big.Int) (*AccountsWrapper, error) {
+	contract, err := w.GetAccounts(ctx, block)
+	if err != nil {
+		return nil, err
+	}
+	return NewAccounts(contract), nil
+}
+
+func (w *RegistryWrapper) GetElection(ctx context.Context, block *big.Int) (*contract.Election, error) {
+	addr, err := w.GetAddressForString(ctx, block, ElectionRegistryId.String())
 	if err != nil {
 		return nil, err
 	}
 
-	election, err := contract.NewElection(addr, backend)
+	election, err := contract.NewElection(addr, w.cc.Eth)
 	if err != nil {
 		return nil, err
 	}
@@ -134,31 +158,10 @@ func (w *RegistryWrapper) GetElection(opts *bind.CallOpts, backend bind.Contract
 	return election, nil
 }
 
-func (w *RegistryWrapper) GetUpdatesOnBlock(ctx context.Context, blockNumber uint64, maxTxIndex *uint, identifiers [][32]byte) (map[[32]byte]common.Address, error) {
-	addresses := make(map[[32]byte]common.Address)
-
-	// Get Iterator for events on given block
-	iter, err := w.contract.FilterRegistryUpdated(&bind.FilterOpts{
-		Start:   blockNumber,
-		End:     &blockNumber,
-		Context: ctx,
-	}, identifiers)
-
+func (w *RegistryWrapper) GetElectionWrapper(ctx context.Context, block *big.Int) (*ElectionWrapper, error) {
+	contract, err := w.GetElection(ctx, block)
 	if err != nil {
 		return nil, err
 	}
-
-	for iter.Next() {
-		if maxTxIndex != nil && iter.Event.Raw.TxIndex >= *maxTxIndex {
-			break
-		}
-		addresses[iter.Event.IdentifierHash] = iter.Event.Addr
-	}
-
-	err = iter.Close()
-	if err != nil {
-		return addresses, err
-	}
-
-	return addresses, nil
+	return NewElection(contract), nil
 }

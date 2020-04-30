@@ -41,7 +41,7 @@ func SerializeTransactionOptions(txOptions *transaction.TransactionOptions) map[
 func ConstructTxFromMetadata(txMetadata *transaction.TransactionMetadata) *gethTypes.Transaction {
 	return gethTypes.NewTransaction(
 		txMetadata.Nonce,
-		*txMetadata.To,
+		txMetadata.To,
 		txMetadata.Value,
 		txMetadata.Gas,
 		txMetadata.GasPrice,

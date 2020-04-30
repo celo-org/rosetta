@@ -18,6 +18,7 @@ import (
 	"math/big"
 
 	"github.com/celo-org/rosetta/celo/wrapper"
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 )
@@ -41,17 +42,17 @@ var (
 func (tt CeloMethod) String() string { return string(tt) }
 
 var (
-	CeloMethodToRegistryKey = map[*CeloMethod]*wrapper.RegistryKey{
-		&CreateAccount:       &wrapper.AccountsRegistryId,
-		&AuthorizeVoteSigner: &wrapper.AccountsRegistryId,
-		&LockGold:            &wrapper.LockedGoldRegistryId,
-		&UnlockGold:          &wrapper.LockedGoldRegistryId,
-		&RelockGold:          &wrapper.LockedGoldRegistryId,
-		&WithdrawGold:        &wrapper.LockedGoldRegistryId,
-		&Vote:                &wrapper.ElectionRegistryId,
-		&ActivateVotes:       &wrapper.ElectionRegistryId,
-		&RevokePendingVotes:  &wrapper.ElectionRegistryId,
-		&RevokeActiveVotes:   &wrapper.ElectionRegistryId,
+	CeloMethodToRegistryKey = map[CeloMethod]wrapper.RegistryKey{
+		CreateAccount:       wrapper.AccountsRegistryId,
+		AuthorizeVoteSigner: wrapper.AccountsRegistryId,
+		LockGold:            wrapper.LockedGoldRegistryId,
+		UnlockGold:          wrapper.LockedGoldRegistryId,
+		RelockGold:          wrapper.LockedGoldRegistryId,
+		WithdrawGold:        wrapper.LockedGoldRegistryId,
+		Vote:                wrapper.ElectionRegistryId,
+		ActivateVotes:       wrapper.ElectionRegistryId,
+		RevokePendingVotes:  wrapper.ElectionRegistryId,
+		RevokeActiveVotes:   wrapper.ElectionRegistryId,
 	}
 )
 
@@ -64,25 +65,20 @@ type TransactionOptions struct {
 }
 
 // [note]: non cGLD fee currencies currently unsupported
-type AccountMetadata struct {
-	From  common.Address
-	Nonce uint64
-}
-
-type NodeMetadata struct {
-	GasPrice            *big.Int
-	GatewayFeeRecipient *common.Address
-	GatewayFee          *big.Int
-}
 
 type MethodMetadata struct {
-	To   *common.Address
+	To   common.Address
 	Data []byte
 }
 
 type TransactionMetadata struct {
-	*AccountMetadata
-	*NodeMetadata
+	From                common.Address
+	Nonce               uint64
+	GasPrice            *big.Int
+	GatewayFeeRecipient *common.Address
+	GatewayFee          *big.Int
+	FeeCurrency         *common.Address
+
 	*MethodMetadata
 	Value *big.Int
 	Gas   uint64
@@ -91,13 +87,26 @@ type TransactionMetadata struct {
 func (tm *TransactionMetadata) AsTransaction() *types.Transaction {
 	return types.NewTransaction(
 		tm.Nonce,
-		*tm.To,
+		tm.To,
 		tm.Value,
 		tm.Gas,
 		tm.GasPrice,
-		nil, // non-cGLD fees not supported
+		tm.FeeCurrency,
 		tm.GatewayFeeRecipient,
 		tm.GatewayFee,
 		tm.Data,
 	)
+}
+
+func (tm *TransactionMetadata) AsCallMessage() ethereum.CallMsg {
+	return ethereum.CallMsg{
+		From:                tm.From,
+		GatewayFee:          tm.GatewayFee,
+		GatewayFeeRecipient: tm.GatewayFeeRecipient,
+		GasPrice:            tm.GasPrice,
+		To:                  &tm.To,
+		Data:                tm.Data,
+		Value:               tm.Value,
+		FeeCurrency:         tm.FeeCurrency,
+	}
 }

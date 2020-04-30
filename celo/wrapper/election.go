@@ -17,7 +17,6 @@ package wrapper
 import (
 	"math/big"
 
-	"github.com/celo-org/rosetta/celo/client"
 	"github.com/celo-org/rosetta/celo/contract"
 	"github.com/celo-org/rosetta/internal/utils"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -29,9 +28,8 @@ type ElectionWrapper struct {
 	*contract.Election
 }
 
-func NewElection(celoClient *client.CeloClient, registryWrapper *RegistryWrapper) (*ElectionWrapper, error) {
-	election, err := registryWrapper.GetElection(nil, celoClient.Eth)
-	return &ElectionWrapper{election}, err
+func NewElection(contract *contract.Election) *ElectionWrapper {
+	return &ElectionWrapper{contract}
 }
 
 type VotesByGroup map[common.Address]*big.Int

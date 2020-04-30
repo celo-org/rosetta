@@ -3,7 +3,6 @@ package wrapper
 import (
 	"fmt"
 
-	"github.com/celo-org/rosetta/celo/client"
 	"github.com/celo-org/rosetta/celo/contract"
 	"github.com/ethereum/go-ethereum/crypto"
 )
@@ -12,9 +11,8 @@ type AccountsWrapper struct {
 	*contract.Accounts
 }
 
-func NewAccounts(celoClient *client.CeloClient, registryWrapper *RegistryWrapper) (*AccountsWrapper, error) {
-	accounts, err := registryWrapper.GetAccounts(nil, celoClient.Eth)
-	return &AccountsWrapper{accounts}, err
+func NewAccounts(contract *contract.Accounts) *AccountsWrapper {
+	return &AccountsWrapper{contract}
 }
 
 type EncodedSignature struct {

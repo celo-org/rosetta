@@ -16,140 +16,102 @@ package transaction
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/celo-org/rosetta/celo/client"
 	"github.com/celo-org/rosetta/celo/wrapper"
-	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 )
 
-type OnlineBuilder struct {
-	celoClient      *client.CeloClient
-	registry        *wrapper.RegistryWrapper
-	resolverLocator *ResolverLocator
-	abiBuilder      *AbiBuilder
+type TxMetadataFetcher interface {
+	FetchTransactionMetadata(ctx context.Context, txOpts *TransactionOptions) (*TransactionMetadata, error)
 }
 
-func NewOnlineBuilder(client *client.CeloClient) (*OnlineBuilder, error) {
+type txMetadataFetcherImpl struct {
+	cc         *client.CeloClient
+	registry   *wrapper.RegistryWrapper
+	resolvers  *ResolverMap
+	abiBuilder *AbiBuilder
+}
+
+func NewTxMetadataFetcher(client *client.CeloClient) (TxMetadataFetcher, error) {
 	registry, err := wrapper.NewRegistry(client)
 	if err != nil {
 		return nil, err
 	}
 
-	locator, err := NewResolverLocator(registry, client)
+	abiBuilder, err := NewAbiBuilder()
 	if err != nil {
 		return nil, err
 	}
 
-	builder := &OnlineBuilder{
-		registry:        registry,
-		celoClient:      client,
-		resolverLocator: locator,
-		abiBuilder:      NewAbiBuilder(),
+	builder := &txMetadataFetcherImpl{
+		registry:   registry,
+		cc:         client,
+		resolvers:  NewResolverMap(registry),
+		abiBuilder: abiBuilder,
 	}
 
 	return builder, nil
 }
 
-func (b *OnlineBuilder) FetchNodeMetadata(ctx context.Context) (*NodeMetadata, error) {
-	gasPrice, err := b.celoClient.Eth.SuggestGasPrice(ctx)
+func (b *txMetadataFetcherImpl) FetchTransactionMetadata(ctx context.Context, options *TransactionOptions) (*TransactionMetadata, error) {
+	nonce, err := b.cc.Eth.NonceAt(ctx, options.From, nil) // nil == latest
 	if err != nil {
 		return nil, err
 	}
 
-	metadata := NodeMetadata{
-		GatewayFeeRecipient: nil,
-		GatewayFee:          nil,
-		GasPrice:            gasPrice,
-	}
-	return &metadata, nil
-}
-
-func (b *OnlineBuilder) FetchAccountMetadata(ctx context.Context, address common.Address) (*AccountMetadata, error) {
-	nonce, err := b.celoClient.Eth.NonceAt(ctx, address, nil) // nil == latest
-	if err != nil {
-		return nil, err
-	}
-
-	metadata := AccountMetadata{
-		From:  address,
-		Nonce: nonce,
-	}
-	return &metadata, nil
-}
-
-func (b *OnlineBuilder) FetchMethodMetadata(ctx context.Context, method *CeloMethod, args []interface{}) (*MethodMetadata, error) {
-	argResolver := b.resolverLocator.GetResolver(method)
-	resolvedArgs, err := argResolver(args, ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	data, err := b.abiBuilder.GetData(method, resolvedArgs)
-	if err != nil {
-		return nil, err
-	}
-
-	contractAddress, err := b.registry.GetAddressForString(&bind.CallOpts{Context: ctx}, CeloMethodToRegistryKey[method].String())
-	if err != nil {
-		return nil, err
-	}
-
-	meta := MethodMetadata{
-		Data: data,
-		To:   &contractAddress,
-	}
-	return &meta, nil
-}
-
-func (b *OnlineBuilder) FetchTransactionMetadata(ctx context.Context, options *TransactionOptions) (*TransactionMetadata, error) {
-	accountMetadata, err := b.FetchAccountMetadata(ctx, options.From)
-	if err != nil {
-		return nil, err
-	}
-
-	nodeMetadata, err := b.FetchNodeMetadata(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	methodMetadata := &MethodMetadata{
-		Data: nil,
-		To:   options.To,
-	}
-
-	if options.Method != nil {
-		meta, err := b.FetchMethodMetadata(ctx, options.Method, options.Args)
-		if err != nil {
-			return nil, err
-		}
-		methodMetadata = meta
-	}
-
-	msg := ethereum.CallMsg{
-		From:                accountMetadata.From,
-		GatewayFee:          nodeMetadata.GatewayFee,
-		GatewayFeeRecipient: nodeMetadata.GatewayFeeRecipient,
-		GasPrice:            nodeMetadata.GasPrice,
-		To:                  methodMetadata.To,
-		Data:                methodMetadata.Data,
-		Value:               options.Value,
-		FeeCurrency:         nil, // only cGLD fees currently supported
-	}
-
-	estimatedGas, err := b.celoClient.Eth.EstimateGas(ctx, msg)
+	gasPrice, err := b.cc.Eth.SuggestGasPrice(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	txMetadata := TransactionMetadata{
-		AccountMetadata: accountMetadata,
-		NodeMetadata:    nodeMetadata,
-		MethodMetadata:  methodMetadata,
-		Value:           options.Value,
-		Gas:             estimatedGas,
+		From:                options.From,
+		Nonce:               nonce,
+		GasPrice:            gasPrice,
+		GatewayFee:          nil,
+		GatewayFeeRecipient: nil,
+		Value:               options.Value,
 	}
 
+	if options.To != nil && options.Method != nil {
+		return nil, fmt.Errorf("Can't specify 'to' &  'method' at the same time (%s,%s)", options.To, options.Method)
+	} else if options.To != nil {
+		txMetadata.To = *options.To
+	} else {
+		data, to, err := b.resolveMethod(ctx, *options.Method, options.Args)
+		if err != nil {
+			return nil, err
+		}
+		txMetadata.To = to
+		txMetadata.Data = data
+	}
+
+	estimatedGas, err := b.cc.Eth.EstimateGas(ctx, txMetadata.AsCallMessage())
+	if err != nil {
+		return nil, err
+	}
+	txMetadata.Gas = estimatedGas
+
 	return &txMetadata, nil
+}
+
+func (b *txMetadataFetcherImpl) resolveMethod(ctx context.Context, method CeloMethod, args []interface{}) ([]byte, common.Address, error) {
+	resolvedArgs, err := b.resolvers.FindResolverFor(method)(ctx, args)
+	if err != nil {
+		return nil, common.ZeroAddress, err
+	}
+
+	data, err := b.abiBuilder.GetData(method, resolvedArgs)
+	if err != nil {
+		return nil, common.ZeroAddress, err
+	}
+
+	contractAddress, err := b.registry.GetAddressForString(ctx, nil, CeloMethodToRegistryKey[method].String())
+	if err != nil {
+		return nil, common.ZeroAddress, err
+	}
+
+	return data, contractAddress, err
 }

@@ -17,7 +17,6 @@ package wrapper
 import (
 	"math/big"
 
-	"github.com/celo-org/rosetta/celo/client"
 	"github.com/celo-org/rosetta/celo/contract"
 	"github.com/celo-org/rosetta/internal/utils"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -28,9 +27,8 @@ type LockedGoldWrapper struct {
 	*contract.LockedGold
 }
 
-func NewLockedGold(celoClient *client.CeloClient, registryWrapper *RegistryWrapper) (*LockedGoldWrapper, error) {
-	lockedgold, err := registryWrapper.GetLockedGold(nil, celoClient.Eth)
-	return &LockedGoldWrapper{lockedgold}, err
+func NewLockedGold(contract *contract.LockedGold) *LockedGoldWrapper {
+	return &LockedGoldWrapper{contract}
 }
 
 type PendingWithdrawal struct {
