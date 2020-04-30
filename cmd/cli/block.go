@@ -66,6 +66,7 @@ func printBlockContext(rosettabBlock *types.Block) {
 
 	names := []string{"Governance", "GasPriceMinimum", "LockedGold", "Election", "StableToken", "Validators", "EpochRewards"}
 	addresses, err := db.RegistryAddressesStartOf(ctx, blockNumber, 0, names...)
+	utils.ExitOnError(err)
 
 	block, err := cc.Eth.BlockByNumber(ctx, blockNumber)
 	utils.ExitOnError(err)
