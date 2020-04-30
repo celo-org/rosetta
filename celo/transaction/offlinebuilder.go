@@ -59,7 +59,7 @@ func (b *OfflineBuilder) getAbi(key *wrapper.RegistryKey) (*abi.ABI, error) {
 
 func (b *OfflineBuilder) getData(options *TransactionOptions) ([]byte, error) {
 	if options.Method == nil {
-		return nil, fmt.Errorf("'Method' required for building tx data")
+		return nil, fmt.Errorf("Method' required for building tx data")
 	}
 
 	contractABI, err := b.getAbi(CeloMethodToRegistryKey[options.Method])

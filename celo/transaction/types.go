@@ -64,18 +64,15 @@ type TransactionOptions struct {
 	Args   []interface{}
 }
 
-//go:generate gencodec -type GenericMetadata -out gen_transaction_metadata_json.go
-
 // [note]: non cGLD fee currencies currently unsupported
 type GenericMetadata struct {
 	From                common.Address
-	Nonce               uint64          `json:"nonce"    gencodec:"required"`
-	GasPrice            *big.Int        `json:"gasPrice" gencodec:"required"`
+	Nonce               uint64          `json:"nonce"   `
+	GasPrice            *big.Int        `json:"gasPrice"`
 	GatewayFeeRecipient *common.Address `json:"gatewayFeeRecipient" rlp:"nil"` // nil means no gateway fee is paid
 	GatewayFee          *big.Int        `json:"gatewayFee" rlp:"nil"`          // nil means no gateway fee is paid
 }
 
-//go:generate gencodec -type TransactionMetadata -out gen_transaction_metadata_json.go
 type TransactionMetadata struct {
 	Generic *GenericMetadata
 	To      *common.Address
