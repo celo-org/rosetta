@@ -1,0 +1,130 @@
+# Copyright 2020 Celo Org
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+version: 2.1
+
+executors:
+  golang:
+    docker:
+      - image: circleci/golang:1.13
+        user: root
+    working_directory: /go/src/github.com/celo-org/rosetta
+attach: &attach
+  attach_workspace:
+    at: /go
+jobs:
+  build-rust:
+    docker:
+      - image: circleci/rust:1.41.0
+        user: root
+    working_directory: /go/src/github.com/celo-org/rosetta
+    steps:
+      - checkout
+      # - run:
+      #     name: Setup Rust language
+      #     command: |
+      #       rustup install 1.41.0
+      #       rustup default 1.41.0
+      - restore_cache:
+          keys:
+            - cargo-cache-v1-{{ arch }}-{{ checksum "external/bls-zexe/Cargo.lock" }}
+            - cargo-cache-v1-{{ arch }}-
+      - run:
+          name: Compile bls-zexe
+          command: |
+            export PATH=$PATH:~/.cargo/bin
+            make bls-zexe
+      - save_cache:
+          key: cargo-cache-v1-{{ arch }}-{{ checksum "external/bls-zexe/Cargo.lock"}}
+          paths:
+            - external/bls-zexe/target         
+      - persist_to_workspace:
+          root: /go
+          paths:
+            - src/github.com/celo-org/rosetta
+  build-go:
+    executor: golang
+    steps:
+      - *attach
+      - restore_cache:
+          keys:
+            - go-modules-v1-{{ checksum "go.sum" }}
+            - go-modules-v1  
+      - run: make deps
+      - run: make rosetta
+      - save_cache:
+          key: go-modules-v1-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
+      - persist_to_workspace:
+          root: /go
+          paths:
+            - src
+            - bin
+            - pkg/mod
+  unit-tests:
+    executor: golang
+    steps:
+      - *attach
+      - run: make ci-test
+      - store_artifacts:
+          path: /tmp/test-results
+          destination: raw-test-output
+      - store_test_results:
+          path: /tmp/test-results            
+
+  lint:
+    executor: golang
+    steps:
+      - *attach
+      - run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.25.1
+      - run: make ci-lint
+      - store_artifacts:
+          path: /tmp/test-results
+          destination: raw-test-output
+      - store_test_results:
+          path: /tmp/test-results       
+  coverage:
+    executor: golang
+    steps:
+      - attach_workspace:
+          at: /go
+      - run: make test-cover
+      - run: bash <(curl -s https://codecov.io/bash)
+  check-license:
+    executor: golang
+    steps:
+      - *attach
+      - run: make check-license
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build-rust
+      - build-go:
+          requires:
+            - build-rust
+      - unit-tests:
+          requires:
+            - build-go
+      - lint:
+          requires:
+            - build-go
+      - coverage:
+          requires:
+            - build-go
+      - check-license:
+          requires:
+            - build-go
