@@ -53,6 +53,7 @@ jobs:
           keys:
             - go-mod-v1-{{ checksum "go.sum" }}
             - go-mod-v1  
+      - run: make deps
       - run: make rosetta
       - save_cache:
           key: go-mod-v1-{{ checksum "go.sum" }}
