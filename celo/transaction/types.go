@@ -56,7 +56,7 @@ var (
 )
 
 type TransactionOptions struct {
-	From   *common.Address
+	From   common.Address
 	To     *common.Address // non-nil means exclusively cGLD transfer
 	Value  *big.Int
 	Method *CeloMethod // non-nil means celo registry contract invokation

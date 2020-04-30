@@ -40,14 +40,14 @@ func SerializeTransactionOptions(txOptions *transaction.TransactionOptions) map[
 
 func ConstructTxFromMetadata(txMetadata *transaction.TransactionMetadata) *gethTypes.Transaction {
 	return gethTypes.NewTransaction(
-		txMetadata.Generic.Nonce,
+		txMetadata.Nonce,
 		*txMetadata.To,
 		txMetadata.Value,
 		txMetadata.Gas,
-		txMetadata.Generic.GasPrice,
+		txMetadata.GasPrice,
 		nil, // non-cGLD fees not supported
-		txMetadata.Generic.GatewayFeeRecipient,
-		txMetadata.Generic.GatewayFee,
+		txMetadata.GatewayFeeRecipient,
+		txMetadata.GatewayFee,
 		txMetadata.Data,
 	)
 }
