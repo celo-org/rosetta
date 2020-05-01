@@ -21,8 +21,8 @@ import (
 
 	"github.com/celo-org/rosetta/analyzer"
 	"github.com/celo-org/rosetta/celo"
+	"github.com/celo-org/rosetta/celo/airgap"
 	"github.com/celo-org/rosetta/celo/client"
-	"github.com/celo-org/rosetta/celo/transaction"
 	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/celo-org/rosetta/db"
 	"github.com/celo-org/rosetta/internal/utils"
@@ -36,24 +36,24 @@ import (
 // This service should implement the business logic for every endpoint for the AccountApi API.
 // Include any external packages or services that will be required by this service.
 type Servicer struct {
-	cc              *client.CeloClient
-	db              db.RosettaDBReader
-	chainParams     *celo.ChainParameters
-	metadataFetcher transaction.TxMetadataFetcher
+	cc          *client.CeloClient
+	db          db.RosettaDBReader
+	chainParams *celo.ChainParameters
+	airgap      airgap.AirGapServer
 }
 
 // NewServicer creates a default api service
 func NewServicer(celoClient *client.CeloClient, db db.RosettaDBReader, cp *celo.ChainParameters) (*Servicer, error) {
-	tb, err := transaction.NewTxMetadataFetcher(celoClient)
+	airgap, err := airgap.NewAirGapServer(celoClient)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Servicer{
-		cc:              celoClient,
-		db:              db,
-		chainParams:     cp,
-		metadataFetcher: tb,
+		cc:          celoClient,
+		db:          db,
+		chainParams: cp,
+		airgap:      airgap,
 	}, nil
 }
 
@@ -358,12 +358,12 @@ func (s *Servicer) BlockTransaction(ctx context.Context, request *types.BlockTra
 
 func (s *Servicer) ConstructionMetadata(ctx context.Context, request *types.ConstructionMetadataRequest) (*types.ConstructionMetadataResponse, *types.Error) {
 
-	txOptions, errResp := s.validateTxConstructionOptions(request.Options)
+	txArgs, errResp := s.validateTxConstructionOptions(request.Options)
 	if errResp != nil {
 		return nil, errResp
 	}
 
-	txMetadata, err := s.metadataFetcher.FetchTransactionMetadata(ctx, txOptions)
+	txMetadata, err := s.airgap.ObtainMetadata(ctx, txArgs)
 	if err != nil {
 		return nil, LogErrInternal(fmt.Errorf("Failed to fetch tx metadata"))
 	}
@@ -377,7 +377,7 @@ func (s *Servicer) ConstructionMetadata(ctx context.Context, request *types.Cons
 }
 
 func (s *Servicer) ConstructionSubmit(ctx context.Context, request *types.ConstructionSubmitRequest) (*types.ConstructionSubmitResponse, *types.Error) {
-	txhash, err := s.cc.Eth.SendRawTransaction(ctx, []byte(request.SignedTransaction))
+	txhash, err := s.airgap.SubmitTx(ctx, []byte(request.SignedTransaction))
 	if err != nil {
 		return nil, LogErrCeloClient("SendRawTx", err)
 	}
@@ -394,7 +394,7 @@ func (s *Servicer) ConstructionSubmit(ctx context.Context, request *types.Constr
 // Private Functions
 // ----------------------------------------------------------------------------------------
 
-func (s *Servicer) validateTxConstructionOptions(options map[string]interface{}) (*transaction.TransactionOptions, *types.Error) {
+func (s *Servicer) validateTxConstructionOptions(options map[string]interface{}) (*airgap.TxArgs, *types.Error) {
 	from, fromPresent := options["from"]
 	if !fromPresent {
 		return nil, LogErrValidation(fmt.Errorf("No 'from' provided on tx construction options"))
@@ -414,9 +414,9 @@ func (s *Servicer) validateTxConstructionOptions(options map[string]interface{})
 	}
 
 	method, methodPresent := options["method"]
-	var celoMethod *transaction.CeloMethod
+	var celoMethod *airgap.CeloMethod
 	if methodPresent {
-		celoMethod, ok = method.(*transaction.CeloMethod)
+		celoMethod, ok = method.(*airgap.CeloMethod)
 		if !ok {
 			return nil, LogErrValidation(fmt.Errorf("Method '%v' must be a *CeloMethod", method))
 		}
@@ -441,7 +441,7 @@ func (s *Servicer) validateTxConstructionOptions(options map[string]interface{})
 		}
 	}
 
-	txOptions := transaction.TransactionOptions{
+	txOptions := airgap.TxArgs{
 		From:   fromAddress,
 		To:     toAddress,
 		Value:  valueBigInt,

@@ -20,7 +20,7 @@ import (
 	"math/big"
 	"strconv"
 
-	"github.com/celo-org/rosetta/celo/transaction"
+	"github.com/celo-org/rosetta/celo/airgap"
 	"github.com/celo-org/rosetta/client"
 	"github.com/coinbase/rosetta-sdk-go/fetcher"
 )
@@ -54,7 +54,7 @@ func main() {
 	signer := client.NewSigner(big.NewInt(chainIDInt))
 
 	// generalizes tx flow
-	submitSigned := func(txOptions *transaction.TransactionOptions) error {
+	submitSigned := func(txOptions *airgap.TxArgs) error {
 		// step 1: decide options OFFLINE
 		optionsMap := map[string]interface{}{
 			"from":   txOptions.From,
@@ -72,7 +72,7 @@ func main() {
 		}
 
 		// step 3: sign transaction OFFLINE
-		txMetadata := metadataMap["tx"].(transaction.TransactionMetadata)
+		txMetadata := metadataMap["tx"].(airgap.TxMetadata)
 		tx := txMetadata.AsTransaction()
 		signedTx, err := client.SignTransaction(tx, privKey, &signer)
 		if err != nil {
@@ -93,26 +93,26 @@ func main() {
 		return nil
 	}
 
-	submitSigned(&transaction.TransactionOptions{
+	submitSigned(&airgap.TxArgs{
 		From:   *addr,
-		Method: &transaction.CreateAccount,
+		Method: airgap.CreateAccount,
 	})
 
-	submitSigned(&transaction.TransactionOptions{
+	submitSigned(&airgap.TxArgs{
 		From:   *addr,
-		Method: &transaction.LockGold,
+		Method: airgap.LockGold,
 		Value:  big.NewInt(100),
 	})
 
-	submitSigned(&transaction.TransactionOptions{
+	submitSigned(&airgap.TxArgs{
 		From:   *addr,
-		Method: &transaction.UnlockGold,
+		Method: airgap.UnlockGold,
 		Value:  big.NewInt(50),
 	})
 
-	submitSigned(&transaction.TransactionOptions{
+	submitSigned(&airgap.TxArgs{
 		From:   *addr,
-		Method: &transaction.WithdrawGold,
+		Method: airgap.WithdrawGold,
 		Args:   []interface{}{big.NewInt(0)}, // withdrawal index 0
 	})
 }

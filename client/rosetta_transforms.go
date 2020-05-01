@@ -18,7 +18,7 @@ import (
 	"crypto/ecdsa"
 
 	"github.com/celo-org/rosetta/analyzer"
-	"github.com/celo-org/rosetta/celo/transaction"
+	"github.com/celo-org/rosetta/celo/airgap"
 	"github.com/celo-org/rosetta/service/rpc"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	rosettaTypes "github.com/coinbase/rosetta-sdk-go/types"
@@ -28,7 +28,7 @@ import (
 	"github.com/ethereum/go-ethereum/rlp"
 )
 
-func SerializeTransactionOptions(txOptions *transaction.TransactionOptions) map[string]interface{} {
+func SerializeTransactionOptions(txOptions *airgap.TxArgs) map[string]interface{} {
 	return map[string]interface{}{
 		rpc.OptionsFromKey:   txOptions.From,
 		rpc.OptionsToKey:     txOptions.To,
@@ -38,7 +38,7 @@ func SerializeTransactionOptions(txOptions *transaction.TransactionOptions) map[
 	}
 }
 
-func ConstructTxFromMetadata(txMetadata *transaction.TransactionMetadata) *gethTypes.Transaction {
+func ConstructTxFromMetadata(txMetadata *airgap.TxMetadata) *gethTypes.Transaction {
 	return gethTypes.NewTransaction(
 		txMetadata.Nonce,
 		txMetadata.To,
@@ -60,10 +60,9 @@ func EncodeTransaction(transaction *gethTypes.Transaction) (string, error) {
 	return string(bytes), nil
 }
 
-func DecodeTransaction(transaction *rosettaTypes.ConstructionSubmitRequest) (*gethTypes.Transaction, error) {
-	bytes := []byte(transaction.SignedTransaction)
+func DecodeTransaction(serializedTx []byte) (*gethTypes.Transaction, error) {
 	var tx gethTypes.Transaction
-	err := rlp.DecodeBytes(bytes, tx)
+	err := rlp.DecodeBytes(serializedTx, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -80,6 +79,6 @@ func EncodeAccount(publicKey *ecdsa.PublicKey, address *common.Address) *types.A
 	}
 }
 
-func DecodeTransactionMetadata(resp *rosettaTypes.ConstructionMetadataResponse, opType analyzer.OperationType) *transaction.TransactionMetadata {
-	return resp.Metadata["tx"].(*transaction.TransactionMetadata)
+func DecodeTransactionMetadata(resp *rosettaTypes.ConstructionMetadataResponse, opType analyzer.OperationType) *airgap.TxMetadata {
+	return resp.Metadata["tx"].(*airgap.TxMetadata)
 }
