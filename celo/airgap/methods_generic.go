@@ -24,8 +24,19 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-func genericAirGapMethodFactory(registry *wrapper.RegistryWrapper, abi *abi.ABI, method *CeloMethod) airGapServerMethod {
+func noopArgParser(ctx context.Context, registry *wrapper.RegistryWrapper, args []interface{}) ([]interface{}, error) {
+	return args, nil
+}
+
+func airgapMethodFactory(registry *wrapper.RegistryWrapper, abi *abi.ABI, argsParser argumentsParser, method *CeloMethod) airGapServerMethod {
+	if argsParser == nil {
+		argsParser = noopArgParser
+	}
 	return func(ctx context.Context, args []interface{}) ([]byte, common.Address, error) {
+		args, err := argsParser(ctx, registry, args)
+		if err != nil {
+			return nil, common.ZeroAddress, err
+		}
 		data, err := abi.Pack(method.Name, args...)
 		if err != nil {
 			return nil, common.ZeroAddress, err
@@ -39,33 +50,19 @@ func genericAirGapMethodFactory(registry *wrapper.RegistryWrapper, abi *abi.ABI,
 }
 
 type abiFactory func() (*abi.ABI, error)
-type airGapMethodGroupFactory func(registry *wrapper.RegistryWrapper) (airGapMethodGroup, error)
-type airGapMethodGroup interface {
-	register(server *airgGapServerImpl)
-}
 
-type genericAirGapMethodGroup struct {
-	abi      *abi.ABI
-	registry *wrapper.RegistryWrapper
-	methods  []*CeloMethod
-}
+func methodGroup(abiFactory abiFactory, methods []*CeloMethod) methodGroupFactory {
+	return func(registry *wrapper.RegistryWrapper) (map[*CeloMethod]airGapServerMethod, error) {
+		abi, err := abiFactory()
+		if err != nil {
+			return nil, err
+		}
 
-func newGenericAirGapMethodGroup(registry *wrapper.RegistryWrapper, abiFactory abiFactory, methods []*CeloMethod) (airGapMethodGroup, error) {
-	abi, err := abiFactory()
-	if err != nil {
-		return nil, err
-	}
-
-	return &genericAirGapMethodGroup{
-		abi:      abi,
-		registry: registry,
-		methods:  methods,
-	}, nil
-}
-
-func (eag *genericAirGapMethodGroup) register(server *airgGapServerImpl) {
-	for _, method := range eag.methods {
-		server.registerMethod(method, genericAirGapMethodFactory(eag.registry, eag.abi, method))
+		serverMethods := make(map[*CeloMethod]airGapServerMethod)
+		for _, method := range methods {
+			serverMethods[method] = airgapMethodFactory(registry, abi, nil, method)
+		}
+		return serverMethods, nil
 	}
 }
 

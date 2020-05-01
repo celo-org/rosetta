@@ -28,9 +28,6 @@ type AirGapServer interface {
 	SubmitTx(ctx context.Context, rawTx []byte) (*common.Hash, error)
 }
 
-// airGapServerMethod is a function that returns the tx.data and tx.to for that method + parameters
-type airGapServerMethod = func(context.Context, []interface{}) ([]byte, common.Address, error)
-
 type TxArgs struct {
 	From common.Address
 	// non-nil means exclusively cGLD transfer

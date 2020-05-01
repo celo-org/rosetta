@@ -18,7 +18,7 @@ var methodsMap = make(map[wrapper.RegistryKey]map[string]*CeloMethod)
 
 // FromString returns the CeloMethod that matches the given string
 // Methods are represented as "Contract.Name"
-func FromString(celoMethodStr string) (*CeloMethod, error) {
+func MethodFromString(celoMethodStr string) (*CeloMethod, error) {
 	parts := strings.Split(celoMethodStr, ".")
 	if len(parts) != 2 {
 		return nil, fmt.Errorf("Invalid method string: %s", celoMethodStr)

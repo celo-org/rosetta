@@ -23,40 +23,54 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
+// airGapServerMethod is a function that returns the tx.data and tx.to for that method + parameters
+type airGapServerMethod = func(context.Context, []interface{}) ([]byte, common.Address, error)
+
+type methodGroupFactory func(registry *wrapper.RegistryWrapper) (map[*CeloMethod]airGapServerMethod, error)
+
 type airgGapServerImpl struct {
 	cc               *client.CeloClient
 	supportedMethods map[*CeloMethod]airGapServerMethod
 }
 
 func NewAirGapServer(cc *client.CeloClient) (AirGapServer, error) {
-	server := &airgGapServerImpl{
-		cc:               cc,
-		supportedMethods: make(map[*CeloMethod]airGapServerMethod),
-	}
-
 	registry, err := wrapper.NewRegistry(cc)
 	if err != nil {
 		return nil, err
 	}
 
-	groupFactories := []airGapMethodGroupFactory{
-		newAccountsAirGapMethods,
-		newAccountsAirGapMethods,
-		newLockedGoldAirGapMethods,
+	supportedMethods := make(map[*CeloMethod]airGapServerMethod)
+	groupRegisterers := []methodGroupFactory{
+		lockedGoldMethodGroup,
+		accountsMethodGroup,
+		electionMethodGroup,
 	}
-	for _, factory := range groupFactories {
-		group, err := factory(registry)
+	for _, registerGroup := range groupRegisterers {
+		methods, err := registerGroup(registry)
 		if err != nil {
 			return nil, err
 		}
-		group.register(server)
+		for method, serverMethod := range methods {
+			if _, ok := supportedMethods[method]; ok {
+				return nil, fmt.Errorf("can't register same method twice %s", method.String())
+			}
+			supportedMethods[method] = serverMethod
+		}
+
 	}
 
-	return server, nil
+	return &airgGapServerImpl{
+		cc:               cc,
+		supportedMethods: supportedMethods,
+	}, nil
 }
 
-func (b *airgGapServerImpl) registerMethod(method *CeloMethod, executor airGapServerMethod) {
+func (b *airgGapServerImpl) registerMethod(method *CeloMethod, executor airGapServerMethod) error {
+	if _, ok := b.supportedMethods[method]; ok {
+		return fmt.Errorf("can't register same method twice %s", method.String())
+	}
 	b.supportedMethods[method] = executor
+	return nil
 }
 
 func (b *airgGapServerImpl) SubmitTx(ctx context.Context, rawTx []byte) (*common.Hash, error) {
@@ -109,22 +123,3 @@ func (b *airgGapServerImpl) ObtainMetadata(ctx context.Context, options *TxArgs)
 
 	return &txMetadata, nil
 }
-
-// func (b *airgGapServerImpl) resolveMethod(ctx context.Context, method *CeloMethod, args []interface{}) ([]byte, common.Address, error) {
-// 	resolvedArgs, err := b.resolvers.FindResolverFor(method)(ctx, args)
-// 	if err != nil {
-// 		return nil, common.ZeroAddress, err
-// 	}
-
-// 	data, err := b.abiBuilder.GetData(method, resolvedArgs)
-// 	if err != nil {
-// 		return nil, common.ZeroAddress, err
-// 	}
-
-// 	contractAddress, err := b.registry.GetAddressForString(ctx, nil, method.Contract.String())
-// 	if err != nil {
-// 		return nil, common.ZeroAddress, err
-// 	}
-
-// 	return data, contractAddress, err
-// }

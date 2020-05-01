@@ -20,7 +20,6 @@ import (
 	"github.com/celo-org/rosetta/celo/contract"
 	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 type accountsAirGapMethods struct {
@@ -28,61 +27,42 @@ type accountsAirGapMethods struct {
 	registry *wrapper.RegistryWrapper
 }
 
-func newAccountsAirGapMethods(registry *wrapper.RegistryWrapper) (airGapMethodGroup, error) {
+func accountsMethodGroup(registry *wrapper.RegistryWrapper) (map[*CeloMethod]airGapServerMethod, error) {
 	abi, err := contract.ParseAccountsABI()
 	if err != nil {
 		return nil, err
 	}
 
-	return &accountsAirGapMethods{
-		abi:      abi,
-		registry: registry,
-	}, nil
-
+	methods := make(map[*CeloMethod]airGapServerMethod)
+	methods[AuthorizeVoteSigner] = airgapMethodFactory(registry, abi, authorizeVoteSignerParser, AuthorizeVoteSigner)
+	methods[CreateAccount] = airgapMethodFactory(registry, abi, nil, CreateAccount)
+	return methods, nil
 }
 
-func (eag *accountsAirGapMethods) register(server *airgGapServerImpl) {
-	server.registerMethod(AuthorizeVoteSigner, eag.authorizeVoteSigner)
-	server.registerMethod(CreateAccount, genericAirGapMethodFactory(eag.registry, eag.abi, CreateAccount))
-}
-
-func (eag *accountsAirGapMethods) address(ctx context.Context) (common.Address, error) {
-	return eag.registry.GetAddressForString(ctx, nil, wrapper.AccountsRegistryId.String())
-}
-
-func (eag *accountsAirGapMethods) authorizeVoteSigner(ctx context.Context, args []interface{}) ([]byte, common.Address, error) {
+func authorizeVoteSignerParser(ctx context.Context, registry *wrapper.RegistryWrapper, args []interface{}) ([]interface{}, error) {
 	err := validateArgLength(args, 2)
 	if err != nil {
-		return nil, common.ZeroAddress, err
+		return nil, err
 	}
 
 	signer, err := parseAddress(args, 0)
 	if err != nil {
-		return nil, common.ZeroAddress, err
+		return nil, err
 	}
 
 	pop, err := parseBytes(args, 1)
 	if err != nil {
-		return nil, common.ZeroAddress, err
+		return nil, err
 	}
 
-	accounts, err := eag.registry.GetAccountsWrapper(ctx, nil)
+	accounts, err := registry.GetAccountsWrapper(ctx, nil)
 	if err != nil {
-		return nil, common.ZeroAddress, err
+		return nil, err
 	}
 	encodedSig, err := accounts.AuthorizeMetadata(pop)
 	if err != nil {
-		return nil, common.ZeroAddress, err
+		return nil, err
 	}
 
-	data, err := eag.abi.Pack(Vote.Name, signer, encodedSig.V, encodedSig.R, encodedSig.S)
-	if err != nil {
-		return nil, common.ZeroAddress, err
-	}
-
-	address, err := eag.address(ctx)
-	if err != nil {
-		return nil, common.ZeroAddress, err
-	}
-	return data, address, nil
+	return []interface{}{signer, encodedSig.V, encodedSig.R, encodedSig.S}, nil
 }

@@ -16,14 +16,11 @@ package airgap
 
 import (
 	"github.com/celo-org/rosetta/celo/contract"
-	"github.com/celo-org/rosetta/celo/wrapper"
 )
 
-func newLockedGoldAirGapMethods(registry *wrapper.RegistryWrapper) (airGapMethodGroup, error) {
-	return newGenericAirGapMethodGroup(registry, contract.ParseLockedGoldABI, []*CeloMethod{
-		LockGold,
-		UnlockGold,
-		RelockGold,
-		WithdrawGold,
-	})
-}
+var lockedGoldMethodGroup = methodGroup(contract.ParseLockedGoldABI, []*CeloMethod{
+	LockGold,
+	UnlockGold,
+	RelockGold,
+	WithdrawGold,
+})
