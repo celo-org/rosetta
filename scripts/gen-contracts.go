@@ -23,6 +23,7 @@ var contractsToGenerate = []string{
 	"Validators",
 	"GoldToken",
 	"Reserve",
+	"Accounts",
 }
 
 func main() {

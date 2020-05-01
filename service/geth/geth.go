@@ -1,3 +1,17 @@
+// Copyright 2020 Celo Org
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package geth
 
 import (
@@ -28,7 +42,6 @@ type gethService struct {
 	cmd     *exec.Cmd
 	running service.RunningLock
 	logger  log.Logger
-	errors  chan error
 }
 
 func NewGethService(
@@ -112,8 +125,9 @@ func (gs *gethService) Start(ctx context.Context) error {
 }
 
 func (gs *gethService) gethCmd(args ...string) *exec.Cmd {
-	fullArgs := append([]string{"--datadir", gs.paths.Datadir()}, args...)
-	return exec.Command(gs.gethBinary, fullArgs...)
+	datadir := gs.paths.Datadir()
+	fullArgs := append([]string{"--datadir", datadir}, args...)
+	return exec.Command(gs.gethBinary, fullArgs...) //nolint:gosec
 }
 
 func (gs *gethService) setupStaticNodes() error {
@@ -124,6 +138,7 @@ func (gs *gethService) setupStaticNodes() error {
 		return fmt.Errorf("Can't serialize static nodes: %w", err)
 	}
 
+	//nolint:gosec
 	if err = ioutil.WriteFile(gs.paths.StaticNodesFile(), staticNodesRaw, 0644); err != nil {
 		return fmt.Errorf("Can't serialize static nodes: %w", err)
 	}
