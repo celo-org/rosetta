@@ -19,19 +19,63 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/celo-org/rosetta/celo/contract"
 	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 )
 
-func noopArgParser(ctx context.Context, registry *wrapper.RegistryWrapper, args []interface{}) ([]interface{}, error) {
-	return args, nil
+type argumentsParser func(ctx context.Context, registry *wrapper.RegistryWrapper, args []interface{}) ([]interface{}, error)
+type contractMethods struct {
+	abiFactory func() (*abi.ABI, error)
+	methods    map[*CeloMethod]argumentsParser
+}
+
+var serverMethods = []contractMethods{
+	{
+		abiFactory: contract.ParseAccountsABI,
+		methods: map[*CeloMethod]argumentsParser{
+			AuthorizeVoteSigner: authorizeVoteSignerParser,
+			CreateAccount:       noopArgParser,
+		},
+	},
+	{
+		abiFactory: contract.ParseElectionABI,
+		methods: map[*CeloMethod]argumentsParser{
+			Vote:               voteMethodParser,
+			RevokeActiveVotes:  revokeParser,
+			RevokePendingVotes: revokeParser,
+			ActivateVotes:      noopArgParser,
+		},
+	},
+	{
+		abiFactory: contract.ParseLockedGoldABI,
+		methods: map[*CeloMethod]argumentsParser{
+			LockGold:     noopArgParser,
+			UnlockGold:   noopArgParser,
+			RelockGold:   noopArgParser,
+			WithdrawGold: noopArgParser,
+		},
+	},
+}
+
+func hydrateMethods(registry *wrapper.RegistryWrapper, definitions []contractMethods) (map[*CeloMethod]airGapServerMethod, error) {
+	serverMethods := make(map[*CeloMethod]airGapServerMethod)
+
+	for _, cm := range definitions {
+		abi, err := cm.abiFactory()
+		if err != nil {
+			return nil, err
+		}
+
+		for method, argParser := range cm.methods {
+			serverMethods[method] = airgapMethodFactory(registry, abi, argParser, method)
+		}
+	}
+	return serverMethods, nil
 }
 
 func airgapMethodFactory(registry *wrapper.RegistryWrapper, abi *abi.ABI, argsParser argumentsParser, method *CeloMethod) airGapServerMethod {
-	if argsParser == nil {
-		argsParser = noopArgParser
-	}
 	return func(ctx context.Context, args []interface{}) ([]byte, common.Address, error) {
 		args, err := argsParser(ctx, registry, args)
 		if err != nil {
@@ -49,21 +93,8 @@ func airgapMethodFactory(registry *wrapper.RegistryWrapper, abi *abi.ABI, argsPa
 	}
 }
 
-type abiFactory func() (*abi.ABI, error)
-
-func methodGroup(abiFactory abiFactory, methods []*CeloMethod) methodGroupFactory {
-	return func(registry *wrapper.RegistryWrapper) (map[*CeloMethod]airGapServerMethod, error) {
-		abi, err := abiFactory()
-		if err != nil {
-			return nil, err
-		}
-
-		serverMethods := make(map[*CeloMethod]airGapServerMethod)
-		for _, method := range methods {
-			serverMethods[method] = airgapMethodFactory(registry, abi, nil, method)
-		}
-		return serverMethods, nil
-	}
+func noopArgParser(ctx context.Context, registry *wrapper.RegistryWrapper, args []interface{}) ([]interface{}, error) {
+	return args, nil
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

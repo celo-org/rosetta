@@ -17,25 +17,36 @@ package airgap
 import (
 	"context"
 
-	"github.com/celo-org/rosetta/celo/contract"
 	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 )
 
-type argumentsParser func(ctx context.Context, registry *wrapper.RegistryWrapper, args []interface{}) ([]interface{}, error)
-
-func electionMethodGroup(registry *wrapper.RegistryWrapper) (map[*CeloMethod]airGapServerMethod, error) {
-	abi, err := contract.ParseElectionABI()
+func authorizeVoteSignerParser(ctx context.Context, registry *wrapper.RegistryWrapper, args []interface{}) ([]interface{}, error) {
+	err := validateArgLength(args, 2)
 	if err != nil {
 		return nil, err
 	}
 
-	methods := make(map[*CeloMethod]airGapServerMethod)
-	methods[Vote] = airgapMethodFactory(registry, abi, voteMethodParser, Vote)
-	methods[RevokeActiveVotes] = airgapMethodFactory(registry, abi, revokeParser, RevokeActiveVotes)
-	methods[RevokePendingVotes] = airgapMethodFactory(registry, abi, revokeParser, RevokePendingVotes)
-	methods[ActivateVotes] = airgapMethodFactory(registry, abi, nil, ActivateVotes)
-	return methods, nil
+	signer, err := parseAddress(args, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	pop, err := parseBytes(args, 1)
+	if err != nil {
+		return nil, err
+	}
+
+	accounts, err := registry.GetAccountsWrapper(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	encodedSig, err := accounts.AuthorizeMetadata(pop)
+	if err != nil {
+		return nil, err
+	}
+
+	return []interface{}{signer, encodedSig.V, encodedSig.R, encodedSig.S}, nil
 }
 
 func voteMethodParser(ctx context.Context, registry *wrapper.RegistryWrapper, args []interface{}) ([]interface{}, error) {

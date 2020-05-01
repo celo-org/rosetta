@@ -26,8 +26,6 @@ import (
 // airGapServerMethod is a function that returns the tx.data and tx.to for that method + parameters
 type airGapServerMethod = func(context.Context, []interface{}) ([]byte, common.Address, error)
 
-type methodGroupFactory func(registry *wrapper.RegistryWrapper) (map[*CeloMethod]airGapServerMethod, error)
-
 type airgGapServerImpl struct {
 	cc               *client.CeloClient
 	supportedMethods map[*CeloMethod]airGapServerMethod
@@ -39,38 +37,15 @@ func NewAirGapServer(cc *client.CeloClient) (AirGapServer, error) {
 		return nil, err
 	}
 
-	supportedMethods := make(map[*CeloMethod]airGapServerMethod)
-	groupRegisterers := []methodGroupFactory{
-		lockedGoldMethodGroup,
-		accountsMethodGroup,
-		electionMethodGroup,
-	}
-	for _, registerGroup := range groupRegisterers {
-		methods, err := registerGroup(registry)
-		if err != nil {
-			return nil, err
-		}
-		for method, serverMethod := range methods {
-			if _, ok := supportedMethods[method]; ok {
-				return nil, fmt.Errorf("can't register same method twice %s", method.String())
-			}
-			supportedMethods[method] = serverMethod
-		}
-
+	supportedMethods, err := hydrateMethods(registry, serverMethods)
+	if err != nil {
+		return nil, err
 	}
 
 	return &airgGapServerImpl{
 		cc:               cc,
 		supportedMethods: supportedMethods,
 	}, nil
-}
-
-func (b *airgGapServerImpl) registerMethod(method *CeloMethod, executor airGapServerMethod) error {
-	if _, ok := b.supportedMethods[method]; ok {
-		return fmt.Errorf("can't register same method twice %s", method.String())
-	}
-	b.supportedMethods[method] = executor
-	return nil
 }
 
 func (b *airgGapServerImpl) SubmitTx(ctx context.Context, rawTx []byte) (*common.Hash, error) {
