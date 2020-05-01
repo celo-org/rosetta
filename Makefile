@@ -63,7 +63,7 @@ test:
 	go test ./...
 
 test-cover:
-	go test ./... -covermode=count
+	go test ./... -coverprofile=coverage.txt -covermode=count
 
 lint: ## Run linters.
 ifeq ("$(GOLANGCI_exists)","")
