@@ -51,7 +51,8 @@ func (w *ElectionWrapper) GetAccountElectionVotes(opts *bind.CallOpts, account c
 		return nil, err
 	}
 
-	var votes *ElectionVotes
+	pending := make(map[common.Address]*big.Int)
+	active := make(map[common.Address]*big.Int)
 	for _, groupAddr := range groups {
 		// TODO(yorke): dedup
 		pendingAmt, err := w.GetPendingVotesForGroupByAccount(opts, groupAddr, account)
@@ -59,7 +60,7 @@ func (w *ElectionWrapper) GetAccountElectionVotes(opts *bind.CallOpts, account c
 			return nil, err
 		}
 		if pendingAmt.Cmp(utils.Big0) == 1 {
-			votes.Pending[groupAddr] = pendingAmt
+			pending[groupAddr] = pendingAmt
 		}
 
 		activeAmt, err := w.GetActiveVotesForGroupByAccount(opts, groupAddr, account)
@@ -67,9 +68,12 @@ func (w *ElectionWrapper) GetAccountElectionVotes(opts *bind.CallOpts, account c
 			return nil, err
 		}
 		if activeAmt.Cmp(utils.Big0) == 1 {
-			votes.Active[groupAddr] = activeAmt
+			active[groupAddr] = activeAmt
 		}
 	}
 
-	return votes, nil
+	return &ElectionVotes{
+		Active:  active,
+		Pending: pending,
+	}, nil
 }
