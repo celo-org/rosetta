@@ -23,6 +23,7 @@ import (
 	"github.com/celo-org/rosetta/celo/client/debug"
 	"github.com/celo-org/rosetta/celo/contract"
 	"github.com/celo-org/rosetta/db"
+	"github.com/celo-org/rosetta/internal/utils"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/log"
 )
@@ -185,14 +186,14 @@ func (tr *Tracer) TxLockedGoldTransfers(blockHeader *types.Header, tx *types.Tra
 		return nil, fmt.Errorf("can't get governanceAddress: %w", err)
 	}
 
-	transfers := make([]Operation, 0, len(receipt.Logs))
-	for _, eventLog := range receipt.Logs {
+	logs := utils.RemoveProxyLogs(receipt.Logs)
+
+	transfers := make([]Operation, 0, len(logs))
+	for _, eventLog := range logs {
 		if eventLog.Address == electionAddr {
 			eventName, eventRaw, ok, err := election.TryParseLog(*eventLog)
 			if err != nil {
-				tr.logger.Warn("Ignoring event: Error parsing election event", "err", err, "eventId", eventLog.Topics[0].Hex(), "tx", receipt.TxHash.Hex())
-				// return nil, fmt.Errorf("can't parse Election event: %w", err)
-				continue
+				return nil, fmt.Errorf("can't parse Election event: %w", err)
 			}
 			if !ok {
 				continue
