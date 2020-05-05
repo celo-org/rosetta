@@ -217,7 +217,7 @@ func NewVote(addr common.Address, group common.Address, value *big.Int) *Operati
 		Successful: true,
 		Changes: []BalanceChange{
 			{Account: NewAccount(addr, AccLockedGoldNonVoting), Amount: negate(value)},
-			{Account: NewVotingAccount(addr, AccLockedGoldVotingPending, group), Amount: big.NewInt(0)},
+			{Account: NewVotingAccount(addr, AccLockedGoldVotingPending, group), Amount: nil},
 		},
 	}
 }
@@ -227,8 +227,8 @@ func NewActiveVotes(addr common.Address, group common.Address, value *big.Int) *
 		Type:       OpActiveVotes,
 		Successful: true,
 		Changes: []BalanceChange{
-			{Account: NewVotingAccount(addr, AccLockedGoldVotingPending, group), Amount: big.NewInt(0)},
-			{Account: NewVotingAccount(addr, AccLockedGoldVotingActive, group), Amount: big.NewInt(0)},
+			{Account: NewVotingAccount(addr, AccLockedGoldVotingPending, group), Amount: nil},
+			{Account: NewVotingAccount(addr, AccLockedGoldVotingActive, group), Amount: nil},
 		},
 	}
 }
@@ -238,7 +238,7 @@ func NewRevokePendingVotes(addr common.Address, group common.Address, value *big
 		Type:       OpRevokePendingVotes,
 		Successful: true,
 		Changes: []BalanceChange{
-			{Account: NewVotingAccount(addr, AccLockedGoldVotingPending, group), Amount: big.NewInt(0)},
+			{Account: NewVotingAccount(addr, AccLockedGoldVotingPending, group), Amount: nil},
 			{Account: NewAccount(addr, AccLockedGoldNonVoting), Amount: value},
 		},
 	}
@@ -249,7 +249,7 @@ func NewRevokeActiveVotes(addr common.Address, group common.Address, value *big.
 		Type:       OpRevokeActiveVotes,
 		Successful: true,
 		Changes: []BalanceChange{
-			{Account: NewVotingAccount(addr, AccLockedGoldVotingActive, group), Amount: big.NewInt(0)},
+			{Account: NewVotingAccount(addr, AccLockedGoldVotingActive, group), Amount: nil},
 			{Account: NewAccount(addr, AccLockedGoldNonVoting), Amount: value},
 		},
 	}
