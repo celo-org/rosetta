@@ -25,7 +25,7 @@ import (
 type argParser func(value interface{}) (interface{}, error)
 
 func genericParser(parsers ...argParser) argumentsParser {
-	return func(ctx context.Context, srvCtx serverContext, values []interface{}) ([]interface{}, error) {
+	return func(ctx context.Context, srvCtx ServerContext, values []interface{}) ([]interface{}, error) {
 		parsedArgs := make([]interface{}, len(parsers))
 		if len(values) != len(parsers) {
 			return nil, fmt.Errorf("Received %d args; expected %d", len(values), len(parsers))
@@ -43,7 +43,7 @@ func genericParser(parsers ...argParser) argumentsParser {
 	}
 }
 
-func zeroArgumentsParser(ctx context.Context, srvCtx serverContext, values []interface{}) ([]interface{}, error) {
+func zeroArgumentsParser(ctx context.Context, srvCtx ServerContext, values []interface{}) ([]interface{}, error) {
 	if len(values) != 0 {
 		return nil, fmt.Errorf("Received %d args; expected %d", len(values), 0)
 	}
@@ -103,7 +103,7 @@ func bigIntParser(value interface{}) (interface{}, error) {
 	return ret, nil
 }
 
-func authorizeVoteSignerParser(ctx context.Context, srvCtx serverContext, args []interface{}) ([]interface{}, error) {
+func authorizeVoteSignerParser(ctx context.Context, srvCtx ServerContext, args []interface{}) ([]interface{}, error) {
 	parsedArgs, err := genericParser(addressParser, bytesParser)(ctx, srvCtx, args)
 	if err != nil {
 		return nil, err
@@ -117,7 +117,7 @@ func authorizeVoteSignerParser(ctx context.Context, srvCtx serverContext, args [
 	return []interface{}{parsedArgs[0], encodedSig.V, encodedSig.R, encodedSig.S}, nil
 }
 
-func voteMethodParser(ctx context.Context, srvCtx serverContext, args []interface{}) ([]interface{}, error) {
+func voteMethodParser(ctx context.Context, srvCtx ServerContext, args []interface{}) ([]interface{}, error) {
 	parsedArgs, err := genericParser(addressParser, bigIntParser)(ctx, srvCtx, args)
 	if err != nil {
 		return nil, err
@@ -131,7 +131,7 @@ func voteMethodParser(ctx context.Context, srvCtx serverContext, args []interfac
 	return []interface{}{parsedArgs[0], parsedArgs[1], keys.Lesser, keys.Greater}, nil
 }
 
-func revokeParser(ctx context.Context, srvCtx serverContext, args []interface{}) ([]interface{}, error) {
+func revokeParser(ctx context.Context, srvCtx ServerContext, args []interface{}) ([]interface{}, error) {
 	parsedArgs, err := genericParser(addressParser, addressParser, bigIntParser)(ctx, srvCtx, args)
 	if err != nil {
 		return nil, err
@@ -145,6 +145,6 @@ func revokeParser(ctx context.Context, srvCtx serverContext, args []interface{})
 	return []interface{}{parsedArgs[1], parsedArgs[2], keys.Lesser, keys.Greater, keys.Index}, nil
 }
 
-func noopArgParser(ctx context.Context, srvCtx serverContext, args []interface{}) ([]interface{}, error) {
+func noopArgParser(ctx context.Context, srvCtx ServerContext, args []interface{}) ([]interface{}, error) {
 	return args, nil
 }

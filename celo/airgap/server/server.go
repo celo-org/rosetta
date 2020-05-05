@@ -19,7 +19,6 @@ import (
 	"fmt"
 
 	"github.com/celo-org/rosetta/celo/airgap"
-	"github.com/celo-org/rosetta/celo/client"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -27,38 +26,33 @@ import (
 type airGapServerMethod = func(context.Context, []interface{}) ([]byte, common.Address, error)
 
 type airgGapServerImpl struct {
-	cc               *client.CeloClient
+	srvCtx           ServerContext
 	supportedMethods map[*airgap.CeloMethod]airGapServerMethod
 }
 
-func NewAirGapServer(cc *client.CeloClient) (airgap.AirGapServer, error) {
-	srvCtx, err := newServerContext(cc)
-	if err != nil {
-		return nil, err
-	}
-
+func NewAirgapServer(srvCtx ServerContext) (airgap.AirGapServer, error) {
 	supportedMethods, err := hydrateMethods(srvCtx, serverMethods)
 	if err != nil {
 		return nil, err
 	}
 
 	return &airgGapServerImpl{
-		cc:               cc,
+		srvCtx:           srvCtx,
 		supportedMethods: supportedMethods,
 	}, nil
 }
 
 func (b *airgGapServerImpl) SubmitTx(ctx context.Context, rawTx []byte) (*common.Hash, error) {
-	return b.cc.Eth.SendRawTransaction(ctx, rawTx)
+	return b.srvCtx.SendRawTransaction(ctx, rawTx)
 }
 
 func (b *airgGapServerImpl) ObtainMetadata(ctx context.Context, options *airgap.TxArgs) (*airgap.TxMetadata, error) {
-	nonce, err := b.cc.Eth.NonceAt(ctx, options.From, nil) // nil == latest
+	nonce, err := b.srvCtx.NonceAt(ctx, options.From, nil) // nil == latest
 	if err != nil {
 		return nil, err
 	}
 
-	gasPrice, err := b.cc.Eth.SuggestGasPrice(ctx)
+	gasPrice, err := b.srvCtx.SuggestGasPrice(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +84,7 @@ func (b *airgGapServerImpl) ObtainMetadata(ctx context.Context, options *airgap.
 		txMetadata.Data = data
 	}
 
-	estimatedGas, err := b.cc.Eth.EstimateGas(ctx, txMetadata.AsCallMessage())
+	estimatedGas, err := b.srvCtx.EstimateGas(ctx, txMetadata.AsCallMessage())
 	if err != nil {
 		return nil, err
 	}

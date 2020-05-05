@@ -29,6 +29,18 @@ type AirGapServer interface {
 }
 
 type AirGapClient interface {
+	CreateAccount(signer common.Address) (*TxArgs, error)
+	AuthorizeVoteSigner(account common.Address, popSignature []byte) (*TxArgs, error)
+	LockGold(signer common.Address, amount *big.Int) (*TxArgs, error)
+	UnlockGold(signer common.Address, value *big.Int) (*TxArgs, error)
+	RelockGold(signer common.Address, index *big.Int, value *big.Int) (*TxArgs, error)
+	WithdrawGold(signer common.Address, index *big.Int) (*TxArgs, error)
+	Vote(signer common.Address, group common.Address, value *big.Int) (*TxArgs, error)
+	ActivateVotes(signer common.Address, account common.Address, group common.Address) (*TxArgs, error)
+	RevokePendingVotes(signer common.Address, account common.Address, group common.Address, value *big.Int) (*TxArgs, error)
+	RevokeActiveVotes(signer common.Address, account common.Address, group common.Address, value *big.Int) (*TxArgs, error)
+	TransferGold(from common.Address, to common.Address, value *big.Int) (*TxArgs, error)
+
 	TxFromMetadata(*TxMetadata) (*types.Transaction, error)
 }
 
@@ -53,20 +65,6 @@ type TxMetadata struct {
 	Data                []byte
 	Value               *big.Int
 	Gas                 uint64
-}
-
-func (tm *TxMetadata) AsTransaction() *types.Transaction {
-	return types.NewTransaction(
-		tm.Nonce,
-		tm.To,
-		tm.Value,
-		tm.Gas,
-		tm.GasPrice,
-		tm.FeeCurrency,
-		tm.GatewayFeeRecipient,
-		tm.GatewayFee,
-		tm.Data,
-	)
 }
 
 func (tm *TxMetadata) AsCallMessage() ethereum.CallMsg {

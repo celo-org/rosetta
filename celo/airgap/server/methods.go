@@ -23,7 +23,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-type argumentsParser func(ctx context.Context, srvCtx serverContext, args []interface{}) ([]interface{}, error)
+type argumentsParser func(ctx context.Context, srvCtx ServerContext, args []interface{}) ([]interface{}, error)
 type contractMethods struct {
 	abiFactory func() (*abi.ABI, error)
 	methods    map[*airgap.CeloMethod]argumentsParser
@@ -57,7 +57,7 @@ var serverMethods = []contractMethods{
 	},
 }
 
-func hydrateMethods(srvCtx serverContext, definitions []contractMethods) (map[*airgap.CeloMethod]airGapServerMethod, error) {
+func hydrateMethods(srvCtx ServerContext, definitions []contractMethods) (map[*airgap.CeloMethod]airGapServerMethod, error) {
 	serverMethods := make(map[*airgap.CeloMethod]airGapServerMethod)
 
 	for _, cm := range definitions {
@@ -73,7 +73,7 @@ func hydrateMethods(srvCtx serverContext, definitions []contractMethods) (map[*a
 	return serverMethods, nil
 }
 
-func airgapMethodFactory(srvCtx serverContext, abi *abi.ABI, argsParser argumentsParser, method *airgap.CeloMethod) airGapServerMethod {
+func airgapMethodFactory(srvCtx ServerContext, abi *abi.ABI, argsParser argumentsParser, method *airgap.CeloMethod) airGapServerMethod {
 	return func(ctx context.Context, args []interface{}) ([]byte, common.Address, error) {
 
 		args, err := argsParser(ctx, srvCtx, args)

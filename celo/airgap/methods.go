@@ -30,7 +30,7 @@ type CeloMethod struct {
 	Contract wrapper.RegistryKey
 }
 
-func (tt *CeloMethod) String() string { return fmt.Sprintf("%s.%s", tt.Contract, tt.Name) }
+func (cm *CeloMethod) String() string { return fmt.Sprintf("%s.%s", cm.Contract, cm.Name) }
 
 // FromString returns the CeloMethod that matches the given string
 // Methods are represented as "Contract.Name"

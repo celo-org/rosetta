@@ -45,7 +45,12 @@ type Servicer struct {
 
 // NewServicer creates a default api service
 func NewServicer(celoClient *client.CeloClient, db db.RosettaDBReader, cp *celo.ChainParameters) (*Servicer, error) {
-	airgap, err := server.NewAirGapServer(celoClient)
+	srvCtx, err := server.NewServerContext(celoClient)
+	if err != nil {
+		return nil, err
+	}
+
+	airgap, err := server.NewAirgapServer(srvCtx)
 	if err != nil {
 		return nil, err
 	}
