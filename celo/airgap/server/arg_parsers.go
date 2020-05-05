@@ -19,15 +19,10 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/ethereum/go-ethereum/common"
 )
 
 type argParser func(value interface{}) (interface{}, error)
-
-type AirgapAccountsMetadata interface {
-	AuthorizeMetadata(popSignature []byte) (*wrapper.EncodedSignature, error)
-}
 
 func genericParser(parsers ...argParser) argumentsParser {
 	return func(ctx context.Context, srvCtx serverContext, values []interface{}) ([]interface{}, error) {
@@ -80,6 +75,7 @@ func bytesParser(value interface{}) (interface{}, error) {
 }
 
 func bigIntParser(value interface{}) (interface{}, error) {
+	var ret *big.Int
 	switch v := value.(type) {
 	case string:
 		val, ok := new(big.Int).SetString(v, 10)
@@ -87,20 +83,24 @@ func bigIntParser(value interface{}) (interface{}, error) {
 			return nil, fmt.Errorf("Not a big.Int: %s", val)
 		}
 		return val, nil
+	case int:
+		ret = new(big.Int).SetInt64(int64(v))
 	case int64:
-		val := new(big.Int).SetInt64(v)
-		return val, nil
+		ret = new(big.Int).SetInt64(v)
+	case uint:
+		ret = new(big.Int).SetUint64(uint64(v))
 	case uint64:
-		val := new(big.Int).SetUint64(v)
-		return val, nil
+		ret = new(big.Int).SetUint64(v)
+	case float32:
+		ret = new(big.Int).SetInt64(int64(v))
 	case float64:
-		val := new(big.Int).SetInt64(int64(v))
-		return val, nil
+		ret = new(big.Int).SetInt64(int64(v))
 	case *big.Int:
-		return v, nil
+		ret = v
 	default:
 		return nil, fmt.Errorf("Not a big.Int: %v", v)
 	}
+	return ret, nil
 }
 
 func authorizeVoteSignerParser(ctx context.Context, srvCtx serverContext, args []interface{}) ([]interface{}, error) {
