@@ -17,6 +17,8 @@ package utils
 import (
 	"errors"
 	"math/big"
+
+	"github.com/ethereum/go-ethereum/core/types"
 )
 
 var ErrNotImplemented = errors.New("Not implemented")
@@ -26,4 +28,25 @@ var TobinTaxDenominator = new(big.Int).SetBytes([]byte{211, 194, 27, 206, 204, 2
 
 func CalcTobinTaxAmount(transferAmount, tobinTaxNumerator *big.Int) *big.Int {
 	return new(big.Int).Div(new(big.Int).Mul(transferAmount, tobinTaxNumerator), TobinTaxDenominator)
+}
+
+var ProxyEventIds = []string{
+	"ab64f92ab780ecbf4f3866f57cee465ff36c89450dcce20237ca7a8d81fb7d13", // ImplementationSet(address)
+	"50146d0e3c60aa1d17a70635b05494f864e86144a2201275021014fbf08bafe2", // OwnerSet(address)
+}
+
+// RemoveProxyLogs filters out logs from Proxy events and returns a list
+// of Logs that are safe to Parse using the implementation contract's abi.
+func RemoveProxyLogs(logs []*types.Log) []*types.Log {
+	safeLogs := make([]*types.Log, 0, len(logs))
+	for _, log := range logs {
+		if len(log.Topics) > 0 {
+			for _, id := range ProxyEventIds {
+				if log.Topics[0].Hex() != id {
+					safeLogs = append(safeLogs, log)
+				}
+			}
+		}
+	}
+	return safeLogs
 }
