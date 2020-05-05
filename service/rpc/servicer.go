@@ -22,6 +22,7 @@ import (
 	"github.com/celo-org/rosetta/analyzer"
 	"github.com/celo-org/rosetta/celo"
 	"github.com/celo-org/rosetta/celo/airgap"
+	"github.com/celo-org/rosetta/celo/airgap/server"
 	"github.com/celo-org/rosetta/celo/client"
 	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/celo-org/rosetta/db"
@@ -44,7 +45,7 @@ type Servicer struct {
 
 // NewServicer creates a default api service
 func NewServicer(celoClient *client.CeloClient, db db.RosettaDBReader, cp *celo.ChainParameters) (*Servicer, error) {
-	airgap, err := airgap.NewAirGapServer(celoClient)
+	airgap, err := server.NewAirGapServer(celoClient)
 	if err != nil {
 		return nil, err
 	}

@@ -7,6 +7,22 @@ import (
 	"github.com/celo-org/rosetta/celo/wrapper"
 )
 
+// values taken from contract method names for ABI usage
+var (
+	CreateAccount       = registerMethod(wrapper.AccountsRegistryId, "createAccount")
+	AuthorizeVoteSigner = registerMethod(wrapper.AccountsRegistryId, "authorizeVoteSigner")
+	LockGold            = registerMethod(wrapper.LockedGoldRegistryId, "lock")
+	UnlockGold          = registerMethod(wrapper.LockedGoldRegistryId, "unlock")
+	RelockGold          = registerMethod(wrapper.LockedGoldRegistryId, "relock")
+	WithdrawGold        = registerMethod(wrapper.LockedGoldRegistryId, "withdraw")
+	Vote                = registerMethod(wrapper.ElectionRegistryId, "vote")
+	ActivateVotes       = registerMethod(wrapper.ElectionRegistryId, "activate")
+	RevokePendingVotes  = registerMethod(wrapper.ElectionRegistryId, "revokePending")
+	RevokeActiveVotes   = registerMethod(wrapper.ElectionRegistryId, "revokeActive")
+)
+
+var methodsMap = make(map[wrapper.RegistryKey]map[string]*CeloMethod)
+
 type CeloMethod struct {
 	// Name of the abi method
 	Name string
@@ -14,7 +30,7 @@ type CeloMethod struct {
 	Contract wrapper.RegistryKey
 }
 
-var methodsMap = make(map[wrapper.RegistryKey]map[string]*CeloMethod)
+func (tt *CeloMethod) String() string { return fmt.Sprintf("%s.%s", tt.Contract, tt.Name) }
 
 // FromString returns the CeloMethod that matches the given string
 // Methods are represented as "Contract.Name"
@@ -46,19 +62,3 @@ func registerMethod(contract wrapper.RegistryKey, name string) *CeloMethod {
 	methodsMap[contract][name] = cm
 	return cm
 }
-
-// values taken from contract method names for ABI usage
-var (
-	CreateAccount       = registerMethod(wrapper.AccountsRegistryId, "createAccount")
-	AuthorizeVoteSigner = registerMethod(wrapper.AccountsRegistryId, "authorizeVoteSigner")
-	LockGold            = registerMethod(wrapper.LockedGoldRegistryId, "lock")
-	UnlockGold          = registerMethod(wrapper.LockedGoldRegistryId, "unlock")
-	RelockGold          = registerMethod(wrapper.LockedGoldRegistryId, "relock")
-	WithdrawGold        = registerMethod(wrapper.LockedGoldRegistryId, "withdraw")
-	Vote                = registerMethod(wrapper.ElectionRegistryId, "vote")
-	ActivateVotes       = registerMethod(wrapper.ElectionRegistryId, "activate")
-	RevokePendingVotes  = registerMethod(wrapper.ElectionRegistryId, "revokePending")
-	RevokeActiveVotes   = registerMethod(wrapper.ElectionRegistryId, "revokeActive")
-)
-
-func (tt *CeloMethod) String() string { return fmt.Sprintf("%s.%s", tt.Contract, tt.Name) }

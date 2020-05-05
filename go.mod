@@ -15,6 +15,7 @@ require (
 	github.com/onsi/gomega v1.9.0
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.6.3
+	golang.org/x/net v0.0.0-20190921015927-1a5e07d1ff72
 	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
 )
 

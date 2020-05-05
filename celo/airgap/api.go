@@ -28,11 +28,15 @@ type AirGapServer interface {
 	SubmitTx(ctx context.Context, rawTx []byte) (*common.Hash, error)
 }
 
+type AirGapClient interface {
+	TxFromMetadata(*TxMetadata) (*types.Transaction, error)
+}
+
 type TxArgs struct {
-	From common.Address
-	// non-nil means exclusively cGLD transfer
-	To    *common.Address
+	From  common.Address
 	Value *big.Int
+	// non-nil means exclusively cGLD transfer
+	To *common.Address
 	// non-nil means celo registry contract invokation
 	Method *CeloMethod
 	Args   []interface{}

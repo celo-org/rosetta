@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package airgap
+package server
 
 import (
 	"context"
 	"fmt"
 
+	"github.com/celo-org/rosetta/celo/airgap"
 	"github.com/celo-org/rosetta/celo/client"
-	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -28,16 +28,16 @@ type airGapServerMethod = func(context.Context, []interface{}) ([]byte, common.A
 
 type airgGapServerImpl struct {
 	cc               *client.CeloClient
-	supportedMethods map[*CeloMethod]airGapServerMethod
+	supportedMethods map[*airgap.CeloMethod]airGapServerMethod
 }
 
-func NewAirGapServer(cc *client.CeloClient) (AirGapServer, error) {
-	registry, err := wrapper.NewRegistry(cc)
+func NewAirGapServer(cc *client.CeloClient) (airgap.AirGapServer, error) {
+	srvCtx, err := newServerContext(cc)
 	if err != nil {
 		return nil, err
 	}
 
-	supportedMethods, err := hydrateMethods(registry, serverMethods)
+	supportedMethods, err := hydrateMethods(srvCtx, serverMethods)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (b *airgGapServerImpl) SubmitTx(ctx context.Context, rawTx []byte) (*common
 	return b.cc.Eth.SendRawTransaction(ctx, rawTx)
 }
 
-func (b *airgGapServerImpl) ObtainMetadata(ctx context.Context, options *TxArgs) (*TxMetadata, error) {
+func (b *airgGapServerImpl) ObtainMetadata(ctx context.Context, options *airgap.TxArgs) (*airgap.TxMetadata, error) {
 	nonce, err := b.cc.Eth.NonceAt(ctx, options.From, nil) // nil == latest
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func (b *airgGapServerImpl) ObtainMetadata(ctx context.Context, options *TxArgs)
 		return nil, err
 	}
 
-	txMetadata := TxMetadata{
+	txMetadata := airgap.TxMetadata{
 		From:                options.From,
 		Nonce:               nonce,
 		GasPrice:            gasPrice,
