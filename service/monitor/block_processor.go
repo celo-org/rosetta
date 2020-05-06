@@ -57,6 +57,8 @@ func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes c
 			return err
 		}
 
+		// TODO current impl doesn't catch case where contract changed mid-tx and has events before & after that
+
 		if err := bp.registryChanges(bcs); err != nil {
 			return err
 		}
@@ -283,6 +285,10 @@ func (bp *processor) tobinTaxChange(bcs *db.BlockChangeSet) error {
 		return err
 	}
 
+	// We get the tobinTax at the END of the block
+	// which is actually the value that was valid during the block
+	// since the first tx doing a transfer would have update it
+	// and it can only be updated once a block
 	tobinTaxCache, err := reserve.TobinTaxCache(&bind.CallOpts{
 		Pending:     false,
 		BlockNumber: bcs.BlockNumber,

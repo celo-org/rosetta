@@ -32,8 +32,10 @@ type RosettaDBReader interface {
 	// In case of not block, it will return 0
 	LastPersistedBlock(ctx context.Context) (*big.Int, error)
 
-	// GasPriceMinimumFor returns the gasPriceMinimum registered for that block
-	// In case of no value, will return with fallbackValue which is 0
+	// GasPriceMinimumFor reads the gpm that was used FOR the specified block.
+	// That is, it gets the gpm that was set at the end of the preceding block.
+	// The gpm value is updated at the end of each block, and applied to txs
+	// in the following block.
 	GasPriceMinimumFor(ctx context.Context, block *big.Int) (*big.Int, error)
 
 	// TobinTaxFor returns the tobinTax applied to txs in that block.
