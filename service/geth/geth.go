@@ -199,7 +199,7 @@ func (gs *gethService) startGeth(stdErr *os.File) error {
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
 	cmd.Stderr = stdErr
 
-	if err = cmd.Start(); err != nil {
+	if err := cmd.Start(); err != nil {
 		gs.logger.Error("Error starting geth", "err", err)
 		return err
 	}
