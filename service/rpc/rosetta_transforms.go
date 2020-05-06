@@ -103,6 +103,9 @@ func NewOperationIdentifier(index int64) *rosettaTypes.OperationIdentifier {
 }
 
 func NewAmount(value *big.Int, currency *rosettaTypes.Currency) *rosettaTypes.Amount {
+	if value == nil {
+		return nil
+	}
 	return &rosettaTypes.Amount{
 		Value:    value.String(),
 		Currency: currency,
