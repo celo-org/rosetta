@@ -29,6 +29,7 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 )
 
+//nolint:unused
 type processor struct {
 	ctx                 context.Context
 	headers             <-chan *types.Header
@@ -43,7 +44,7 @@ type processor struct {
 	logger              log.Logger
 }
 
-var ErrMultipleGasPriceMinimumUpdates = errors.New("Error multiple GasPriceMinimumUpdated events emmitted in same block")
+var ErrMultipleGasPriceMinimumUpdates = errors.New("Error multiple GasPriceMinimumUpdated events emitted in same block")
 
 func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes chan<- *db.BlockChangeSet, cc *client.CeloClient, db_ db.RosettaDBReader, logger log.Logger) error {
 	bp, err := newProcessor(ctx, headers, changes, cc, db_, logger)
@@ -295,6 +296,7 @@ func (bp *processor) carbonOffsetPartner(bcs *db.BlockChangeSet) error {
 	return nil
 }
 
+//nolint:unused
 func (bp *processor) tobinTaxChange(bcs *db.BlockChangeSet) error {
 	if bp.reserveAddress == common.ZeroAddress {
 		return nil

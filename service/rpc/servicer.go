@@ -251,7 +251,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 		}
 	}
 
-	voteBalance := big.NewInt(0)
+	var voteBalance *big.Int
 	if subAccount.Address == string(analyzer.AccLockedGoldVotingPending) {
 		if groupAddr != common.ZeroAddress {
 			voteBalance, err = electionWrapper.GetPendingVotesForGroupByAccount(requestedBlockOpts, groupAddr, accountAddr)

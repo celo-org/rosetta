@@ -70,6 +70,7 @@ func (rctx *rewardsContext) nextBlockNumber() *big.Int {
 	return new(big.Int).Add(rctx.header.Number, big.NewInt(1))
 }
 
+//nolint:unused
 func (rctx *rewardsContext) prevBlockNumber() *big.Int {
 	return new(big.Int).Sub(rctx.header.Number, big.NewInt(1))
 }
