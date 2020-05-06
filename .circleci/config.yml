@@ -48,7 +48,7 @@ jobs:
       - save_cache:
           key: cargo-cache-v1-{{ arch }}-{{ checksum "external/bls-zexe/Cargo.lock"}}
           paths:
-            - external/bls-zexe/target         
+            - external/bls-zexe/target
       - persist_to_workspace:
           root: /go
           paths:
@@ -60,7 +60,7 @@ jobs:
       - restore_cache:
           keys:
             - go-modules-v1-{{ checksum "go.sum" }}
-            - go-modules-v1  
+            - go-modules-v1
       - run: make deps
       - run: make rosetta
       - save_cache:
@@ -82,19 +82,21 @@ jobs:
           path: /tmp/test-results
           destination: raw-test-output
       - store_test_results:
-          path: /tmp/test-results            
+          path: /tmp/test-results
 
   lint:
     executor: golang
     steps:
       - *attach
       - run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.25.1
-      - run: make ci-lint
+      - run: |
+          mkdir -p /tmp/test-results
+          golangci-lint run --config .golangci.yml --out-format junit-xml ./... | tee /tmp/test-results/go-lint-report.xml
       - store_artifacts:
           path: /tmp/test-results
           destination: raw-test-output
       - store_test_results:
-          path: /tmp/test-results       
+          path: /tmp/test-results
   coverage:
     executor: golang
     steps:
