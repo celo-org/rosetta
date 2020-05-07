@@ -5,7 +5,7 @@
 
 A monitoring server for celo-blockchain
 
-## What is Celo-Rosetta?
+## What is Celo Rosetta?
 
 Celo Rosetta is an RPC server that exposes an API to:
  * Query Blockchain
