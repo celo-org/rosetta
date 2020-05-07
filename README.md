@@ -10,7 +10,7 @@ A monitoring server for celo-blockchain
 Celo Rosetta is an RPC server that exposes an API to:
  * Query Blockchain
  * Obtain Balance Changing Operations
- * Construct Airgapped transactions
+ * Construct Airgapped Transactions
 
  
 With a special focus on getting balanche change operations, provides an easy way to obtain changes that are not easily queryable using
