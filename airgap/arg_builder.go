@@ -13,6 +13,14 @@ func NewArgBuilder() ArgBuilder {
 	return &airgapArgBuilderImpl{}
 }
 
+func (c *airgapArgBuilderImpl) TransferGold(from common.Address, to common.Address, value *big.Int) (*TxArgs, error) {
+	return &TxArgs{
+		From:  from,
+		To:    &to,
+		Value: value,
+	}, nil
+}
+
 func (c *airgapArgBuilderImpl) CreateAccount(signer common.Address) (*TxArgs, error) {
 	return CreateAccount.CreateTxArgs(signer, nil)
 }
@@ -55,10 +63,84 @@ func (c *airgapArgBuilderImpl) RevokeActiveVotes(signer common.Address, account 
 	return RevokeActiveVotes.CreateTxArgs(signer, nil, account, group, value)
 }
 
-func (c *airgapArgBuilderImpl) TransferGold(from common.Address, to common.Address, value *big.Int) (*TxArgs, error) {
-	return &TxArgs{
-		From:  from,
-		To:    &to,
-		Value: value,
-	}, nil
+func (c *airgapArgBuilderImpl) ReleaseGoldCreateAccount(releaseGold common.Address, signer common.Address) (*TxArgs, error) {
+	txArgs, err := ReleaseGoldCreateAccount.CreateTxArgs(signer, nil)
+	if err != nil {
+		return nil, err
+	}
+	txArgs.To = &releaseGold
+	return txArgs, nil
+}
+
+func (c *airgapArgBuilderImpl) ReleaseGoldAuthorizeVoteSigner(releaseGold common.Address, account common.Address, popSignature []byte) (*TxArgs, error) {
+	txArgs, err := ReleaseGoldAuthorizeVoteSigner.CreateTxArgs(account, nil, account, popSignature)
+	if err != nil {
+		return nil, err
+	}
+	txArgs.To = &releaseGold
+	return txArgs, nil
+}
+func (c *airgapArgBuilderImpl) ReleaseGoldAuthorizeAttestationSigner(releaseGold common.Address, account common.Address, popSignature []byte) (*TxArgs, error) {
+	txArgs, err := ReleaseGoldAuthorizeAttestationSigner.CreateTxArgs(account, nil, account, popSignature)
+	if err != nil {
+		return nil, err
+	}
+	txArgs.To = &releaseGold
+	return txArgs, nil
+}
+func (c *airgapArgBuilderImpl) ReleaseGoldAuthorizeValidatorSigner(releaseGold common.Address, account common.Address, popSignature []byte) (*TxArgs, error) {
+	txArgs, err := ReleaseGoldAuthorizeValidatorSigner.CreateTxArgs(account, nil, account, popSignature)
+	if err != nil {
+		return nil, err
+	}
+	txArgs.To = &releaseGold
+	return txArgs, nil
+}
+func (c *airgapArgBuilderImpl) ReleaseGoldLockGold(releaseGold common.Address, signer common.Address, amount *big.Int) (*TxArgs, error) {
+	txArgs, err := ReleaseGoldLockGold.CreateTxArgs(signer, amount)
+	if err != nil {
+		return nil, err
+	}
+	txArgs.To = &releaseGold
+	return txArgs, nil
+}
+func (c *airgapArgBuilderImpl) ReleaseGoldUnlockGold(releaseGold common.Address, signer common.Address, value *big.Int) (*TxArgs, error) {
+	txArgs, err := ReleaseGoldUnlockGold.CreateTxArgs(signer, nil, value)
+	if err != nil {
+		return nil, err
+	}
+	txArgs.To = &releaseGold
+	return txArgs, nil
+}
+func (c *airgapArgBuilderImpl) ReleaseGoldRelockGold(releaseGold common.Address, signer common.Address, index *big.Int, value *big.Int) (*TxArgs, error) {
+	txArgs, err := ReleaseGoldRelockGold.CreateTxArgs(signer, nil, index, value)
+	if err != nil {
+		return nil, err
+	}
+	txArgs.To = &releaseGold
+	return txArgs, nil
+}
+func (c *airgapArgBuilderImpl) ReleaseGoldWithdrawGold(releaseGold common.Address, signer common.Address, index *big.Int) (*TxArgs, error) {
+	txArgs, err := ReleaseGoldWithdrawGold.CreateTxArgs(signer, nil, index)
+	if err != nil {
+		return nil, err
+	}
+	txArgs.To = &releaseGold
+	return txArgs, nil
+}
+func (c *airgapArgBuilderImpl) ReleaseGoldRevokePendingVotes(releaseGold common.Address, signer common.Address, account common.Address, group common.Address, value *big.Int) (*TxArgs, error) {
+	txArgs, err := ReleaseGoldRevokePendingVotes.CreateTxArgs(signer, nil, account, group, value)
+	if err != nil {
+		return nil, err
+	}
+	txArgs.To = &releaseGold
+	return txArgs, nil
+}
+func (c *airgapArgBuilderImpl) ReleaseGoldRevokeActiveVotes(releaseGold common.Address, signer common.Address, account common.Address, group common.Address, value *big.Int) (*TxArgs, error) {
+	txArgs, err := ReleaseGoldRevokeActiveVotes.CreateTxArgs(signer, nil, account, group, value)
+	if err != nil {
+		return nil, err
+	}
+	txArgs.To = &releaseGold
+	return txArgs, nil
 }

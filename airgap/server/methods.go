@@ -22,13 +22,13 @@ import (
 	"github.com/celo-org/rosetta/celo/contract"
 	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/common"
 )
 
-var abiFactoryMap = map[wrapper.RegistryKey]func() (*abi.ABI, error){
-	wrapper.AccountsRegistryId:   contract.ParseAccountsABI,
-	wrapper.ElectionRegistryId:   contract.ParseElectionABI,
-	wrapper.LockedGoldRegistryId: contract.ParseLockedGoldABI,
+var abiFactoryMap = map[string]func() (*abi.ABI, error){
+	wrapper.AccountsRegistryId.String():   contract.ParseAccountsABI,
+	wrapper.ElectionRegistryId.String():   contract.ParseElectionABI,
+	wrapper.LockedGoldRegistryId.String(): contract.ParseLockedGoldABI,
+	airgap.ReleaseGold:                    contract.ParseReleaseGoldABI,
 }
 
 type argsPreProcessor func(ctx context.Context, srvCtx ServerContext, args []interface{}) ([]interface{}, error)
@@ -48,6 +48,16 @@ var serverMethodsDefinitions = map[*airgap.CeloMethod]argsPreProcessor{
 	airgap.ActivateVotes:      noopArgsPreProcessor,
 	airgap.RevokePendingVotes: preprocessRevoke,
 	airgap.RevokeActiveVotes:  preprocessRevoke,
+
+	airgap.ReleaseGoldWithdraw:                   noopArgsPreProcessor,
+	airgap.ReleaseGoldCreateAccount:              noopArgsPreProcessor,
+	airgap.ReleaseGoldLockGold:                   noopArgsPreProcessor,
+	airgap.ReleaseGoldUnlockGold:                 noopArgsPreProcessor,
+	airgap.ReleaseGoldRelockGold:                 noopArgsPreProcessor,
+	airgap.ReleaseGoldWithdrawGold:               noopArgsPreProcessor,
+	airgap.ReleaseGoldAuthorizeVoteSigner:        preprocessAuthorizeSigner,
+	airgap.ReleaseGoldAuthorizeAttestationSigner: preprocessAuthorizeSigner,
+	airgap.ReleaseGoldAuthorizeValidatorSigner:   preprocessAuthorizeSigner,
 }
 
 func noopArgsPreProcessor(ctx context.Context, srvCtx ServerContext, args []interface{}) ([]interface{}, error) {
@@ -55,7 +65,7 @@ func noopArgsPreProcessor(ctx context.Context, srvCtx ServerContext, args []inte
 }
 
 func hydrateMethods(srvCtx ServerContext) (map[*airgap.CeloMethod]airGapServerMethod, error) {
-	abis := make(map[wrapper.RegistryKey]*abi.ABI)
+	abis := make(map[string]*abi.ABI)
 	for id, abiFactory := range abiFactoryMap {
 		abi, err := abiFactory()
 		if err != nil {
@@ -77,23 +87,18 @@ func hydrateMethods(srvCtx ServerContext) (map[*airgap.CeloMethod]airGapServerMe
 }
 
 func airgapMethodFactory(srvCtx ServerContext, abi *abi.ABI, argsParser argsPreProcessor, method *airgap.CeloMethod) airGapServerMethod {
-	return func(ctx context.Context, args []interface{}) ([]byte, common.Address, error) {
+	return func(ctx context.Context, args []interface{}) ([]byte, error) {
 
 		args, err := argsParser(ctx, srvCtx, args)
 		if err != nil {
-			return nil, common.ZeroAddress, err
+			return nil, err
 		}
 
 		data, err := abi.Pack(method.Name, args...)
 		if err != nil {
-			return nil, common.ZeroAddress, err
+			return nil, err
 		}
 
-		address, err := srvCtx.addressFor(ctx, method.Contract)
-		if err != nil {
-			return nil, common.ZeroAddress, err
-		}
-
-		return data, address, nil
+		return data, nil
 	}
 }
