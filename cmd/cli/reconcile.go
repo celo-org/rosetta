@@ -147,9 +147,11 @@ func reconcileRange(blocks []*types.Block, checkDifferences func(id string, chan
 
 		for _, tx := range block.Transactions {
 			for _, op := range tx.Operations {
-				val, _ := new(big.Int).SetString(op.Amount.Value, 10)
-				blockChanges.Add(op.Account, val)
-				rangeChanges.Add(op.Account, val)
+				if op.Amount != nil {
+					val, _ := new(big.Int).SetString(op.Amount.Value, 10)
+					blockChanges.Add(op.Account, val)
+					rangeChanges.Add(op.Account, val)
+				}
 			}
 		}
 
