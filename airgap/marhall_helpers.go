@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
-
-	"github.com/ethereum/go-ethereum/common"
 )
 
 func MarshallToMap(input interface{}) (map[string]interface{}, error) {
@@ -37,14 +35,6 @@ func bigIntToString(input *big.Int) *string {
 		return nil
 	}
 	out := input.String()
-	return &out
-}
-
-func addressToString(input *common.Address) *string {
-	if input == nil {
-		return nil
-	}
-	out := input.Hex()
 	return &out
 }
 

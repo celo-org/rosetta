@@ -403,64 +403,6 @@ func (s *Servicer) ConstructionSubmit(ctx context.Context, request *types.Constr
 // Private Functions
 // ----------------------------------------------------------------------------------------
 
-func (s *Servicer) validateTxConstructionOptions(options map[string]interface{}) (*airgap.TxArgs, *types.Error) {
-	from, fromPresent := options["from"]
-	if !fromPresent {
-		return nil, LogErrValidation(fmt.Errorf("No 'from' provided on tx construction options"))
-	}
-	fromAddress, ok := from.(common.Address)
-	if !ok {
-		return nil, LogErrValidation(fmt.Errorf("From must be a common.address"))
-	}
-
-	to, toPresent := options["to"]
-	var toAddress *common.Address
-	if toPresent {
-		toAddress, ok = to.(*common.Address)
-		if !ok {
-			return nil, LogErrValidation(fmt.Errorf("To must be a *common.address"))
-		}
-	}
-
-	method, methodPresent := options["method"]
-	var celoMethod *airgap.CeloMethod
-	if methodPresent {
-		celoMethod, ok = method.(*airgap.CeloMethod)
-		if !ok {
-			return nil, LogErrValidation(fmt.Errorf("Method '%v' must be a *CeloMethod", method))
-		}
-	}
-
-	args, argsPresent := options["args"]
-	var argsArray []interface{}
-	if argsPresent {
-		arr, ok := args.([]interface{})
-		if !ok {
-			return nil, LogErrValidation(fmt.Errorf("Args '%v' must be an []interface{}", args))
-		}
-		argsArray = arr
-	}
-
-	value, valuePresent := options["value"]
-	var valueBigInt *big.Int
-	if valuePresent {
-		valueBigInt, ok = value.(*big.Int)
-		if !ok {
-			return nil, LogErrValidation(fmt.Errorf("Value '%v' must be a *big.int", value))
-		}
-	}
-
-	txOptions := airgap.TxArgs{
-		From:   fromAddress,
-		To:     toAddress,
-		Value:  valueBigInt,
-		Method: celoMethod,
-		Args:   argsArray,
-	}
-
-	return &txOptions, nil
-}
-
 func (s *Servicer) blockHeader(ctx context.Context, blockIdentifier *types.PartialBlockIdentifier) (*ethclient.HeaderAndTxnHashes, *types.Error) {
 	var err error
 	var blockHeader *ethclient.HeaderAndTxnHashes
