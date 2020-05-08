@@ -15,7 +15,6 @@
 package server
 
 import (
-	"encoding/json"
 	"math/big"
 	"testing"
 
@@ -57,26 +56,9 @@ func TestMethodArgumentParsing(t *testing.T) {
 		args := test.args
 		t.Run(test.method.String(), func(t *testing.T) {
 			RegisterTestingT(t)
-			t.Run("normal case", func(t *testing.T) {
-				RegisterTestingT(t)
-				_, _, err := method(ctx, args)
-				Ω(err).ShouldNot(HaveOccurred())
-			})
 
-			t.Run("with serialized arguments", func(t *testing.T) {
-				RegisterTestingT(t)
-
-				serialized, err := json.Marshal(args)
-				Ω(err).ShouldNot(HaveOccurred())
-
-				var newArgs []interface{}
-				err = json.Unmarshal(serialized, &newArgs)
-				Ω(err).ShouldNot(HaveOccurred())
-
-				_, _, err = method(ctx, newArgs)
-				Ω(err).ShouldNot(HaveOccurred())
-			})
-
+			_, _, err := method(ctx, args)
+			Ω(err).ShouldNot(HaveOccurred())
 		})
 	}
 }
