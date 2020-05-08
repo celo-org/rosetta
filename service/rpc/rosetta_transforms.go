@@ -96,13 +96,6 @@ func NewAccountIdentifier(addr common.Address, subAccount *rosettaTypes.SubAccou
 	}
 }
 
-func NewSubAccountIdentifier(name string, id string, value string) *rosettaTypes.SubAccountIdentifier {
-	return &rosettaTypes.SubAccountIdentifier{
-		Address:  name,
-		Metadata: map[string]interface{}{id: value},
-	}
-}
-
 func NewOperationIdentifier(index int64) *rosettaTypes.OperationIdentifier {
 	return &rosettaTypes.OperationIdentifier{
 		Index: index,

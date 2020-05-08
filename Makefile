@@ -21,7 +21,6 @@ COMMIT_SHA=$(shell git rev-parse HEAD)
 LICENCE_SCRIPT=addlicense -c "Celo Org" -l "apache" -v
 
 .PHONY:
-	gen-rpc 
 	ifdef CARGO_exists
 		$(BLS_RS_PATH)/target/release/libepoch_snark.a
 	endif

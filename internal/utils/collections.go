@@ -12,26 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package client
+package utils
 
 import (
-	"crypto/ecdsa"
 	"fmt"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
 )
 
-func Keygen() (*ecdsa.PrivateKey, error) {
-	return crypto.GenerateKey()
-}
-
-func Derive(privateKey *ecdsa.PrivateKey) (*ecdsa.PublicKey, *common.Address, error) {
-	publicKey := privateKey.Public()
-	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-	if !ok {
-		return nil, nil, fmt.Errorf("error casting public key to ECDSA")
+func AddressIndexOf(slice []common.Address, item common.Address) (*big.Int, error) {
+	for idx, currItem := range slice {
+		if currItem == item {
+			return big.NewInt(int64(idx)), nil
+		}
 	}
-	address := crypto.PubkeyToAddress(*publicKeyECDSA)
-	return publicKeyECDSA, &address, nil
+	return nil, fmt.Errorf("Item not found in slice")
 }
