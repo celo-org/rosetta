@@ -365,7 +365,7 @@ func (s *Servicer) BlockTransaction(ctx context.Context, request *types.BlockTra
 func (s *Servicer) ConstructionMetadata(ctx context.Context, request *types.ConstructionMetadataRequest) (*types.ConstructionMetadataResponse, *types.Error) {
 
 	var txArgs airgap.TxArgs
-	if err := txArgs.UnmarshallMap(request.Options); err != nil {
+	if err := airgap.UnmarshallFromMap(request.Options, &txArgs); err != nil {
 		return nil, LogErrValidation(err)
 	}
 
@@ -374,7 +374,7 @@ func (s *Servicer) ConstructionMetadata(ctx context.Context, request *types.Cons
 		return nil, LogErrInternal(fmt.Errorf("Failed to fetch tx metadata"))
 	}
 
-	metadata, err := txMetadata.MarshallMap()
+	metadata, err := airgap.MarshallToMap(txMetadata)
 	if err != nil {
 		return nil, LogErrInternal(err)
 	}

@@ -6,30 +6,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-func (tm *TxMetadata) MarshallMap() (map[string]interface{}, error) {
-	data, err := tm.MarshalJSON()
-	if err != nil {
-		return nil, err
-	}
-
-	var output map[string]interface{}
-	err = json.Unmarshal(data, &output)
-	if err != nil {
-		return nil, err
-	}
-
-	return output, nil
-}
-
-func (tm *TxMetadata) UnmarshallMap(input map[string]interface{}) error {
-	data, err := json.Marshal(input)
-	if err != nil {
-		return err
-	}
-
-	return tm.UnmarshalJSON(data)
-}
-
 func (tm TxMetadata) MarshalJSON() ([]byte, error) {
 	var data struct {
 		From                common.Address  `json:"from"`

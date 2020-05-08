@@ -50,7 +50,7 @@ func main() {
 	// generalizes tx flow
 	submitSigned := func(txArgs *airgap.TxArgs) error {
 		// step 1: decide options OFFLINE
-		txArgsMap, err := txArgs.MarshallMap()
+		txArgsMap, err := airgap.MarshallToMap(txArgs)
 		if err != nil {
 			return err
 		}
@@ -61,7 +61,7 @@ func main() {
 		}
 
 		txMetadata := &airgap.TxMetadata{}
-		if err := txMetadata.UnmarshallMap(txMetadataMap); err != nil {
+		if err := airgap.UnmarshallFromMap(txMetadataMap, &txMetadata); err != nil {
 			return err
 		}
 

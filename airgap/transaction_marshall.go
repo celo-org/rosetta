@@ -6,42 +6,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-// From                common.Address
-// Nonce               uint64
-// GasPrice            *big.Int
-// GatewayFeeRecipient *common.Address
-// GatewayFee          *big.Int
-// FeeCurrency         *common.Address
-// To                  common.Address
-// Data                []byte
-// Value               *big.Int
-// Gas                 uint64
-// ChainId             *big.Int
-
-func (tx *Transaction) MarshallMap() (map[string]interface{}, error) {
-	data, err := tx.MarshalJSON()
-	if err != nil {
-		return nil, err
-	}
-
-	var output map[string]interface{}
-	err = json.Unmarshal(data, &output)
-	if err != nil {
-		return nil, err
-	}
-
-	return output, nil
-}
-
-func (tx *Transaction) UnmarshallMap(input map[string]interface{}) error {
-	data, err := json.Marshal(input)
-	if err != nil {
-		return err
-	}
-
-	return tx.UnmarshalJSON(data)
-}
-
 func (tx Transaction) MarshalJSON() ([]byte, error) {
 	var data struct {
 		From                common.Address  `json:"from"`

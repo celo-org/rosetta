@@ -84,10 +84,10 @@ func TestTransactionMarshalling(t *testing.T) {
 
 				var output Transaction
 
-				theMap, err := input.MarshallMap()
+				theMap, err := MarshallToMap(input)
 				Ω(err).ShouldNot(HaveOccurred())
 
-				err = output.UnmarshallMap(theMap)
+				err = UnmarshallFromMap(theMap, &output)
 				Ω(err).ShouldNot(HaveOccurred())
 
 				Ω(output).Should(Equal(input))
@@ -96,7 +96,7 @@ func TestTransactionMarshalling(t *testing.T) {
 			t.Run("MapThenJson", func(t *testing.T) {
 				RegisterTestingT(t)
 
-				theMap, err := input.MarshallMap()
+				theMap, err := MarshallToMap(input)
 				Ω(err).ShouldNot(HaveOccurred())
 
 				var overTheWireMap map[string]interface{}
@@ -104,7 +104,7 @@ func TestTransactionMarshalling(t *testing.T) {
 				Ω(err).ShouldNot(HaveOccurred())
 
 				var output Transaction
-				err = output.UnmarshallMap(overTheWireMap)
+				err = UnmarshallFromMap(overTheWireMap, &output)
 				Ω(err).ShouldNot(HaveOccurred())
 
 				Ω(output).Should(Equal(input))

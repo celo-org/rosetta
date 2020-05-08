@@ -1,11 +1,36 @@
 package airgap
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 )
+
+func MarshallToMap(input interface{}) (map[string]interface{}, error) {
+	data, err := json.Marshal(input)
+	if err != nil {
+		return nil, err
+	}
+
+	var output map[string]interface{}
+	err = json.Unmarshal(data, &output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func UnmarshallFromMap(input map[string]interface{}, output interface{}) error {
+	data, err := json.Marshal(input)
+	if err != nil {
+		return err
+	}
+
+	return json.Unmarshal(data, output)
+}
 
 func bigIntToString(input *big.Int) *string {
 	if input == nil {
