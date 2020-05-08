@@ -44,27 +44,31 @@ func (w *ElectionWrapper) GetAccountElectionVotes(opts *bind.CallOpts, account c
 		return nil, err
 	}
 
-	var votes *ElectionVotes
+	pending := make(map[common.Address]*big.Int)
+	active := make(map[common.Address]*big.Int)
 	for _, groupAddr := range groups {
 		// TODO(yorke): dedup
 		pendingAmt, err := w.Election.GetPendingVotesForGroupByAccount(opts, groupAddr, account)
 		if err != nil {
 			return nil, err
 		}
-		if utils.IsNonZero(pendingAmt) {
-			votes.Pending[groupAddr] = pendingAmt
+		if pendingAmt.Cmp(utils.Big0) == 1 {
+			pending[groupAddr] = pendingAmt
 		}
 
 		activeAmt, err := w.Election.GetActiveVotesForGroupByAccount(opts, groupAddr, account)
 		if err != nil {
 			return nil, err
 		}
-		if utils.IsNonZero(activeAmt) {
-			votes.Active[groupAddr] = activeAmt
+		if activeAmt.Cmp(utils.Big0) == 1 {
+			active[groupAddr] = activeAmt
 		}
 	}
 
-	return votes, nil
+	return &ElectionVotes{
+		Active:  active,
+		Pending: pending,
+	}, nil
 }
 
 type AddressLesserGreater struct {

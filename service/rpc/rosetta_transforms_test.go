@@ -15,25 +15,31 @@
 package rpc
 
 import (
+	"math/big"
+	"strconv"
 	"testing"
 
+	"github.com/celo-org/rosetta/analyzer"
 	"github.com/coinbase/rosetta-sdk-go/types"
+	rosettaTypes "github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/onsi/gomega"
+	gs "github.com/onsi/gomega/gstruct"
+	gtypes "github.com/onsi/gomega/types"
 )
 
-// func MatchOperation(account common.Address, value int, currency *types.Currency, status OperationResult, kind analyzer.OperationType) gtypes.GomegaMatcher {
-// 	return gs.MatchFields(gs.IgnoreExtras, gs.Fields{
-// 		"Account": Equal(NewAccountIdentifier(account, nil)),
-// 		"Amount": gs.MatchAllFields(gs.Fields{
-// 			"Value":    Equal(strconv.Itoa(value)),
-// 			"Currency": Equal(currency),
-// 			"Metadata": BeNil(),
-// 		}),
-// 		"Status": Equal(status.String()),
-// 		"Type":   Equal(kind.String()),
-// 	})
-// }
+func MatchOperation(account common.Address, value int, currency *types.Currency, status OperationResult, kind analyzer.OperationType) gtypes.GomegaMatcher {
+	return gs.PointTo(gs.MatchFields(gs.IgnoreExtras, gs.Fields{
+		"Account": gs.PointTo(Equal(NewAccountIdentifier(account, nil))),
+		"Amount": gs.PointTo(gs.MatchAllFields(gs.Fields{
+			"Value":    Equal(strconv.Itoa(value)),
+			"Currency": Equal(currency),
+			"Metadata": BeNil(),
+		})),
+		"Status": Equal(status.String()),
+		"Type":   Equal(kind.String()),
+	}))
+}
 
 func TestMapTxHashesToTransaction(t *testing.T) {
 	RegisterTestingT(t)
@@ -48,39 +54,75 @@ func TestMapTxHashesToTransaction(t *testing.T) {
 		return txHashes
 	}
 
-	Ω(MapTxHashesToTransaction(txHashes)).To(And(
+	Ω(MapTxHashesToTransaction(txHashes)).Should(And(
 		HaveLen(len(txHashes)),
 		WithTransform(getHashesFromIds, ConsistOf(txHashes)),
 	))
 }
 
-// func TestTransferToOperations(t *testing.T) {
-// 	g := NewGomegaWithT(t)
+func TestTransferToOperations(t *testing.T) {
+	RegisterTestingT(t)
 
-// 	aop := analyzer.NewTransfer(common.HexToAddress("1"), common.HexToAddress("2"), big.NewInt(10000), true)
+	aop := analyzer.NewTransfer(common.HexToAddress("1"), common.HexToAddress("2"), big.NewInt(10000), true)
 
-// 	g.Expect(OperationsFromAnalyzer(aop, 50)).To(And(
-// 		HaveLen(2),
-// 		ConsistOf(
-// 			MatchOperation(common.HexToAddress("1"), -10000, CeloGold, OperationSuccess, analyzer.OpTransfer),
-// 			MatchOperation(common.HexToAddress("2"), 10000, CeloGold, OperationSuccess, analyzer.OpTransfer),
-// 		),
-// 	))
-// }
+	Ω(OperationsFromAnalyzer(aop, 50)).Should(And(
+		HaveLen(2),
+		ConsistOf(
+			MatchOperation(common.HexToAddress("1"), -10000, CeloGold, OperationSuccess, analyzer.OpTransfer),
+			MatchOperation(common.HexToAddress("2"), 10000, CeloGold, OperationSuccess, analyzer.OpTransfer),
+		),
+	))
+}
 
-// func TestGasDetailsToOperations(t *testing.T) {
-// 	g := NewGomegaWithT(t)
+func TestGasDetailsToOperations(t *testing.T) {
+	RegisterTestingT(t)
 
-// 	gasDetail := analyzer.NewFee(map[common.Address]*big.Int{
-// 		common.HexToAddress("1"): big.NewInt(-1000),
-// 		common.HexToAddress("2"): big.NewInt(800),
-// 		common.HexToAddress("3"): big.NewInt(200),
-// 	})
+	gasDetail := analyzer.NewFee(map[common.Address]*big.Int{
+		common.HexToAddress("1"): big.NewInt(-1000),
+		common.HexToAddress("2"): big.NewInt(800),
+		common.HexToAddress("3"): big.NewInt(200),
+	})
 
-// 	g.Expect(OperationsFromAnalyzer(gasDetail, 0)).To(And(
-// 		HaveLen(3),
-// 		ContainElement(MatchOperation(common.HexToAddress("1"), -1000, CeloGold, OperationSuccess, analyzer.OpFee)),
-// 		ContainElement(MatchOperation(common.HexToAddress("2"), 800, CeloGold, OperationSuccess, analyzer.OpFee)),
-// 		ContainElement(MatchOperation(common.HexToAddress("3"), 200, CeloGold, OperationSuccess, analyzer.OpFee)),
-// 	))
-// }
+	Ω(OperationsFromAnalyzer(gasDetail, 0)).Should(And(
+		HaveLen(3),
+		ConsistOf(
+			MatchOperation(common.HexToAddress("1"), -1000, CeloGold, OperationSuccess, analyzer.OpFee),
+			MatchOperation(common.HexToAddress("2"), 800, CeloGold, OperationSuccess, analyzer.OpFee),
+			MatchOperation(common.HexToAddress("3"), 200, CeloGold, OperationSuccess, analyzer.OpFee),
+		),
+	))
+}
+
+func TestOperationsFromAnalyzer_RelatedOpsCounter(t *testing.T) {
+	RegisterTestingT(t)
+
+	gasDetail := analyzer.NewFee(map[common.Address]*big.Int{
+		common.HexToAddress("1"): big.NewInt(-1000),
+		common.HexToAddress("2"): big.NewInt(800),
+		common.HexToAddress("3"): big.NewInt(200),
+	})
+
+	getRelatedOps := func(op *rosettaTypes.Operation) []int64 {
+		ops := make([]int64, len(op.RelatedOperations))
+		for i, relatedOp := range op.RelatedOperations {
+			ops[i] = relatedOp.Index
+		}
+		return ops
+	}
+
+	Ω(OperationsFromAnalyzer(gasDetail, 0)).Should(
+		ConsistOf(
+			WithTransform(getRelatedOps, BeEmpty()),
+			WithTransform(getRelatedOps, Equal([]int64{0})),
+			WithTransform(getRelatedOps, Equal([]int64{0, 1})),
+		),
+	)
+
+	Ω(OperationsFromAnalyzer(gasDetail, 5)).Should(
+		ConsistOf(
+			WithTransform(getRelatedOps, BeEmpty()),
+			WithTransform(getRelatedOps, Equal([]int64{5})),
+			WithTransform(getRelatedOps, Equal([]int64{5, 6})),
+		),
+	)
+}

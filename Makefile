@@ -103,10 +103,6 @@ ci-test:
 	trap "go-junit-report < /tmp/test-results/go-test.out > /tmp/test-results/go-test-report.xml" EXIT
 	go test -v ./... | tee /tmp/test-results/go-test.out
 
-ci-lint:
-	mkdir -p /tmp/test-results
-	golangci-lint run --config .golangci.yml --out-format junit-xml ./... | tee /tmp/test-results/go-lint-report.xml
-
 add-license:
 	${LICENCE_SCRIPT} analyzer celo client cmd db examples internal service main.go
 
