@@ -1,84 +1,79 @@
 # Celo Rosetta
 
+[![CircleCI](https://circleci.com/gh/celo-org/rosetta/tree/master.svg?style=shield)](https://circleci.com/gh/celo-org/rosetta/tree/master)
+[![License](https://img.shields.io/github/license/celo-org/rosetta.svg)](https://github.com/celo-org/rosetta/blob/master/LICENSE.txt)
+
 A monitoring server for celo-blockchain
 
-## Overview
+## What is Celo Rosetta?
 
+Celo Rosetta is an RPC server that exposes an API to:
+ * Query Celo's Blockchain
+ * Obtain Balance Changing Operations
+ * Construct Airgapped Transactions
 
-## Starting rosetta
+With a special focus on getting balance change operations, Celo Rosetta provides an easy way to obtain changes that are not easily queryable using
+the celo-blockchain rpc; such as:
 
-To run rosetta do:
-```
-    rosetta run [options]
-```
+* Gas Fee distribution
+* Gold transfers (internal & external). Taking in account Tobin Tax
+* Epoch Rewards Distribution
+* LockedGold & Election Operations
 
-Where rosetta is the binary. 
+## RPC endpoints
 
-  * If on development you can replace rosetta by `go run main.go`
+Rosetta exposes the following endpoints:
 
-### Example for RC1:
+ * `POST /network/list`: Get List of Available Networks
+ * `POST /network/status`: Get Network Status
+ * `POST /network/options`: Get Network Options
+ * `POST /block`: Get a Block
+ * `POST /block/transaction`: Get a Block Transaction
+ * `POST /mempool`: Get All Mempool Transactions
+ * `POST /mempool/transaction`: Get a Mempool Transaction
+ * `POST /account/balance`: Get an Account Balance
+ * `POST /construction/metadata`: Get Transaction Construction Metadata
+ * `POST /construction/submit`: Submit a Signed Transaction
 
-Prerequisites:
-  * Download `celo-monorepo` branch `rc1` and `yarn && yarn build`
-  * Download `celo-blockchain` branch `rc1-tracing-fix` and `make all`
-  * Download `rosetta` branch `master` update go.mod and `make gen-contracts && make all`
-  * Run `make rc1-env` to create an empty datadir with the genesis block
+For an understanding of inputs & outputs check [servicer.go](./service/rpc/servicer.go)
+
+## Running Rosetta Docker Image
+
+Rosetta is released as a docker image: `us.gcr.io/celo-testnet/rosetta`. All version can be found on the [registry page](https://us.gcr.io/celo-testnet/rosetta)
+
+Within the docker image, we pack `rosetta` binary and also `geth` binary from celo-blockchain. Rosetta will run both.
+
+### Configuration
+
+The necessary parameters to run Celo Rosetta are:
+
+ * `genesis.json` for the target network (can be found by `curl 'https://storage.googleapis.com/genesis_blocks/baklava' > genesis.json`)
+ * `staticNode` enodeURL. Rosetta will directly peer to the list of staticNode provided (it doens't run discovery protocol for the moment).
+    This node can be any you have access to. For a public list check `https://storage.cloud.google.com/static_nodes/baklava`
+
+Additionaly, it needs a data directory for the geth datadir & rosetta.db
+
+### Run
+
+To run Celo Rosetta:
+
 
 ```bash
-rosetta run \
-  --genesis ./envs/rc1/genesis.json \
-  --geth ../celo-blockchain/build/bin/geth \
-  --staticNode "enode://5e0f4e3aaa096e2a2db76622b335cab4d3224d08d16cb11e8855a3a5f30c19d35d81a74b21271562e459495ab203c2f3a5a5747a83eb53ba046aeeb09aa240ff@34.83.110.24:30303"
-  --datadir "./envs/rc1"
+# Use the last release
+export RELEASE="0.1.2"
+# folder for rosetta to use as data directory (saves rosetta.db & celo-blockchain datadir)
+export DATADIR="/var/rosetta"
+# enode for a known address to peer
+export STATICNODE="enode://33ac194052ccd10ce54101c8340dbbe7831de02a3e7dcbca7fd35832ff8c53a72fd75e57ce8c8e73a0ace650dc2c2ec1e36f0440e904bc20a3cf5927f2323e85@34.83.199.225:30303"
+docker pull us.gcr.io/celo-testnet/rosetta:$RELEASE
+docker run --name rosetta --rm \
+  -v "${DATADIR}:/data" \
+  -p 8080:8080 \
+  us.gcr.io/celo-testnet/rosetta:$RELEASE \
+  run --staticNode $STATICNODE
 ```
 
-### Example for Alfajores:
-
-Prerequisites:
-  * Download `celo-monorepo` branch `alfajores` and `yarn && yarn build`
-  * Download `celo-blockchain` branch `alfajores-tracing-fix` and `make all`
-  * Download `rosetta` branch `master` update go.mod and `make gen-contracts && make all`
-  * Run `make alfajores-env` to create an empty datadir with the genesis block
-
-```bash
-rosetta run \
-  --genesis ./envs/alfajores/genesis.json \
-  --geth ../celo-blockchain/build/bin/geth \
-  --staticNode "enode://05977f6b7d3e16a99d27b714f8a029a006e41ec7732167d373dd920d31f72b3a1776650798d8763560854369d36867e9564dad13b4b60a90c347feeb491d83a9@34.83.42.50:30303"
-  --datadir "./envs/alfajores"
-```
-
-### Example for RC0:
-
-Prerequisites:
-  * Download `celo-monorepo` branch `rc0` and `yarn && yarn build`
-  * Download `celo-blockchain` branch `mc/rosetta-rc0` and `make all`
-  * Download `rosetta` branch `rc0` update go.mod and `make gen-contracts && make all`
-  * Run `make rc0-env` to create an empty datadir with the genesis block
-
-```bash
-rosetta run \
-  --genesis ./envs/rc0/genesis.json \
-  --geth ../celo-blockchain/build/bin/geth \
-  --staticNode "enode://33ac194052ccd10ce54101c8340dbbe7831de02a3e7dcbca7fd35832ff8c53a72fd75e57ce8c8e73a0ace650dc2c2ec1e36f0440e904bc20a3cf5927f2323e85@34.83.199.225:30303" \
-  --datadir "./envs/rc0"
-```
-
-## Running with the docker image
-
-Docker image is configured by default to:
-  * Use `geth` binary inside the image
-  * Use `/data` as datadir (should to be mounted)
-  * Expects genesis.json to be at `/data/genesis.json`
-  * HttpServer listens on port 8080
-
-To run the docker image do:
-```bash 
-docker run -v "${PWD}/envs/rc0:/data" -p 8080:8080--name rosetta gcr.io/celo-testnet/rosetta:0.1 run \
-  --staticNode "enode://33ac194052ccd10ce54101c8340dbbe7831de02a3e7dcbca7fd35832ff8c53a72fd75e57ce8c8e73a0ace650dc2c2ec1e36f0440e904bc20a3cf5927f2323e85@34.83.199.225:30303"
-```
-
-## Dev Guide
+## Developer Guide
 
 ### Setup
 
@@ -128,4 +123,54 @@ go run examples/generate_balances/main.go \
   https://storage.googleapis.com/genesis_blocks/alfajores \
   validator-data/bootstrap_balances.json
 rosetta-validator check:complete
+```
+
+### Running on development
+
+#### Running on RC1:
+
+Prerequisites:
+  * Download `celo-monorepo` branch `rc1` and `yarn && yarn build`
+  * Download `celo-blockchain` branch `rc1-tracing-fix` and `make all`
+  * Download `rosetta` branch `master` update go.mod and `make gen-contracts && make all`
+  * Run `make rc1-env` to create an empty datadir with the genesis block
+
+```bash
+go run main.go run \
+  --genesis ./envs/rc1/genesis.json \
+  --geth ../celo-blockchain/build/bin/geth \
+  --staticNode "enode://5e0f4e3aaa096e2a2db76622b335cab4d3224d08d16cb11e8855a3a5f30c19d35d81a74b21271562e459495ab203c2f3a5a5747a83eb53ba046aeeb09aa240ff@34.83.110.24:30303"
+  --datadir "./envs/rc1"
+```
+
+#### Running on Alfajores:
+
+Prerequisites:
+  * Download `celo-monorepo` branch `alfajores` and `yarn && yarn build`
+  * Download `celo-blockchain` branch `alfajores-tracing-fix` and `make all`
+  * Download `rosetta` branch `master` update go.mod and `make gen-contracts && make all`
+  * Run `make alfajores-env` to create an empty datadir with the genesis block
+
+```bash
+go run main.go run \
+  --genesis ./envs/alfajores/genesis.json \
+  --geth ../celo-blockchain/build/bin/geth \
+  --staticNode "enode://05977f6b7d3e16a99d27b714f8a029a006e41ec7732167d373dd920d31f72b3a1776650798d8763560854369d36867e9564dad13b4b60a90c347feeb491d83a9@34.83.42.50:30303"
+  --datadir "./envs/alfajores"
+```
+
+#### Running on RC0:
+
+Prerequisites:
+  * Download `celo-monorepo` branch `rc0` and `yarn && yarn build`
+  * Download `celo-blockchain` branch `mc/rosetta-rc0` and `make all`
+  * Download `rosetta` branch `rc0` update go.mod and `make gen-contracts && make all`
+  * Run `make rc0-env` to create an empty datadir with the genesis block
+
+```bash
+go run main.go run \
+  --genesis ./envs/rc0/genesis.json \
+  --geth ../celo-blockchain/build/bin/geth \
+  --staticNode "enode://33ac194052ccd10ce54101c8340dbbe7831de02a3e7dcbca7fd35832ff8c53a72fd75e57ce8c8e73a0ace650dc2c2ec1e36f0440e904bc20a3cf5927f2323e85@34.83.199.225:30303" \
+  --datadir "./envs/rc0"
 ```

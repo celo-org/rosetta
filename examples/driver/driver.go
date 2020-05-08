@@ -29,7 +29,6 @@ import (
 	"github.com/celo-org/rosetta/internal/config"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -164,7 +163,7 @@ func GetAllRegistryAddresses(cc *client.CeloClient) (map[common.Address]string, 
 	addrToName := make(map[common.Address]string)
 	nameToAddr := make(map[string]common.Address)
 	for _, name := range coreContracts {
-		address, _ := registry.GetAddressForString(nil, name)
+		address, _ := registry.GetAddressForString(context.Background(), nil, name)
 		addrToName[address] = name
 		nameToAddr[name] = address
 	}
@@ -203,9 +202,7 @@ func DriverRegistryErrors() {
 
 	// Find where Registry Was deployed
 	value := BinarySearch(670, 226008, func(n uint) bool {
-		_, err := registry.GetAddressForString(&bind.CallOpts{
-			BlockNumber: new(big.Int).SetUint64(uint64(n)),
-		}, "Governance")
+		_, err := registry.GetAddressForString(context.Background(), new(big.Int).SetUint64(uint64(n)), "Governance")
 		return err != client.ErrContractNotDeployed
 	})
 	fmt.Println(value)

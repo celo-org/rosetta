@@ -19,10 +19,11 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/celo-org/rosetta/airgap"
+	"github.com/celo-org/rosetta/airgap/server"
 	"github.com/celo-org/rosetta/analyzer"
 	"github.com/celo-org/rosetta/celo"
 	"github.com/celo-org/rosetta/celo/client"
-	"github.com/celo-org/rosetta/celo/transaction"
 	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/celo-org/rosetta/db"
 	"github.com/coinbase/rosetta-sdk-go/types"
@@ -38,12 +39,17 @@ type Servicer struct {
 	cc          *client.CeloClient
 	db          db.RosettaDBReader
 	chainParams *celo.ChainParameters
-	txBuilder   *transaction.OnlineBuilder
+	airgap      airgap.Server
 }
 
 // NewServicer creates a default api service
 func NewServicer(celoClient *client.CeloClient, db db.RosettaDBReader, cp *celo.ChainParameters) (*Servicer, error) {
-	tb, err := transaction.NewOnlineBuilder(celoClient)
+	srvCtx, err := server.NewServerContext(celoClient)
+	if err != nil {
+		return nil, err
+	}
+
+	airgap, err := server.NewAirgapServer(srvCtx)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +58,7 @@ func NewServicer(celoClient *client.CeloClient, db db.RosettaDBReader, cp *celo.
 		cc:          celoClient,
 		db:          db,
 		chainParams: cp,
-		txBuilder:   tb,
+		airgap:      airgap,
 	}, nil
 }
 
@@ -191,7 +197,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 
 	if subAccount.Address == string(analyzer.AccLockedGoldNonVoting) {
 		// Fetch LockedGold Balances
-		lockedGoldWrapper, err := wrapper.NewLockedGold(s.cc, registryWrapper)
+		lockedGoldWrapper, err := registryWrapper.GetLockedGoldWrapper(ctx, nil)
 		if err == client.ErrContractNotDeployed {
 			// Nothing is deployed => ignore lockedGold & election balances
 			return emptyResponse, nil
@@ -209,7 +215,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 
 	if subAccount.Address == string(analyzer.AccLockedGoldPending) {
 		// Fetch LockedGold Balances
-		lockedGoldWrapper, err := wrapper.NewLockedGold(s.cc, registryWrapper)
+		lockedGoldWrapper, err := registryWrapper.GetLockedGoldWrapper(ctx, nil)
 		if err == client.ErrContractNotDeployed {
 			// Nothing is deployed => ignore lockedGold & election balances
 			return emptyResponse, nil
@@ -228,7 +234,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 	// If we are here need to be election based
 
 	// Fetch Election (Votes) Balances
-	electionWrapper, err := wrapper.NewElection(s.cc, registryWrapper)
+	electionWrapper, err := registryWrapper.GetElectionWrapper(ctx, nil)
 	if err == client.ErrContractNotDeployed {
 		// Nothing is deployed => ignore lockedGold & election balances
 		return emptyResponse, nil
@@ -369,26 +375,29 @@ func (s *Servicer) BlockTransaction(ctx context.Context, request *types.BlockTra
 
 func (s *Servicer) ConstructionMetadata(ctx context.Context, request *types.ConstructionMetadataRequest) (*types.ConstructionMetadataResponse, *types.Error) {
 
-	txOptions, errResp := s.validateTxConstructionOptions(request.Options)
-	if errResp != nil {
-		return nil, errResp
+	var txArgs airgap.TxArgs
+	if err := airgap.UnmarshallFromMap(request.Options, &txArgs); err != nil {
+		return nil, LogErrValidation(err)
 	}
 
-	txMetadata, err := s.txBuilder.FetchTransactionMetadata(ctx, txOptions)
+	txMetadata, err := s.airgap.ObtainMetadata(ctx, &txArgs)
 	if err != nil {
 		return nil, LogErrInternal(fmt.Errorf("Failed to fetch tx metadata"))
 	}
 
+	metadata, err := airgap.MarshallToMap(txMetadata)
+	if err != nil {
+		return nil, LogErrInternal(err)
+	}
+
 	response := types.ConstructionMetadataResponse{
-		Metadata: map[string]interface{}{
-			"tx": txMetadata,
-		},
+		Metadata: metadata,
 	}
 	return &response, nil
 }
 
 func (s *Servicer) ConstructionSubmit(ctx context.Context, request *types.ConstructionSubmitRequest) (*types.ConstructionSubmitResponse, *types.Error) {
-	txhash, err := s.cc.Eth.SendRawTransaction(ctx, []byte(request.SignedTransaction))
+	txhash, err := s.airgap.SubmitTx(ctx, []byte(request.SignedTransaction))
 	if err != nil {
 		return nil, LogErrCeloClient("SendRawTx", err)
 	}
@@ -404,64 +413,6 @@ func (s *Servicer) ConstructionSubmit(ctx context.Context, request *types.Constr
 // ----------------------------------------------------------------------------------------
 // Private Functions
 // ----------------------------------------------------------------------------------------
-
-func (s *Servicer) validateTxConstructionOptions(options map[string]interface{}) (*transaction.TransactionOptions, *types.Error) {
-	from, fromPresent := options["from"]
-	if !fromPresent {
-		return nil, LogErrValidation(fmt.Errorf("No 'from' provided on tx construction options"))
-	}
-	fromAddress, ok := from.(common.Address)
-	if !ok {
-		return nil, LogErrValidation(fmt.Errorf("From must be a common.address"))
-	}
-
-	to, toPresent := options["to"]
-	var toAddress *common.Address
-	if toPresent {
-		toAddress, ok = to.(*common.Address)
-		if !ok {
-			return nil, LogErrValidation(fmt.Errorf("To must be a *common.address"))
-		}
-	}
-
-	method, methodPresent := options["method"]
-	var celoMethod *transaction.CeloMethod
-	if methodPresent {
-		celoMethod, ok = method.(*transaction.CeloMethod)
-		if !ok {
-			return nil, LogErrValidation(fmt.Errorf("Method '%v' must be a *CeloMethod", method))
-		}
-	}
-
-	args, argsPresent := options["args"]
-	var argsArray []interface{}
-	if argsPresent {
-		arr, ok := args.([]interface{})
-		if !ok {
-			return nil, LogErrValidation(fmt.Errorf("Args '%v' must be an []interface{}", args))
-		}
-		argsArray = arr
-	}
-
-	value, valuePresent := options["value"]
-	var valueBigInt *big.Int
-	if valuePresent {
-		valueBigInt, ok = value.(*big.Int)
-		if !ok {
-			return nil, LogErrValidation(fmt.Errorf("Value '%v' must be a *big.int", value))
-		}
-	}
-
-	txOptions := transaction.TransactionOptions{
-		From:   fromAddress,
-		To:     toAddress,
-		Value:  valueBigInt,
-		Method: celoMethod,
-		Args:   argsArray,
-	}
-
-	return &txOptions, nil
-}
 
 func (s *Servicer) blockHeader(ctx context.Context, blockIdentifier *types.PartialBlockIdentifier) (*ethclient.HeaderAndTxnHashes, *types.Error) {
 	var err error

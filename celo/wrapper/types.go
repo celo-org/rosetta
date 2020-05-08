@@ -12,22 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package client
+package wrapper
 
 import (
-	"crypto/ecdsa"
-
-	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 )
 
-func Sign(message []byte, privateKey *ecdsa.PrivateKey) (*[]byte, error) {
-	digest := crypto.Keccak256(message)
-	sig, err := crypto.Sign(digest, privateKey)
-	return &sig, err
-}
-
-func Verify(message []byte, publicKey *ecdsa.PublicKey, signature *[]byte) bool {
-	digest := crypto.Keccak256(message)
-	publicKeyBytes := crypto.FromECDSAPub(publicKey)
-	return crypto.VerifySignature(publicKeyBytes, digest, *signature)
+func CallOptsFromTxOpts(txOpts *bind.TransactOpts) *bind.CallOpts {
+	return &bind.CallOpts{
+		From:    txOpts.From,
+		Context: txOpts.Context,
+	}
 }

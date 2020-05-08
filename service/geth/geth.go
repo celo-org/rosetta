@@ -144,7 +144,6 @@ func (gs *gethService) setupStaticNodes() error {
 	if staticNodesRaw, err = json.Marshal(gs.staticNodes); err != nil {
 		return fmt.Errorf("Can't serialize static nodes: %w", err)
 	}
-
 	//nolint:gosec
 	if err = ioutil.WriteFile(gs.paths.StaticNodesFile(), staticNodesRaw, 0644); err != nil {
 		return fmt.Errorf("Can't serialize static nodes: %w", err)

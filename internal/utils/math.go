@@ -36,3 +36,65 @@ func Inc(val *big.Int) *big.Int {
 func Dec(val *big.Int) *big.Int {
 	return new(big.Int).Sub(val, Big1)
 }
+
+func Neg(val *big.Int) *big.Int {
+	return val.Neg(val)
+}
+
+func Sub(a *big.Int, b *big.Int) *big.Int {
+	return a.Sub(a, b)
+}
+
+func Add(a *big.Int, b *big.Int) *big.Int {
+	return a.Add(a, b)
+}
+
+// a < b
+func IsLt(a *big.Int, b *big.Int) bool {
+	return a.Cmp(b) == -1
+}
+
+// a <= b
+func IsLte(a *big.Int, b *big.Int) bool {
+	return a.Cmp(b) < 1
+}
+
+// a > b
+func IsGt(a *big.Int, b *big.Int) bool {
+	return a.Cmp(b) == 1
+}
+
+// a >= b
+func IsGte(a *big.Int, b *big.Int) bool {
+	return a.Cmp(b) > -1
+}
+
+// a == b
+func IsEq(a *big.Int, b *big.Int) bool {
+	return a.Cmp(b) == 0
+}
+
+// a == 0
+func IsZero(a *big.Int) bool {
+	return IsEq(a, Big0)
+}
+
+func IsNonZero(a *big.Int) bool {
+	return !IsZero(a)
+}
+
+func Min(a *big.Int, b *big.Int) *big.Int {
+	if IsLt(a, b) {
+		return a
+	} else {
+		return b
+	}
+}
+
+func Max(a *big.Int, b *big.Int) *big.Int {
+	if IsGt(a, b) {
+		return a
+	} else {
+		return b
+	}
+}
