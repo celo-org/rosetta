@@ -99,6 +99,10 @@ github.com/coinbase/rosetta-sdk-go v0.1.5 h1:fkYLDs8f7RuwKDJiaZv4qtVRntCOAcSm6Ve
 github.com/coinbase/rosetta-sdk-go v0.1.5/go.mod h1:lbmGsBpBiSZWP4WQqEW2CuTweGcU/ioQHwZ8CYo6yO8=
 github.com/coinbase/rosetta-sdk-go v0.1.6 h1:l6vyt+Gad7TWIy2Tf7giXO8jniBcLPhhW6021QFgIq0=
 github.com/coinbase/rosetta-sdk-go v0.1.6/go.mod h1:lbmGsBpBiSZWP4WQqEW2CuTweGcU/ioQHwZ8CYo6yO8=
+github.com/coinbase/rosetta-sdk-go v0.1.7 h1:4NRMHWPSpmFNohtzQ/Nv9wsPLBEbgccNBbjwZTG1Owk=
+github.com/coinbase/rosetta-sdk-go v0.1.7/go.mod h1:lbmGsBpBiSZWP4WQqEW2CuTweGcU/ioQHwZ8CYo6yO8=
+github.com/coinbase/rosetta-sdk-go v0.1.8 h1:YJf5Us7Pl4G8CRBZ5+LEUIV4k9ZI/18nFloPaHBySFk=
+github.com/coinbase/rosetta-sdk-go v0.1.8/go.mod h1:y1wXRc1wod4fEp3jhW+9D6MSFtnm/9X5yNxJv92Cv2E=
 github.com/coreos/bbolt v1.3.2/go.mod h1:iRUV2dpdMOn7Bo10OQBFzIJO9kkE559Wcmn+qkEiiKk=
 github.com/coreos/etcd v3.3.10+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc32PjwdhPthX9715RE=
 github.com/coreos/etcd v3.3.13+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc32PjwdhPthX9715RE=
@@ -893,6 +897,8 @@ github.com/mitchellh/go-homedir v1.1.0/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrk
 github.com/mitchellh/mapstructure v1.0.0/go.mod h1:FVVH3fgwuzCH5S8UJGiWEs2h04kUh9fWfEaFds41c1Y=
 github.com/mitchellh/mapstructure v1.1.2 h1:fmNYVwqnSfB9mZU6OS2O6GsXM+wcskZDuKQzvN1EDeE=
 github.com/mitchellh/mapstructure v1.1.2/go.mod h1:FVVH3fgwuzCH5S8UJGiWEs2h04kUh9fWfEaFds41c1Y=
+github.com/mitchellh/mapstructure v1.3.0 h1:iDwIio/3gk2QtLLEsqU5lInaMzos0hDTz8a6lazSFVw=
+github.com/mitchellh/mapstructure v1.3.0/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
 github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742/go.mod h1:bx2lNnkwVCuqBIxFjflWJWanXIb3RllmbCylyMrvgv0=

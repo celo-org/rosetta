@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package server
+package airgap
 
 import (
 	"fmt"
@@ -23,7 +23,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestParsers(t *testing.T) {
+func TestArgParsers(t *testing.T) {
 	RegisterTestingT(t)
 
 	type testCase struct {

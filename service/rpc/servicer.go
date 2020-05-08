@@ -40,7 +40,7 @@ type Servicer struct {
 	cc          *client.CeloClient
 	db          db.RosettaDBReader
 	chainParams *celo.ChainParameters
-	airgap      airgap.AirGapServer
+	airgap      airgap.Server
 }
 
 // NewServicer creates a default api service
@@ -364,20 +364,23 @@ func (s *Servicer) BlockTransaction(ctx context.Context, request *types.BlockTra
 
 func (s *Servicer) ConstructionMetadata(ctx context.Context, request *types.ConstructionMetadataRequest) (*types.ConstructionMetadataResponse, *types.Error) {
 
-	txArgs, errResp := s.validateTxConstructionOptions(request.Options)
-	if errResp != nil {
-		return nil, errResp
+	var txArgs airgap.TxArgs
+	if err := txArgs.UnmarshallMap(request.Options); err != nil {
+		return nil, LogErrValidation(err)
 	}
 
-	txMetadata, err := s.airgap.ObtainMetadata(ctx, txArgs)
+	txMetadata, err := s.airgap.ObtainMetadata(ctx, &txArgs)
 	if err != nil {
 		return nil, LogErrInternal(fmt.Errorf("Failed to fetch tx metadata"))
 	}
 
+	metadata, err := txMetadata.MarshallMap()
+	if err != nil {
+		return nil, LogErrInternal(err)
+	}
+
 	response := types.ConstructionMetadataResponse{
-		Metadata: map[string]interface{}{
-			"tx": txMetadata,
-		},
+		Metadata: metadata,
 	}
 	return &response, nil
 }

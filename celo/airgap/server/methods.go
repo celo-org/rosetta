@@ -16,64 +16,65 @@ package server
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/celo-org/rosetta/celo/airgap"
 	"github.com/celo-org/rosetta/celo/contract"
+	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 )
 
-type argumentsParser func(ctx context.Context, srvCtx ServerContext, args []interface{}) ([]interface{}, error)
-type contractMethods struct {
-	abiFactory func() (*abi.ABI, error)
-	methods    map[*airgap.CeloMethod]argumentsParser
+var abiFactoryMap = map[wrapper.RegistryKey]func() (*abi.ABI, error){
+	wrapper.AccountsRegistryId:   contract.ParseAccountsABI,
+	wrapper.ElectionRegistryId:   contract.ParseElectionABI,
+	wrapper.LockedGoldRegistryId: contract.ParseLockedGoldABI,
 }
 
-var serverMethods = []contractMethods{
-	{
-		abiFactory: contract.ParseAccountsABI,
-		methods: map[*airgap.CeloMethod]argumentsParser{
-			airgap.AuthorizeVoteSigner: authorizeVoteSignerParser,
-			airgap.CreateAccount:       zeroArgumentsParser,
-		},
-	},
-	{
-		abiFactory: contract.ParseElectionABI,
-		methods: map[*airgap.CeloMethod]argumentsParser{
-			airgap.Vote:               voteMethodParser,
-			airgap.RevokeActiveVotes:  revokeParser,
-			airgap.RevokePendingVotes: revokeParser,
-			airgap.ActivateVotes:      genericParser(addressParser),
-		},
-	},
-	{
-		abiFactory: contract.ParseLockedGoldABI,
-		methods: map[*airgap.CeloMethod]argumentsParser{
-			airgap.LockGold:     zeroArgumentsParser,
-			airgap.UnlockGold:   genericParser(bigIntParser),
-			airgap.RelockGold:   genericParser(bigIntParser, bigIntParser),
-			airgap.WithdrawGold: genericParser(bigIntParser),
-		},
-	},
+type argsPreProcessor func(ctx context.Context, srvCtx ServerContext, args []interface{}) ([]interface{}, error)
+
+var serverMethodsDefinitions = map[*airgap.CeloMethod]argsPreProcessor{
+	airgap.CreateAccount:       noopArgsPreProcessor,
+	airgap.AuthorizeVoteSigner: authorizeVoteSignerParser,
+	airgap.LockGold:            noopArgsPreProcessor,
+	airgap.UnlockGold:          noopArgsPreProcessor,
+	airgap.RelockGold:          noopArgsPreProcessor,
+	airgap.WithdrawGold:        noopArgsPreProcessor,
+
+	airgap.Vote:          voteMethodParser,
+	airgap.ActivateVotes: noopArgsPreProcessor,
+
+	airgap.RevokePendingVotes: revokeParser,
+	airgap.RevokeActiveVotes:  revokeParser,
 }
 
-func hydrateMethods(srvCtx ServerContext, definitions []contractMethods) (map[*airgap.CeloMethod]airGapServerMethod, error) {
-	serverMethods := make(map[*airgap.CeloMethod]airGapServerMethod)
+func noopArgsPreProcessor(ctx context.Context, srvCtx ServerContext, args []interface{}) ([]interface{}, error) {
+	return args, nil
+}
 
-	for _, cm := range definitions {
-		abi, err := cm.abiFactory()
+func hydrateMethods(srvCtx ServerContext) (map[*airgap.CeloMethod]airGapServerMethod, error) {
+	abis := make(map[wrapper.RegistryKey]*abi.ABI)
+	for id, abiFactory := range abiFactoryMap {
+		abi, err := abiFactory()
 		if err != nil {
 			return nil, err
 		}
+		abis[id] = abi
+	}
 
-		for method, argParser := range cm.methods {
-			serverMethods[method] = airgapMethodFactory(srvCtx, abi, argParser, method)
+	serverMethods := make(map[*airgap.CeloMethod]airGapServerMethod)
+	for method, preProcessor := range serverMethodsDefinitions {
+		abi, ok := abis[method.Contract]
+		if !ok {
+			return nil, fmt.Errorf("Missing abi mapping for %s", method.Contract)
 		}
+
+		serverMethods[method] = airgapMethodFactory(srvCtx, abi, preProcessor, method)
 	}
 	return serverMethods, nil
 }
 
-func airgapMethodFactory(srvCtx ServerContext, abi *abi.ABI, argsParser argumentsParser, method *airgap.CeloMethod) airGapServerMethod {
+func airgapMethodFactory(srvCtx ServerContext, abi *abi.ABI, argsParser argsPreProcessor, method *airgap.CeloMethod) airGapServerMethod {
 	return func(ctx context.Context, args []interface{}) ([]byte, common.Address, error) {
 
 		args, err := argsParser(ctx, srvCtx, args)

@@ -16,19 +16,21 @@ package airgap
 
 import (
 	"context"
+	"crypto/ecdsa"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/rlp"
 )
 
-type AirGapServer interface {
+type Server interface {
 	ObtainMetadata(ctx context.Context, txOpts *TxArgs) (*TxMetadata, error)
 	SubmitTx(ctx context.Context, rawTx []byte) (*common.Hash, error)
 }
 
-type AirGapClient interface {
+type ArgBuilder interface {
 	CreateAccount(signer common.Address) (*TxArgs, error)
 	AuthorizeVoteSigner(account common.Address, popSignature []byte) (*TxArgs, error)
 	LockGold(signer common.Address, amount *big.Int) (*TxArgs, error)
@@ -40,8 +42,25 @@ type AirGapClient interface {
 	RevokePendingVotes(signer common.Address, account common.Address, group common.Address, value *big.Int) (*TxArgs, error)
 	RevokeActiveVotes(signer common.Address, account common.Address, group common.Address, value *big.Int) (*TxArgs, error)
 	TransferGold(from common.Address, to common.Address, value *big.Int) (*TxArgs, error)
+}
 
-	TxFromMetadata(*TxMetadata) (*types.Transaction, error)
+type Client interface {
+	// Keygen generates a private key
+	Keygen() (*ecdsa.PrivateKey, error)
+	// Derive the cryptographic public key and on-chain address from the private key
+	Derive(privateKey *ecdsa.PrivateKey) (*ecdsa.PublicKey, *common.Address, error)
+	// Sign an arbitrary message with the private key
+	Sign(message []byte, privateKey *ecdsa.PrivateKey) ([]byte, error)
+	// Verify the signature of an arbitrary message
+	Verify(message []byte, publicKey *ecdsa.PublicKey, signature []byte) bool
+
+	// ConstructTxFromMetadata creates a new transaction using given Metadata
+	ConstructTxFromMetadata(txMetadata *TxMetadata) (*Transaction, error)
+	// SignTx signs an unsignedTx using the private seed and return a signedTx that can be submitted to the node
+	SignTx(transaction *Transaction, privateKey *ecdsa.PrivateKey) (*Transaction, error)
+
+	// GenerateProofOfPossessionSignature generates a PoP needed for Authorize calls
+	GenerateProofOfPossessionSignature(privateKey *ecdsa.PrivateKey, address *common.Address) ([]byte, error)
 }
 
 type TxArgs struct {
@@ -65,6 +84,7 @@ type TxMetadata struct {
 	Data                []byte
 	Value               *big.Int
 	Gas                 uint64
+	ChainId             *big.Int
 }
 
 func (tm *TxMetadata) AsCallMessage() ethereum.CallMsg {
@@ -78,4 +98,40 @@ func (tm *TxMetadata) AsCallMessage() ethereum.CallMsg {
 		Value:               tm.Value,
 		FeeCurrency:         tm.FeeCurrency,
 	}
+}
+
+type Transaction struct {
+	*TxMetadata `json:"metadata"`
+
+	// Signature values
+	V *big.Int `json:"v"`
+	R *big.Int `json:"r"`
+	S *big.Int `json:"s"`
+}
+
+func (t *Transaction) Signed() bool {
+	return t.V != nil && t.R != nil && t.S != nil
+}
+
+func (tx *Transaction) AsGethTransaction() *types.Transaction {
+	return types.NewTransaction(
+		tx.Nonce,
+		tx.To,
+		tx.Value,
+		tx.Gas,
+		tx.GasPrice,
+		tx.FeeCurrency,
+		tx.GatewayFeeRecipient,
+		tx.GatewayFee,
+		tx.Data,
+	)
+}
+
+func (tx *Transaction) Hash() common.Hash {
+	return tx.AsGethTransaction().Hash()
+}
+
+func (tx *Transaction) Serialize() ([]byte, error) {
+	gethTx := tx.AsGethTransaction()
+	return rlp.EncodeToBytes(gethTx)
 }

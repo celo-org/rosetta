@@ -23,15 +23,15 @@ import (
 )
 
 // airGapServerMethod is a function that returns the tx.data and tx.to for that method + parameters
-type airGapServerMethod = func(context.Context, []interface{}) ([]byte, common.Address, error)
+type airGapServerMethod func(context.Context, []interface{}) ([]byte, common.Address, error)
 
 type airgGapServerImpl struct {
 	srvCtx           ServerContext
 	supportedMethods map[*airgap.CeloMethod]airGapServerMethod
 }
 
-func NewAirgapServer(srvCtx ServerContext) (airgap.AirGapServer, error) {
-	supportedMethods, err := hydrateMethods(srvCtx, serverMethods)
+func NewAirgapServer(srvCtx ServerContext) (airgap.Server, error) {
+	supportedMethods, err := hydrateMethods(srvCtx)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,12 @@ func (b *airgGapServerImpl) ObtainMetadata(ctx context.Context, options *airgap.
 			return nil, fmt.Errorf("Unsupported method: %s", options.Method)
 		}
 
-		data, to, err := serverMethod(ctx, options.Args)
+		hydratedArgs, err := options.Method.DeserializeArguments(options.Args...)
+		if err != nil {
+			return nil, err
+		}
+
+		data, to, err := serverMethod(ctx, hydratedArgs)
 		if err != nil {
 			return nil, err
 		}
