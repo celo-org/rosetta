@@ -137,11 +137,8 @@ func OperationsFromAnalyzer(iop *analyzer.Operation, baseIndex int64) []*rosetta
 	operations := make([]*rosettaTypes.Operation, len(iop.Changes))
 	for i, change := range iop.Changes {
 		var relatedOps []*rosettaTypes.OperationIdentifier
-		if opIndex > 0 {
-			relatedOps = make([]*rosettaTypes.OperationIdentifier, opIndex)
-			for i := int64(0); i < opIndex; i++ {
-				relatedOps[i] = NewOperationIdentifier(i)
-			}
+		for i := baseIndex; i < opIndex; i++ {
+			relatedOps = append(relatedOps, NewOperationIdentifier(i))
 		}
 
 		operations[i] = &rosettaTypes.Operation{
