@@ -34,18 +34,20 @@ var abiFactoryMap = map[wrapper.RegistryKey]func() (*abi.ABI, error){
 type argsPreProcessor func(ctx context.Context, srvCtx ServerContext, args []interface{}) ([]interface{}, error)
 
 var serverMethodsDefinitions = map[*airgap.CeloMethod]argsPreProcessor{
-	airgap.CreateAccount:       noopArgsPreProcessor,
-	airgap.AuthorizeVoteSigner: authorizeVoteSignerParser,
-	airgap.LockGold:            noopArgsPreProcessor,
-	airgap.UnlockGold:          noopArgsPreProcessor,
-	airgap.RelockGold:          noopArgsPreProcessor,
-	airgap.WithdrawGold:        noopArgsPreProcessor,
+	airgap.CreateAccount:              noopArgsPreProcessor,
+	airgap.AuthorizeVoteSigner:        preprocessAuthorizeSigner,
+	airgap.AuthorizeAttestationSigner: preprocessAuthorizeSigner,
+	airgap.AuthorizeValidatorSigner:   preprocessAuthorizeSigner,
 
-	airgap.Vote:          voteMethodParser,
-	airgap.ActivateVotes: noopArgsPreProcessor,
+	airgap.LockGold:     noopArgsPreProcessor,
+	airgap.UnlockGold:   noopArgsPreProcessor,
+	airgap.RelockGold:   noopArgsPreProcessor,
+	airgap.WithdrawGold: noopArgsPreProcessor,
 
-	airgap.RevokePendingVotes: revokeParser,
-	airgap.RevokeActiveVotes:  revokeParser,
+	airgap.Vote:               preprocessVote,
+	airgap.ActivateVotes:      noopArgsPreProcessor,
+	airgap.RevokePendingVotes: preprocessRevoke,
+	airgap.RevokeActiveVotes:  preprocessRevoke,
 }
 
 func noopArgsPreProcessor(ctx context.Context, srvCtx ServerContext, args []interface{}) ([]interface{}, error) {

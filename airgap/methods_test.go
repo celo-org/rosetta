@@ -25,6 +25,20 @@ func TestMethodArgsSerializing(t *testing.T) {
 			},
 		},
 		{
+			method: AuthorizeAttestationSigner,
+			args: []interface{}{
+				common.HexToAddress("0x1111"),
+				[]byte{1, 2, 3, 4, 5, 6},
+			},
+		},
+		{
+			method: AuthorizeValidatorSigner,
+			args: []interface{}{
+				common.HexToAddress("0x1111"),
+				[]byte{1, 2, 3, 4, 5, 6},
+			},
+		},
+		{
 			method: LockGold,
 			args:   []interface{}{},
 		},

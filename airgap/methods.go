@@ -10,16 +10,23 @@ import (
 
 // values taken from contract method names for ABI usage
 var (
-	CreateAccount       = registerMethod(wrapper.AccountsRegistryId, "createAccount", nil)
-	AuthorizeVoteSigner = registerMethod(wrapper.AccountsRegistryId, "authorizeVoteSigner", []argParser{addressParser, bytesParser})
-	LockGold            = registerMethod(wrapper.LockedGoldRegistryId, "lock", nil)
-	UnlockGold          = registerMethod(wrapper.LockedGoldRegistryId, "unlock", []argParser{bigIntParser})
-	RelockGold          = registerMethod(wrapper.LockedGoldRegistryId, "relock", []argParser{bigIntParser, bigIntParser})
-	WithdrawGold        = registerMethod(wrapper.LockedGoldRegistryId, "withdraw", []argParser{bigIntParser})
-	Vote                = registerMethod(wrapper.ElectionRegistryId, "vote", []argParser{addressParser, bigIntParser})
-	ActivateVotes       = registerMethod(wrapper.ElectionRegistryId, "activate", []argParser{addressParser, addressParser})
-	RevokePendingVotes  = registerMethod(wrapper.ElectionRegistryId, "revokePending", []argParser{addressParser, addressParser, bigIntParser})
-	RevokeActiveVotes   = registerMethod(wrapper.ElectionRegistryId, "revokeActive", []argParser{addressParser, addressParser, bigIntParser})
+	// Accounts
+	CreateAccount              = registerMethod(wrapper.AccountsRegistryId, "createAccount", nil)
+	AuthorizeVoteSigner        = registerMethod(wrapper.AccountsRegistryId, "authorizeVoteSigner", []argParser{addressParser, bytesParser})
+	AuthorizeAttestationSigner = registerMethod(wrapper.AccountsRegistryId, "authorizeAttestationSigner", []argParser{addressParser, bytesParser})
+	AuthorizeValidatorSigner   = registerMethod(wrapper.AccountsRegistryId, "authorizeValidatorSigner", []argParser{addressParser, bytesParser})
+
+	// Locked Gold
+	LockGold     = registerMethod(wrapper.LockedGoldRegistryId, "lock", nil)
+	UnlockGold   = registerMethod(wrapper.LockedGoldRegistryId, "unlock", []argParser{bigIntParser})
+	RelockGold   = registerMethod(wrapper.LockedGoldRegistryId, "relock", []argParser{bigIntParser, bigIntParser})
+	WithdrawGold = registerMethod(wrapper.LockedGoldRegistryId, "withdraw", []argParser{bigIntParser})
+
+	// Election
+	Vote               = registerMethod(wrapper.ElectionRegistryId, "vote", []argParser{addressParser, bigIntParser})
+	ActivateVotes      = registerMethod(wrapper.ElectionRegistryId, "activate", []argParser{addressParser, addressParser})
+	RevokePendingVotes = registerMethod(wrapper.ElectionRegistryId, "revokePending", []argParser{addressParser, addressParser, bigIntParser})
+	RevokeActiveVotes  = registerMethod(wrapper.ElectionRegistryId, "revokeActive", []argParser{addressParser, addressParser, bigIntParser})
 )
 
 // Represents a CeloMethod that can be called with the AirgapClient

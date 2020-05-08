@@ -21,6 +21,14 @@ func (c *airgapArgBuilderImpl) AuthorizeVoteSigner(account common.Address, popSi
 	return AuthorizeVoteSigner.CreateTxArgs(account, nil, account, popSignature)
 }
 
+func (c *airgapArgBuilderImpl) AuthorizeAttestationSigner(account common.Address, popSignature []byte) (*TxArgs, error) {
+	return AuthorizeAttestationSigner.CreateTxArgs(account, nil, account, popSignature)
+}
+
+func (c *airgapArgBuilderImpl) AuthorizeValidatorSigner(account common.Address, popSignature []byte) (*TxArgs, error) {
+	return AuthorizeValidatorSigner.CreateTxArgs(account, nil, account, popSignature)
+}
+
 func (c *airgapArgBuilderImpl) LockGold(signer common.Address, amount *big.Int) (*TxArgs, error) {
 	return LockGold.CreateTxArgs(signer, amount)
 }

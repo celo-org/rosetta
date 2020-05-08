@@ -21,7 +21,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-func authorizeVoteSignerParser(ctx context.Context, srvCtx ServerContext, args []interface{}) ([]interface{}, error) {
+func preprocessAuthorizeSigner(ctx context.Context, srvCtx ServerContext, args []interface{}) ([]interface{}, error) {
 	encodedSig, err := srvCtx.authorizeMetadata(ctx, args[1].([]byte))
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func authorizeVoteSignerParser(ctx context.Context, srvCtx ServerContext, args [
 	return []interface{}{args[0], encodedSig.V, encodedSig.R, encodedSig.S}, nil
 }
 
-func voteMethodParser(ctx context.Context, srvCtx ServerContext, args []interface{}) ([]interface{}, error) {
+func preprocessVote(ctx context.Context, srvCtx ServerContext, args []interface{}) ([]interface{}, error) {
 	keys, err := srvCtx.voteMetadata(ctx, args[0].(common.Address), args[1].(*big.Int))
 	if err != nil {
 		return nil, err
@@ -39,7 +39,7 @@ func voteMethodParser(ctx context.Context, srvCtx ServerContext, args []interfac
 	return []interface{}{args[0], args[1], keys.Lesser, keys.Greater}, nil
 }
 
-func revokeParser(ctx context.Context, srvCtx ServerContext, args []interface{}) ([]interface{}, error) {
+func preprocessRevoke(ctx context.Context, srvCtx ServerContext, args []interface{}) ([]interface{}, error) {
 	keys, err := srvCtx.revokeMetadata(ctx, args[0].(common.Address), args[1].(common.Address), args[2].(*big.Int))
 	if err != nil {
 		return nil, err
