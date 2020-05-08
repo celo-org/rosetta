@@ -19,7 +19,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/celo-org/rosetta/celo/airgap"
+	"github.com/celo-org/rosetta/airgap"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/onsi/gomega"
 	"golang.org/x/net/context"

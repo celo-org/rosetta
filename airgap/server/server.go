@@ -18,7 +18,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/celo-org/rosetta/celo/airgap"
+	"github.com/celo-org/rosetta/airgap"
 	"github.com/ethereum/go-ethereum/common"
 )
 

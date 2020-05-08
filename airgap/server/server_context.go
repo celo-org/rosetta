@@ -45,10 +45,6 @@ func NewServerContext(cc *client.CeloClient) (ServerContext, error) {
 	}, nil
 }
 
-func (sc *serverContextImpl) suggestGasPrice(ctx context.Context, identifier wrapper.RegistryKey) (common.Address, error) {
-	return sc.registry.GetAddressForString(ctx, nil, identifier.String())
-}
-
 func (sc *serverContextImpl) addressFor(ctx context.Context, identifier wrapper.RegistryKey) (common.Address, error) {
 	return sc.registry.GetAddressForString(ctx, nil, identifier.String())
 }

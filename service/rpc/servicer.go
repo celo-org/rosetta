@@ -19,10 +19,10 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/celo-org/rosetta/airgap"
+	"github.com/celo-org/rosetta/airgap/server"
 	"github.com/celo-org/rosetta/analyzer"
 	"github.com/celo-org/rosetta/celo"
-	"github.com/celo-org/rosetta/celo/airgap"
-	"github.com/celo-org/rosetta/celo/airgap/server"
 	"github.com/celo-org/rosetta/celo/client"
 	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/celo-org/rosetta/db"

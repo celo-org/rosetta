@@ -19,7 +19,7 @@ import (
 	"log"
 	"math/big"
 
-	"github.com/celo-org/rosetta/celo/airgap"
+	"github.com/celo-org/rosetta/airgap"
 
 	"github.com/coinbase/rosetta-sdk-go/fetcher"
 )
