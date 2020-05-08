@@ -12,7 +12,6 @@ Celo Rosetta is an RPC server that exposes an API to:
  * Obtain Balance Changing Operations
  * Construct Airgapped Transactions
 
- 
 With a special focus on getting balance change operations, Celo Rosetta provides an easy way to obtain changes that are not easily queryable using
 the celo-blockchain rpc; such as:
 
@@ -46,7 +45,7 @@ Within the docker image, we pack `rosetta` binary and also `geth` binary from ce
 
 ### Configuration
 
-The necessary parameters to run rosetta are:
+The necessary parameters to run Celo Rosetta are:
 
  * `genesis.json` for the target network (can be found by `curl 'https://storage.googleapis.com/genesis_blocks/baklava' > genesis.json`)
  * `staticNode` enodeURL. Rosetta will directly peer to the list of staticNode provided (it doens't run discovery protocol for the moment).
@@ -56,7 +55,7 @@ Additionaly, it needs a data directory for the geth datadir & rosetta.db
 
 ### Run
 
-To run rosetta:
+To run Celo Rosetta:
 
 
 ```bash
@@ -127,6 +126,7 @@ rosetta-validator check:complete
 ```
 
 ### Running on development
+
 #### Running on RC1:
 
 Prerequisites:
@@ -168,7 +168,7 @@ Prerequisites:
   * Run `make rc0-env` to create an empty datadir with the genesis block
 
 ```bash
-rosetta run \
+go run main.go run \
   --genesis ./envs/rc0/genesis.json \
   --geth ../celo-blockchain/build/bin/geth \
   --staticNode "enode://33ac194052ccd10ce54101c8340dbbe7831de02a3e7dcbca7fd35832ff8c53a72fd75e57ce8c8e73a0ace650dc2c2ec1e36f0440e904bc20a3cf5927f2323e85@34.83.199.225:30303" \
