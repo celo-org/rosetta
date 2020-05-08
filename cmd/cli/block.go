@@ -106,7 +106,11 @@ func printBlockContext(rosettabBlock *types.Block) {
 			} else {
 				acc = fmt.Sprintf("%s - %s", op.Account.Address, op.Account.SubAccount.Address)
 			}
-			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", acc, op.Amount.Value, op.Type, op.Status)
+			amount := "<nil>"
+			if op.Amount != nil {
+				amount = op.Amount.Value
+			}
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", acc, amount, op.Type, op.Status)
 		}
 		w.Flush()
 	}
