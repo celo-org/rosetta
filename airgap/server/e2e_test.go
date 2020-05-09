@@ -58,7 +58,23 @@ func TestClientServer(t *testing.T) {
 		Ω(err).ShouldNot(HaveOccurred())
 
 		_ = tx
-
 	})
 
+	t.Run("ReleaseGoldCreateAccount()", func(t *testing.T) {
+		RegisterTestingT(t)
+
+		txArgs, err := argBuilder.ReleaseGoldCreateAccount(common.HexToAddress("A"), common.HexToAddress("B"))
+		Ω(err).ShouldNot(HaveOccurred())
+
+		txArgs, err = simulateWire(txArgs)
+		Ω(err).ShouldNot(HaveOccurred())
+
+		txMetadata, err := server.ObtainMetadata(ctx, txArgs)
+		Ω(err).ShouldNot(HaveOccurred())
+
+		tx, err := client.ConstructTxFromMetadata(txMetadata)
+		Ω(err).ShouldNot(HaveOccurred())
+
+		_ = tx
+	})
 }

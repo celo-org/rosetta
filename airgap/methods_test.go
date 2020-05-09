@@ -87,6 +87,66 @@ func TestMethodArgsSerializing(t *testing.T) {
 				big.NewInt(1000),
 			},
 		},
+		{
+			method: ReleaseGoldCreateAccount,
+			args:   []interface{}{},
+		},
+		{
+			method: ReleaseGoldAuthorizeVoteSigner,
+			args: []interface{}{
+				common.HexToAddress("0x1111"),
+				[]byte{1, 2, 3, 4, 5, 6},
+			},
+		},
+		{
+			method: ReleaseGoldAuthorizeAttestationSigner,
+			args: []interface{}{
+				common.HexToAddress("0x1111"),
+				[]byte{1, 2, 3, 4, 5, 6},
+			},
+		},
+		{
+			method: ReleaseGoldAuthorizeValidatorSigner,
+			args: []interface{}{
+				common.HexToAddress("0x1111"),
+				[]byte{1, 2, 3, 4, 5, 6},
+			},
+		},
+		{
+			method: ReleaseGoldLockGold,
+			args:   []interface{}{big.NewInt(10000)},
+		},
+		{
+			method: ReleaseGoldUnlockGold,
+			args:   []interface{}{big.NewInt(10000)},
+		},
+		{
+			method: ReleaseGoldRelockGold,
+			args: []interface{}{
+				big.NewInt(1),
+				big.NewInt(1000),
+			},
+		},
+		{
+			method: ReleaseGoldWithdrawGold,
+			args:   []interface{}{big.NewInt(1)},
+		},
+		{
+			method: RevokePendingVotes,
+			args: []interface{}{
+				common.HexToAddress("0x1111"),
+				common.HexToAddress("0x2222"),
+				big.NewInt(1000),
+			},
+		},
+		{
+			method: RevokeActiveVotes,
+			args: []interface{}{
+				common.HexToAddress("0x1111"),
+				common.HexToAddress("0x2222"),
+				big.NewInt(1000),
+			},
+		},
 	}
 
 	for _, _testCase := range testCases {

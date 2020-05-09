@@ -59,12 +59,13 @@ type CeloMethod struct {
 
 func (cm *CeloMethod) String() string { return fmt.Sprintf("%s.%s", cm.Contract, cm.Name) }
 
-func (cm *CeloMethod) CreateTxArgs(from common.Address, value *big.Int, args ...interface{}) (*TxArgs, error) {
+func (cm *CeloMethod) CreateTxArgs(to *common.Address, from common.Address, value *big.Int, args ...interface{}) (*TxArgs, error) {
 	parsedArgs, err := cm.SerializeArguments(args...)
 	if err != nil {
 		return nil, err
 	}
 	return &TxArgs{
+		To:     to,
 		From:   from,
 		Value:  value,
 		Method: cm,
