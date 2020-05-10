@@ -69,6 +69,10 @@ func (b *airgGapServerImpl) ObtainMetadata(ctx context.Context, options *airgap.
 
 	if options.To != nil {
 		txMetadata.To = *options.To
+	} else {
+		if options.Method == nil {
+			return nil, fmt.Errorf("'To' or 'Method' must be provided as options")
+		}
 	}
 
 	if options.Method != nil {

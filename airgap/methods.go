@@ -31,7 +31,7 @@ var (
 	RevokeActiveVotes  = registerMethod(wrapper.ElectionRegistryId.String(), "revokeActive", []argParser{addressParser, addressParser, bigIntParser})
 
 	// ReleaseGold
-	ReleaseGoldWithdraw = registerMethod("ReleaseGold", "withdraw", []argParser{bigIntParser})
+	ReleaseGoldWithdraw = registerMethod(ReleaseGold, "withdraw", []argParser{bigIntParser})
 
 	// Proxy
 	ReleaseGoldCreateAccount              = registerMethod(ReleaseGold, "createAccount", nil)

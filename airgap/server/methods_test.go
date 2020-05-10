@@ -57,7 +57,7 @@ func TestMethodArgumentParsing(t *testing.T) {
 		t.Run(test.method.String(), func(t *testing.T) {
 			RegisterTestingT(t)
 
-			_, _, err := method(ctx, args)
+			_, err := method(ctx, args)
 			Ω(err).ShouldNot(HaveOccurred())
 		})
 	}
