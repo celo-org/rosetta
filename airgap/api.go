@@ -42,6 +42,17 @@ type ArgBuilder interface {
 	RevokePendingVotes(signer common.Address, account common.Address, group common.Address, value *big.Int) (*TxArgs, error)
 	RevokeActiveVotes(signer common.Address, account common.Address, group common.Address, value *big.Int) (*TxArgs, error)
 	TransferGold(from common.Address, to common.Address, value *big.Int) (*TxArgs, error)
+
+	ReleaseGoldCreateAccount(releaseGold common.Address, signer common.Address) (*TxArgs, error)
+	ReleaseGoldAuthorizeVoteSigner(releaseGold common.Address, account common.Address, popSignature []byte) (*TxArgs, error)
+	ReleaseGoldAuthorizeAttestationSigner(releaseGold common.Address, account common.Address, popSignature []byte) (*TxArgs, error)
+	ReleaseGoldAuthorizeValidatorSigner(releaseGold common.Address, account common.Address, popSignature []byte) (*TxArgs, error)
+	ReleaseGoldLockGold(releaseGold common.Address, signer common.Address, amount *big.Int) (*TxArgs, error)
+	ReleaseGoldUnlockGold(releaseGold common.Address, signer common.Address, value *big.Int) (*TxArgs, error)
+	ReleaseGoldRelockGold(releaseGold common.Address, signer common.Address, index *big.Int, value *big.Int) (*TxArgs, error)
+	ReleaseGoldWithdrawGold(releaseGold common.Address, signer common.Address, index *big.Int) (*TxArgs, error)
+	ReleaseGoldRevokePendingVotes(releaseGold common.Address, signer common.Address, account common.Address, group common.Address, value *big.Int) (*TxArgs, error)
+	ReleaseGoldRevokeActiveVotes(releaseGold common.Address, signer common.Address, account common.Address, group common.Address, value *big.Int) (*TxArgs, error)
 }
 
 type Client interface {

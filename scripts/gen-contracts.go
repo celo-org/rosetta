@@ -22,6 +22,7 @@ var contractsToGenerate = []string{
 	"EpochRewards",
 	"Validators",
 	"Accounts",
+	"ReleaseGold",
 }
 
 func main() {
