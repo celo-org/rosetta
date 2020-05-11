@@ -19,11 +19,11 @@ import (
 )
 
 const (
-	RosettaVersion = "1.2.4"
+	RosettaVersion = "1.3.1"
 	BlockchainName = "celo"
 )
 
 var (
-	MiddlewareVersion = "1.0.0"
+	MiddlewareVersion = "0.4.0"
 	NodeVersion       = params.Version
 )

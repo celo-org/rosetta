@@ -12,7 +12,6 @@ require (
 	github.com/k0kubun/pp v3.0.1+incompatible
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/miguelmota/go-ethereum-hdwallet v0.0.0-20200123000308-a60dcd172b4c
-	github.com/mitchellh/mapstructure v1.3.0
 	github.com/onsi/gomega v1.9.0
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.6.3

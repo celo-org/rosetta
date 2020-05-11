@@ -104,8 +104,8 @@ ci-test:
 	go test -v ./... | tee /tmp/test-results/go-test.out
 
 add-license:
-	${LICENCE_SCRIPT} analyzer celo client cmd db examples internal service main.go
+	${LICENCE_SCRIPT} analyzer celo airgap cmd db examples internal service main.go
 
 
 check-license:
-	${LICENCE_SCRIPT} -check analyzer celo client cmd db examples internal service main.go
+	${LICENCE_SCRIPT} -check analyzer celo airgap cmd db examples internal service main.go

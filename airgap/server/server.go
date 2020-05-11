@@ -19,11 +19,12 @@ import (
 	"fmt"
 
 	"github.com/celo-org/rosetta/airgap"
+	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/ethereum/go-ethereum/common"
 )
 
-// airGapServerMethod is a function that returns the tx.data and tx.to for that method + parameters
-type airGapServerMethod func(context.Context, []interface{}) ([]byte, common.Address, error)
+// airGapServerMethod is a function that returns the tx.data for that method + parameters
+type airGapServerMethod func(context.Context, []interface{}) ([]byte, error)
 
 type airgGapServerImpl struct {
 	srvCtx           ServerContext
@@ -66,11 +67,23 @@ func (b *airgGapServerImpl) ObtainMetadata(ctx context.Context, options *airgap.
 		Value:               options.Value,
 	}
 
-	if options.To != nil && options.Method != nil {
-		return nil, fmt.Errorf("Can't specify 'to' &  'method' at the same time (%s,%s)", options.To, options.Method)
-	} else if options.To != nil {
+	if options.To != nil {
 		txMetadata.To = *options.To
 	} else {
+		if options.Method == nil {
+			return nil, fmt.Errorf("'To' or 'Method' must be provided as options")
+		}
+	}
+
+	if options.Method != nil {
+		if options.To == nil { // 'to' is implicit from registry
+			addr, err := b.srvCtx.addressFor(ctx, wrapper.RegistryKey(options.Method.Contract))
+			if err != nil {
+				return nil, fmt.Errorf("'To' not provided and 'Contract' not a valid registry ID")
+			}
+			txMetadata.To = addr
+		}
+
 		serverMethod, ok := b.supportedMethods[options.Method]
 		if !ok {
 			return nil, fmt.Errorf("Unsupported method: %s", options.Method)
@@ -81,11 +94,10 @@ func (b *airgGapServerImpl) ObtainMetadata(ctx context.Context, options *airgap.
 			return nil, err
 		}
 
-		data, to, err := serverMethod(ctx, hydratedArgs)
+		data, err := serverMethod(ctx, hydratedArgs)
 		if err != nil {
 			return nil, err
 		}
-		txMetadata.To = to
 		txMetadata.Data = data
 	}
 

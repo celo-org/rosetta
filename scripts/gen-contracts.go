@@ -24,6 +24,7 @@ var contractsToGenerate = []string{
 	"GoldToken",
 	"Reserve",
 	"Accounts",
+	"ReleaseGold",
 }
 
 func main() {
