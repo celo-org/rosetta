@@ -64,8 +64,8 @@ RUN go build -o rosetta .
 # Outputs: rosetta & geth binaries on /usr/loca/bin
 #---------------------------------------------------------------------
 
-# 97a0b37cd4fe469a468b928f74506246c18dc855 is the latest image from celo-blockchain mc/rosetta-rc0
-FROM us.gcr.io/celo-testnet/geth:97a0b37cd4fe469a468b928f74506246c18dc855
+# f8eeadd284a21115e6b65546d3e92807452e3252 is the latest image from celo-blockchain branch alfajores-tracing-fix
+FROM us.gcr.io/celo-testnet/geth:f8eeadd284a21115e6b65546d3e92807452e3252
 ARG COMMIT_SHA
 
 RUN apk add --no-cache ca-certificates
