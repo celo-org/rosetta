@@ -48,11 +48,13 @@ func NewTracer(ctx context.Context, cc *client.CeloClient, db db.RosettaDBReader
 func (tr *Tracer) TraceTransaction(blockHeader *types.Header, tx *types.Transaction, receipt *types.Receipt) ([]Operation, error) {
 	var operations []Operation
 
-	gasOperation, err := tr.TxGasDetails(blockHeader, tx, receipt)
-	if err != nil {
-		return nil, err
+	if tx.FeeCurrency() == nil { // nil implies cGLD
+		gasOperation, err := tr.TxGasDetails(blockHeader, tx, receipt)
+		if err != nil {
+			return nil, err
+		}
+		operations = append(operations, *gasOperation)
 	}
-	operations = append(operations, *gasOperation)
 
 	lockedGoldOperations, err := tr.TxLockedGoldTransfers(blockHeader, tx, receipt)
 	if err != nil {

@@ -115,7 +115,7 @@ func printBlockContext(rosettabBlock *types.Block) {
 		}
 		fmt.Println("Operations")
 		w = tabwriter.NewWriter(os.Stdout, 20, 5, 3, ' ', tabwriter.TabIndent)
-		fmt.Fprintf(w, "Account\tAmount\tType\tStatus\n")
+		fmt.Fprintf(w, "Account\tAmount\tType\tCurrency\tStatus\n")
 		for _, op := range rtx.Operations {
 			var acc string
 			if op.Account.SubAccount == nil {
@@ -125,11 +125,12 @@ func printBlockContext(rosettabBlock *types.Block) {
 			} else {
 				acc = fmt.Sprintf("%s - %s", op.Account.Address, op.Account.SubAccount.Address)
 			}
-			amount := "<nil>"
+			amount, currency := "<nil>", "<nil>"
 			if op.Amount != nil {
 				amount = op.Amount.Value
+				currency = op.Amount.Currency.Symbol
 			}
-			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", acc, amount, op.Type, op.Status)
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", acc, amount, op.Type, currency, op.Status)
 		}
 		w.Flush()
 	}
