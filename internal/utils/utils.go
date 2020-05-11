@@ -16,11 +16,19 @@ package utils
 
 import (
 	"errors"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
 var ErrNotImplemented = errors.New("Not implemented")
+
+// 10^(24) == 1000000000000000000000000
+var TobinTaxDenominator *big.Int = new(big.Int).Exp(big.NewInt(10), big.NewInt(24), nil)
+
+func CalcTobinTaxAmount(transferAmount, tobinTaxNumerator *big.Int) *big.Int {
+	return new(big.Int).Div(new(big.Int).Mul(transferAmount, tobinTaxNumerator), TobinTaxDenominator)
+}
 
 var ProxyEventIds = []string{
 	"0xab64f92ab780ecbf4f3866f57cee465ff36c89450dcce20237ca7a8d81fb7d13", // ImplementationSet(address)

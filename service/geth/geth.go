@@ -103,7 +103,14 @@ func (gs *gethService) Start(ctx context.Context) error {
 		return err
 	}
 
-	if err := gs.startGeth(); err != nil {
+	gethStderr, err := os.OpenFile(gs.paths.LogFile(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		gs.logger.Error("Can't open geth logfile", "err", err)
+		return err
+	}
+	defer gethStderr.Close()
+
+	if err := gs.startGeth(gethStderr); err != nil {
 		return err
 	}
 
@@ -168,7 +175,7 @@ func (gs *gethService) ensureGethInit() error {
 	return nil
 }
 
-func (gs *gethService) startGeth() error {
+func (gs *gethService) startGeth(stdErr *os.File) error {
 	gethArgs := []string{
 		"--verbosity", "3",
 		"--syncmode", "full",
@@ -186,21 +193,12 @@ func (gs *gethService) startGeth() error {
 	}
 
 	fmt.Println("geth", strings.Join(gethArgs, " "))
-	f, err := os.OpenFile(gs.paths.LogFile(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-
-	if err != nil {
-		gs.logger.Error("Can't open geth logfile", "err", err)
-		return err
-	}
-
-	defer f.Close()
 
 	cmd := gs.gethCmd(gethArgs...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
-	// cmd.Stdout = f
-	cmd.Stderr = f
+	cmd.Stderr = stdErr
 
-	if err = cmd.Start(); err != nil {
+	if err := cmd.Start(); err != nil {
 		gs.logger.Error("Error starting geth", "err", err)
 		return err
 	}

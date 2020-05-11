@@ -42,7 +42,7 @@ var (
 )
 
 // RegistryABI is the input ABI used to generate the binding from.
-const RegistryABI = "[{\"constant\":true,\"inputs\":[],\"name\":\"initialized\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"registry\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"isOwner\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"identifier\",\"type\":\"string\"},{\"indexed\":true,\"name\":\"identifierHash\",\"type\":\"bytes32\"},{\"indexed\":false,\"name\":\"addr\",\"type\":\"address\"}],\"name\":\"RegistryUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"constant\":false,\"inputs\":[],\"name\":\"initialize\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"identifier\",\"type\":\"string\"},{\"name\":\"addr\",\"type\":\"address\"}],\"name\":\"setAddressFor\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"identifierHash\",\"type\":\"bytes32\"}],\"name\":\"getAddressForOrDie\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"identifierHash\",\"type\":\"bytes32\"}],\"name\":\"getAddressFor\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"identifier\",\"type\":\"string\"}],\"name\":\"getAddressForStringOrDie\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"identifier\",\"type\":\"string\"}],\"name\":\"getAddressForString\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"identifierHashes\",\"type\":\"bytes32[]\"},{\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"isOneOf\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}]"
+const RegistryABI = "[{\"constant\":true,\"inputs\":[],\"name\":\"initialized\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"registry\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"isOwner\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"identifier\",\"type\":\"string\"},{\"indexed\":true,\"name\":\"identifierHash\",\"type\":\"bytes32\"},{\"indexed\":true,\"name\":\"addr\",\"type\":\"address\"}],\"name\":\"RegistryUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"constant\":false,\"inputs\":[],\"name\":\"initialize\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"identifier\",\"type\":\"string\"},{\"name\":\"addr\",\"type\":\"address\"}],\"name\":\"setAddressFor\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"identifierHash\",\"type\":\"bytes32\"}],\"name\":\"getAddressForOrDie\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"identifierHash\",\"type\":\"bytes32\"}],\"name\":\"getAddressFor\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"identifier\",\"type\":\"string\"}],\"name\":\"getAddressForStringOrDie\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"identifier\",\"type\":\"string\"}],\"name\":\"getAddressForString\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"identifierHashes\",\"type\":\"bytes32[]\"},{\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"isOneOf\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}]"
 
 // Registry is an auto generated Go binding around an Ethereum contract.
 type Registry struct {
@@ -513,7 +513,7 @@ func (_Registry *RegistryTransactorSession) TransferOwnership(newOwner common.Ad
 	return _Registry.Contract.TransferOwnership(&_Registry.TransactOpts, newOwner)
 }
 
-// TryParseLog attempts to parse a log. Returns the parsed log, eventName and whether it was successful
+// TryParseLog attempts to parse a log. Returns the parsed log, evenName and whether it was succesfull
 func (_Registry *RegistryFilterer) TryParseLog(log types.Log) (eventName string, event interface{}, ok bool, err error) {
 	eventName, ok, err = _Registry.contract.LogEventName(log)
 	if err != nil || !ok {
@@ -762,15 +762,19 @@ type RegistryRegistryUpdated struct {
 
 // FilterRegistryUpdated is a free log retrieval operation binding the contract event 0x4166d073a7a5e704ce0db7113320f88da2457f872d46dc020c805c562c1582a0.
 //
-// Solidity: event RegistryUpdated(string identifier, bytes32 indexed identifierHash, address addr)
-func (_Registry *RegistryFilterer) FilterRegistryUpdated(opts *bind.FilterOpts, identifierHash [][32]byte) (*RegistryRegistryUpdatedIterator, error) {
+// Solidity: event RegistryUpdated(string identifier, bytes32 indexed identifierHash, address indexed addr)
+func (_Registry *RegistryFilterer) FilterRegistryUpdated(opts *bind.FilterOpts, identifierHash [][32]byte, addr []common.Address) (*RegistryRegistryUpdatedIterator, error) {
 
 	var identifierHashRule []interface{}
 	for _, identifierHashItem := range identifierHash {
 		identifierHashRule = append(identifierHashRule, identifierHashItem)
 	}
+	var addrRule []interface{}
+	for _, addrItem := range addr {
+		addrRule = append(addrRule, addrItem)
+	}
 
-	logs, sub, err := _Registry.contract.FilterLogs(opts, "RegistryUpdated", identifierHashRule)
+	logs, sub, err := _Registry.contract.FilterLogs(opts, "RegistryUpdated", identifierHashRule, addrRule)
 	if err != nil {
 		return nil, err
 	}
@@ -779,15 +783,19 @@ func (_Registry *RegistryFilterer) FilterRegistryUpdated(opts *bind.FilterOpts, 
 
 // WatchRegistryUpdated is a free log subscription operation binding the contract event 0x4166d073a7a5e704ce0db7113320f88da2457f872d46dc020c805c562c1582a0.
 //
-// Solidity: event RegistryUpdated(string identifier, bytes32 indexed identifierHash, address addr)
-func (_Registry *RegistryFilterer) WatchRegistryUpdated(opts *bind.WatchOpts, sink chan<- *RegistryRegistryUpdated, identifierHash [][32]byte) (event.Subscription, error) {
+// Solidity: event RegistryUpdated(string identifier, bytes32 indexed identifierHash, address indexed addr)
+func (_Registry *RegistryFilterer) WatchRegistryUpdated(opts *bind.WatchOpts, sink chan<- *RegistryRegistryUpdated, identifierHash [][32]byte, addr []common.Address) (event.Subscription, error) {
 
 	var identifierHashRule []interface{}
 	for _, identifierHashItem := range identifierHash {
 		identifierHashRule = append(identifierHashRule, identifierHashItem)
 	}
+	var addrRule []interface{}
+	for _, addrItem := range addr {
+		addrRule = append(addrRule, addrItem)
+	}
 
-	logs, sub, err := _Registry.contract.WatchLogs(opts, "RegistryUpdated", identifierHashRule)
+	logs, sub, err := _Registry.contract.WatchLogs(opts, "RegistryUpdated", identifierHashRule, addrRule)
 	if err != nil {
 		return nil, err
 	}
@@ -821,7 +829,7 @@ func (_Registry *RegistryFilterer) WatchRegistryUpdated(opts *bind.WatchOpts, si
 
 // ParseRegistryUpdated is a log parse operation binding the contract event 0x4166d073a7a5e704ce0db7113320f88da2457f872d46dc020c805c562c1582a0.
 //
-// Solidity: event RegistryUpdated(string identifier, bytes32 indexed identifierHash, address addr)
+// Solidity: event RegistryUpdated(string identifier, bytes32 indexed identifierHash, address indexed addr)
 func (_Registry *RegistryFilterer) ParseRegistryUpdated(log types.Log) (*RegistryRegistryUpdated, error) {
 	event := new(RegistryRegistryUpdated)
 	if err := _Registry.contract.UnpackLog(event, "RegistryUpdated", log); err != nil {

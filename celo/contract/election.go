@@ -42,7 +42,7 @@ var (
 )
 
 // ElectionABI is the input ABI used to generate the binding from.
-const ElectionABI = "[{\"constant\":true,\"inputs\":[{\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"validatorSignerAddressFromCurrentSet\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"initialized\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"sender\",\"type\":\"address\"},{\"name\":\"blsKey\",\"type\":\"bytes\"},{\"name\":\"blsPop\",\"type\":\"bytes\"}],\"name\":\"checkProofOfPossession\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"blockNumber\",\"type\":\"uint256\"}],\"name\":\"getEpochNumberOfBlock\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"header\",\"type\":\"bytes\"}],\"name\":\"getVerifiedSealBitmapFromHeader\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"electabilityThreshold\",\"outputs\":[{\"name\":\"value\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"index\",\"type\":\"uint256\"},{\"name\":\"blockNumber\",\"type\":\"uint256\"}],\"name\":\"validatorSignerAddressFromSet\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"header\",\"type\":\"bytes\"}],\"name\":\"hashHeader\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"minQuorumSizeInCurrentSet\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"registry\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"numberValidatorsInCurrentSet\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"header\",\"type\":\"bytes\"}],\"name\":\"getBlockNumberFromHeader\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"isOwner\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getEpochNumber\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"blockNumber\",\"type\":\"uint256\"}],\"name\":\"numberValidatorsInSet\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"registryAddress\",\"type\":\"address\"}],\"name\":\"setRegistry\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"maxNumGroupsVotedFor\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getEpochSize\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"blockNumber\",\"type\":\"uint256\"}],\"name\":\"minQuorumSize\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"aNumerator\",\"type\":\"uint256\"},{\"name\":\"aDenominator\",\"type\":\"uint256\"},{\"name\":\"bNumerator\",\"type\":\"uint256\"},{\"name\":\"bDenominator\",\"type\":\"uint256\"},{\"name\":\"exponent\",\"type\":\"uint256\"},{\"name\":\"_decimals\",\"type\":\"uint256\"}],\"name\":\"fractionMulExp\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"},{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"electableValidators\",\"outputs\":[{\"name\":\"min\",\"type\":\"uint256\"},{\"name\":\"max\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"blockNumber\",\"type\":\"uint256\"}],\"name\":\"getParentSealBitmap\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"min\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"max\",\"type\":\"uint256\"}],\"name\":\"ElectableValidatorsSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"maxNumGroupsVotedFor\",\"type\":\"uint256\"}],\"name\":\"MaxNumGroupsVotedForSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"electabilityThreshold\",\"type\":\"uint256\"}],\"name\":\"ElectabilityThresholdSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"group\",\"type\":\"address\"}],\"name\":\"ValidatorGroupMarkedEligible\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"group\",\"type\":\"address\"}],\"name\":\"ValidatorGroupMarkedIneligible\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"group\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"ValidatorGroupVoteCast\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"group\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"ValidatorGroupVoteActivated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"group\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"ValidatorGroupVoteRevoked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"group\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"EpochRewardsDistributedToVoters\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"registryAddress\",\"type\":\"address\"}],\"name\":\"RegistrySet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"constant\":false,\"inputs\":[{\"name\":\"registryAddress\",\"type\":\"address\"},{\"name\":\"minElectableValidators\",\"type\":\"uint256\"},{\"name\":\"maxElectableValidators\",\"type\":\"uint256\"},{\"name\":\"_maxNumGroupsVotedFor\",\"type\":\"uint256\"},{\"name\":\"_electabilityThreshold\",\"type\":\"uint256\"}],\"name\":\"initialize\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"min\",\"type\":\"uint256\"},{\"name\":\"max\",\"type\":\"uint256\"}],\"name\":\"setElectableValidators\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getElectableValidators\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"},{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_maxNumGroupsVotedFor\",\"type\":\"uint256\"}],\"name\":\"setMaxNumGroupsVotedFor\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"setElectabilityThreshold\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getElectabilityThreshold\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"uint256\"},{\"name\":\"lesser\",\"type\":\"address\"},{\"name\":\"greater\",\"type\":\"address\"}],\"name\":\"vote\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"}],\"name\":\"activate\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"account\",\"type\":\"address\"},{\"name\":\"group\",\"type\":\"address\"}],\"name\":\"hasActivatablePendingVotes\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"uint256\"},{\"name\":\"lesser\",\"type\":\"address\"},{\"name\":\"greater\",\"type\":\"address\"},{\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"revokePending\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"uint256\"},{\"name\":\"lesser\",\"type\":\"address\"},{\"name\":\"greater\",\"type\":\"address\"},{\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"revokeActive\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"account\",\"type\":\"address\"}],\"name\":\"getTotalVotesByAccount\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"},{\"name\":\"account\",\"type\":\"address\"}],\"name\":\"getPendingVotesForGroupByAccount\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"},{\"name\":\"account\",\"type\":\"address\"}],\"name\":\"getActiveVotesForGroupByAccount\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"},{\"name\":\"account\",\"type\":\"address\"}],\"name\":\"getTotalVotesForGroupByAccount\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"}],\"name\":\"getTotalVotesForGroup\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"}],\"name\":\"getActiveVotesForGroup\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"}],\"name\":\"getGroupEligibility\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"},{\"name\":\"totalEpochRewards\",\"type\":\"uint256\"},{\"name\":\"uptimes\",\"type\":\"uint256[]\"}],\"name\":\"getGroupEpochRewards\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"uint256\"},{\"name\":\"lesser\",\"type\":\"address\"},{\"name\":\"greater\",\"type\":\"address\"}],\"name\":\"distributeEpochRewards\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"}],\"name\":\"markGroupIneligible\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"},{\"name\":\"lesser\",\"type\":\"address\"},{\"name\":\"greater\",\"type\":\"address\"}],\"name\":\"markGroupEligible\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"account\",\"type\":\"address\"}],\"name\":\"getGroupsVotedForByAccount\",\"outputs\":[{\"name\":\"\",\"type\":\"address[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"canReceiveVotes\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"}],\"name\":\"getNumVotesReceivable\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getTotalVotes\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getActiveVotes\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getEligibleValidatorGroups\",\"outputs\":[{\"name\":\"\",\"type\":\"address[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getTotalVotesForEligibleValidatorGroups\",\"outputs\":[{\"name\":\"groups\",\"type\":\"address[]\"},{\"name\":\"values\",\"type\":\"uint256[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"electValidatorSigners\",\"outputs\":[{\"name\":\"\",\"type\":\"address[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"minElectableValidators\",\"type\":\"uint256\"},{\"name\":\"maxElectableValidators\",\"type\":\"uint256\"}],\"name\":\"electNValidatorSigners\",\"outputs\":[{\"name\":\"\",\"type\":\"address[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getCurrentValidatorSigners\",\"outputs\":[{\"name\":\"\",\"type\":\"address[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"account\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"uint256\"},{\"name\":\"lessers\",\"type\":\"address[]\"},{\"name\":\"greaters\",\"type\":\"address[]\"},{\"name\":\"indices\",\"type\":\"uint256[]\"}],\"name\":\"forceDecrementVotes\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+const ElectionABI = "[{\"constant\":true,\"inputs\":[{\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"validatorSignerAddressFromCurrentSet\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"initialized\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"sender\",\"type\":\"address\"},{\"name\":\"blsKey\",\"type\":\"bytes\"},{\"name\":\"blsPop\",\"type\":\"bytes\"}],\"name\":\"checkProofOfPossession\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"blockNumber\",\"type\":\"uint256\"}],\"name\":\"getEpochNumberOfBlock\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"header\",\"type\":\"bytes\"}],\"name\":\"getVerifiedSealBitmapFromHeader\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"electabilityThreshold\",\"outputs\":[{\"name\":\"value\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"index\",\"type\":\"uint256\"},{\"name\":\"blockNumber\",\"type\":\"uint256\"}],\"name\":\"validatorSignerAddressFromSet\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"header\",\"type\":\"bytes\"}],\"name\":\"hashHeader\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"minQuorumSizeInCurrentSet\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"registry\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"numberValidatorsInCurrentSet\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"header\",\"type\":\"bytes\"}],\"name\":\"getBlockNumberFromHeader\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"isOwner\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getEpochNumber\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"blockNumber\",\"type\":\"uint256\"}],\"name\":\"numberValidatorsInSet\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"registryAddress\",\"type\":\"address\"}],\"name\":\"setRegistry\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"maxNumGroupsVotedFor\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getEpochSize\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"blockNumber\",\"type\":\"uint256\"}],\"name\":\"minQuorumSize\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"aNumerator\",\"type\":\"uint256\"},{\"name\":\"aDenominator\",\"type\":\"uint256\"},{\"name\":\"bNumerator\",\"type\":\"uint256\"},{\"name\":\"bDenominator\",\"type\":\"uint256\"},{\"name\":\"exponent\",\"type\":\"uint256\"},{\"name\":\"_decimals\",\"type\":\"uint256\"}],\"name\":\"fractionMulExp\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"},{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"electableValidators\",\"outputs\":[{\"name\":\"min\",\"type\":\"uint256\"},{\"name\":\"max\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"blockNumber\",\"type\":\"uint256\"}],\"name\":\"getParentSealBitmap\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"min\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"max\",\"type\":\"uint256\"}],\"name\":\"ElectableValidatorsSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"maxNumGroupsVotedFor\",\"type\":\"uint256\"}],\"name\":\"MaxNumGroupsVotedForSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"electabilityThreshold\",\"type\":\"uint256\"}],\"name\":\"ElectabilityThresholdSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"group\",\"type\":\"address\"}],\"name\":\"ValidatorGroupMarkedEligible\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"group\",\"type\":\"address\"}],\"name\":\"ValidatorGroupMarkedIneligible\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"group\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"ValidatorGroupVoteCast\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"group\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"value\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"units\",\"type\":\"uint256\"}],\"name\":\"ValidatorGroupVoteActivated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"group\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"ValidatorGroupPendingVoteRevoked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"group\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"value\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"units\",\"type\":\"uint256\"}],\"name\":\"ValidatorGroupActiveVoteRevoked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"group\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"EpochRewardsDistributedToVoters\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"registryAddress\",\"type\":\"address\"}],\"name\":\"RegistrySet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"constant\":false,\"inputs\":[{\"name\":\"registryAddress\",\"type\":\"address\"},{\"name\":\"minElectableValidators\",\"type\":\"uint256\"},{\"name\":\"maxElectableValidators\",\"type\":\"uint256\"},{\"name\":\"_maxNumGroupsVotedFor\",\"type\":\"uint256\"},{\"name\":\"_electabilityThreshold\",\"type\":\"uint256\"}],\"name\":\"initialize\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"min\",\"type\":\"uint256\"},{\"name\":\"max\",\"type\":\"uint256\"}],\"name\":\"setElectableValidators\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getElectableValidators\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"},{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_maxNumGroupsVotedFor\",\"type\":\"uint256\"}],\"name\":\"setMaxNumGroupsVotedFor\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"setElectabilityThreshold\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getElectabilityThreshold\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"uint256\"},{\"name\":\"lesser\",\"type\":\"address\"},{\"name\":\"greater\",\"type\":\"address\"}],\"name\":\"vote\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"}],\"name\":\"activate\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"account\",\"type\":\"address\"},{\"name\":\"group\",\"type\":\"address\"}],\"name\":\"hasActivatablePendingVotes\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"uint256\"},{\"name\":\"lesser\",\"type\":\"address\"},{\"name\":\"greater\",\"type\":\"address\"},{\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"revokePending\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"},{\"name\":\"lesser\",\"type\":\"address\"},{\"name\":\"greater\",\"type\":\"address\"},{\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"revokeAllActive\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"uint256\"},{\"name\":\"lesser\",\"type\":\"address\"},{\"name\":\"greater\",\"type\":\"address\"},{\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"revokeActive\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"account\",\"type\":\"address\"}],\"name\":\"getTotalVotesByAccount\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"},{\"name\":\"account\",\"type\":\"address\"}],\"name\":\"getPendingVotesForGroupByAccount\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"},{\"name\":\"account\",\"type\":\"address\"}],\"name\":\"getActiveVotesForGroupByAccount\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"},{\"name\":\"account\",\"type\":\"address\"}],\"name\":\"getTotalVotesForGroupByAccount\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"},{\"name\":\"account\",\"type\":\"address\"}],\"name\":\"getActiveVoteUnitsForGroupByAccount\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"}],\"name\":\"getActiveVoteUnitsForGroup\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"}],\"name\":\"getTotalVotesForGroup\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"}],\"name\":\"getActiveVotesForGroup\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"}],\"name\":\"getPendingVotesForGroup\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"}],\"name\":\"getGroupEligibility\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"},{\"name\":\"totalEpochRewards\",\"type\":\"uint256\"},{\"name\":\"uptimes\",\"type\":\"uint256[]\"}],\"name\":\"getGroupEpochRewards\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"uint256\"},{\"name\":\"lesser\",\"type\":\"address\"},{\"name\":\"greater\",\"type\":\"address\"}],\"name\":\"distributeEpochRewards\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"}],\"name\":\"markGroupIneligible\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"},{\"name\":\"lesser\",\"type\":\"address\"},{\"name\":\"greater\",\"type\":\"address\"}],\"name\":\"markGroupEligible\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"account\",\"type\":\"address\"}],\"name\":\"getGroupsVotedForByAccount\",\"outputs\":[{\"name\":\"\",\"type\":\"address[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"canReceiveVotes\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"group\",\"type\":\"address\"}],\"name\":\"getNumVotesReceivable\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getTotalVotes\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getActiveVotes\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getEligibleValidatorGroups\",\"outputs\":[{\"name\":\"\",\"type\":\"address[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getTotalVotesForEligibleValidatorGroups\",\"outputs\":[{\"name\":\"groups\",\"type\":\"address[]\"},{\"name\":\"values\",\"type\":\"uint256[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"electValidatorSigners\",\"outputs\":[{\"name\":\"\",\"type\":\"address[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"minElectableValidators\",\"type\":\"uint256\"},{\"name\":\"maxElectableValidators\",\"type\":\"uint256\"}],\"name\":\"electNValidatorSigners\",\"outputs\":[{\"name\":\"\",\"type\":\"address[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getCurrentValidatorSigners\",\"outputs\":[{\"name\":\"\",\"type\":\"address[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"account\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"uint256\"},{\"name\":\"lessers\",\"type\":\"address[]\"},{\"name\":\"greaters\",\"type\":\"address[]\"},{\"name\":\"indices\",\"type\":\"uint256[]\"}],\"name\":\"forceDecrementVotes\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 // Election is an auto generated Go binding around an Ethereum contract.
 type Election struct {
@@ -389,6 +389,58 @@ func (_Election *ElectionSession) FractionMulExp(aNumerator *big.Int, aDenominat
 // Solidity: function fractionMulExp(uint256 aNumerator, uint256 aDenominator, uint256 bNumerator, uint256 bDenominator, uint256 exponent, uint256 _decimals) constant returns(uint256, uint256)
 func (_Election *ElectionCallerSession) FractionMulExp(aNumerator *big.Int, aDenominator *big.Int, bNumerator *big.Int, bDenominator *big.Int, exponent *big.Int, _decimals *big.Int) (*big.Int, *big.Int, error) {
 	return _Election.Contract.FractionMulExp(&_Election.CallOpts, aNumerator, aDenominator, bNumerator, bDenominator, exponent, _decimals)
+}
+
+// GetActiveVoteUnitsForGroup is a free data retrieval call binding the contract method 0x5bb5acfb.
+//
+// Solidity: function getActiveVoteUnitsForGroup(address group) constant returns(uint256)
+func (_Election *ElectionCaller) GetActiveVoteUnitsForGroup(opts *bind.CallOpts, group common.Address) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _Election.contract.Call(opts, out, "getActiveVoteUnitsForGroup", group)
+	return *ret0, err
+}
+
+// GetActiveVoteUnitsForGroup is a free data retrieval call binding the contract method 0x5bb5acfb.
+//
+// Solidity: function getActiveVoteUnitsForGroup(address group) constant returns(uint256)
+func (_Election *ElectionSession) GetActiveVoteUnitsForGroup(group common.Address) (*big.Int, error) {
+	return _Election.Contract.GetActiveVoteUnitsForGroup(&_Election.CallOpts, group)
+}
+
+// GetActiveVoteUnitsForGroup is a free data retrieval call binding the contract method 0x5bb5acfb.
+//
+// Solidity: function getActiveVoteUnitsForGroup(address group) constant returns(uint256)
+func (_Election *ElectionCallerSession) GetActiveVoteUnitsForGroup(group common.Address) (*big.Int, error) {
+	return _Election.Contract.GetActiveVoteUnitsForGroup(&_Election.CallOpts, group)
+}
+
+// GetActiveVoteUnitsForGroupByAccount is a free data retrieval call binding the contract method 0xa2fb4ddf.
+//
+// Solidity: function getActiveVoteUnitsForGroupByAccount(address group, address account) constant returns(uint256)
+func (_Election *ElectionCaller) GetActiveVoteUnitsForGroupByAccount(opts *bind.CallOpts, group common.Address, account common.Address) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _Election.contract.Call(opts, out, "getActiveVoteUnitsForGroupByAccount", group, account)
+	return *ret0, err
+}
+
+// GetActiveVoteUnitsForGroupByAccount is a free data retrieval call binding the contract method 0xa2fb4ddf.
+//
+// Solidity: function getActiveVoteUnitsForGroupByAccount(address group, address account) constant returns(uint256)
+func (_Election *ElectionSession) GetActiveVoteUnitsForGroupByAccount(group common.Address, account common.Address) (*big.Int, error) {
+	return _Election.Contract.GetActiveVoteUnitsForGroupByAccount(&_Election.CallOpts, group, account)
+}
+
+// GetActiveVoteUnitsForGroupByAccount is a free data retrieval call binding the contract method 0xa2fb4ddf.
+//
+// Solidity: function getActiveVoteUnitsForGroupByAccount(address group, address account) constant returns(uint256)
+func (_Election *ElectionCallerSession) GetActiveVoteUnitsForGroupByAccount(group common.Address, account common.Address) (*big.Int, error) {
+	return _Election.Contract.GetActiveVoteUnitsForGroupByAccount(&_Election.CallOpts, group, account)
 }
 
 // GetActiveVotes is a free data retrieval call binding the contract method 0x1f604243.
@@ -809,6 +861,32 @@ func (_Election *ElectionSession) GetParentSealBitmap(blockNumber *big.Int) ([32
 // Solidity: function getParentSealBitmap(uint256 blockNumber) constant returns(bytes32)
 func (_Election *ElectionCallerSession) GetParentSealBitmap(blockNumber *big.Int) ([32]byte, error) {
 	return _Election.Contract.GetParentSealBitmap(&_Election.CallOpts, blockNumber)
+}
+
+// GetPendingVotesForGroup is a free data retrieval call binding the contract method 0x95128ce3.
+//
+// Solidity: function getPendingVotesForGroup(address group) constant returns(uint256)
+func (_Election *ElectionCaller) GetPendingVotesForGroup(opts *bind.CallOpts, group common.Address) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _Election.contract.Call(opts, out, "getPendingVotesForGroup", group)
+	return *ret0, err
+}
+
+// GetPendingVotesForGroup is a free data retrieval call binding the contract method 0x95128ce3.
+//
+// Solidity: function getPendingVotesForGroup(address group) constant returns(uint256)
+func (_Election *ElectionSession) GetPendingVotesForGroup(group common.Address) (*big.Int, error) {
+	return _Election.Contract.GetPendingVotesForGroup(&_Election.CallOpts, group)
+}
+
+// GetPendingVotesForGroup is a free data retrieval call binding the contract method 0x95128ce3.
+//
+// Solidity: function getPendingVotesForGroup(address group) constant returns(uint256)
+func (_Election *ElectionCallerSession) GetPendingVotesForGroup(group common.Address) (*big.Int, error) {
+	return _Election.Contract.GetPendingVotesForGroup(&_Election.CallOpts, group)
 }
 
 // GetPendingVotesForGroupByAccount is a free data retrieval call binding the contract method 0x9b95975f.
@@ -1509,6 +1587,27 @@ func (_Election *ElectionTransactorSession) RevokeActive(group common.Address, v
 	return _Election.Contract.RevokeActive(&_Election.TransactOpts, group, value, lesser, greater, index)
 }
 
+// RevokeAllActive is a paid mutator transaction binding the contract method 0xe0a2ab52.
+//
+// Solidity: function revokeAllActive(address group, address lesser, address greater, uint256 index) returns(bool)
+func (_Election *ElectionTransactor) RevokeAllActive(opts *bind.TransactOpts, group common.Address, lesser common.Address, greater common.Address, index *big.Int) (*types.Transaction, error) {
+	return _Election.contract.Transact(opts, "revokeAllActive", group, lesser, greater, index)
+}
+
+// RevokeAllActive is a paid mutator transaction binding the contract method 0xe0a2ab52.
+//
+// Solidity: function revokeAllActive(address group, address lesser, address greater, uint256 index) returns(bool)
+func (_Election *ElectionSession) RevokeAllActive(group common.Address, lesser common.Address, greater common.Address, index *big.Int) (*types.Transaction, error) {
+	return _Election.Contract.RevokeAllActive(&_Election.TransactOpts, group, lesser, greater, index)
+}
+
+// RevokeAllActive is a paid mutator transaction binding the contract method 0xe0a2ab52.
+//
+// Solidity: function revokeAllActive(address group, address lesser, address greater, uint256 index) returns(bool)
+func (_Election *ElectionTransactorSession) RevokeAllActive(group common.Address, lesser common.Address, greater common.Address, index *big.Int) (*types.Transaction, error) {
+	return _Election.Contract.RevokeAllActive(&_Election.TransactOpts, group, lesser, greater, index)
+}
+
 // RevokePending is a paid mutator transaction binding the contract method 0x9dfb6081.
 //
 // Solidity: function revokePending(address group, uint256 value, address lesser, address greater, uint256 index) returns(bool)
@@ -1656,7 +1755,7 @@ func (_Election *ElectionTransactorSession) Vote(group common.Address, value *bi
 	return _Election.Contract.Vote(&_Election.TransactOpts, group, value, lesser, greater)
 }
 
-// TryParseLog attempts to parse a log. Returns the parsed log, eventName and whether it was successful
+// TryParseLog attempts to parse a log. Returns the parsed log, evenName and whether it was succesfull
 func (_Election *ElectionFilterer) TryParseLog(log types.Log) (eventName string, event interface{}, ok bool, err error) {
 	eventName, ok, err = _Election.contract.LogEventName(log)
 	if err != nil || !ok {
@@ -1676,16 +1775,18 @@ func (_Election *ElectionFilterer) TryParseLog(log types.Log) (eventName string,
 		event, err = _Election.ParseOwnershipTransferred(log)
 	case "RegistrySet":
 		event, err = _Election.ParseRegistrySet(log)
+	case "ValidatorGroupActiveVoteRevoked":
+		event, err = _Election.ParseValidatorGroupActiveVoteRevoked(log)
 	case "ValidatorGroupMarkedEligible":
 		event, err = _Election.ParseValidatorGroupMarkedEligible(log)
 	case "ValidatorGroupMarkedIneligible":
 		event, err = _Election.ParseValidatorGroupMarkedIneligible(log)
+	case "ValidatorGroupPendingVoteRevoked":
+		event, err = _Election.ParseValidatorGroupPendingVoteRevoked(log)
 	case "ValidatorGroupVoteActivated":
 		event, err = _Election.ParseValidatorGroupVoteActivated(log)
 	case "ValidatorGroupVoteCast":
 		event, err = _Election.ParseValidatorGroupVoteCast(log)
-	case "ValidatorGroupVoteRevoked":
-		event, err = _Election.ParseValidatorGroupVoteRevoked(log)
 	}
 	if err != nil {
 		return "", nil, false, err
@@ -2533,6 +2634,160 @@ func (_Election *ElectionFilterer) ParseRegistrySet(log types.Log) (*ElectionReg
 	return event, nil
 }
 
+// ElectionValidatorGroupActiveVoteRevokedIterator is returned from FilterValidatorGroupActiveVoteRevoked and is used to iterate over the raw logs and unpacked data for ValidatorGroupActiveVoteRevoked events raised by the Election contract.
+type ElectionValidatorGroupActiveVoteRevokedIterator struct {
+	Event *ElectionValidatorGroupActiveVoteRevoked // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *ElectionValidatorGroupActiveVoteRevokedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(ElectionValidatorGroupActiveVoteRevoked)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(ElectionValidatorGroupActiveVoteRevoked)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *ElectionValidatorGroupActiveVoteRevokedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *ElectionValidatorGroupActiveVoteRevokedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// ElectionValidatorGroupActiveVoteRevoked represents a ValidatorGroupActiveVoteRevoked event raised by the Election contract.
+type ElectionValidatorGroupActiveVoteRevoked struct {
+	Account common.Address
+	Group   common.Address
+	Value   *big.Int
+	Units   *big.Int
+	Raw     types.Log // Blockchain specific contextual infos
+}
+
+// FilterValidatorGroupActiveVoteRevoked is a free log retrieval operation binding the contract event 0xae7458f8697a680da6be36406ea0b8f40164915ac9cc40c0dad05a2ff6e8c6a8.
+//
+// Solidity: event ValidatorGroupActiveVoteRevoked(address indexed account, address indexed group, uint256 value, uint256 units)
+func (_Election *ElectionFilterer) FilterValidatorGroupActiveVoteRevoked(opts *bind.FilterOpts, account []common.Address, group []common.Address) (*ElectionValidatorGroupActiveVoteRevokedIterator, error) {
+
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+	var groupRule []interface{}
+	for _, groupItem := range group {
+		groupRule = append(groupRule, groupItem)
+	}
+
+	logs, sub, err := _Election.contract.FilterLogs(opts, "ValidatorGroupActiveVoteRevoked", accountRule, groupRule)
+	if err != nil {
+		return nil, err
+	}
+	return &ElectionValidatorGroupActiveVoteRevokedIterator{contract: _Election.contract, event: "ValidatorGroupActiveVoteRevoked", logs: logs, sub: sub}, nil
+}
+
+// WatchValidatorGroupActiveVoteRevoked is a free log subscription operation binding the contract event 0xae7458f8697a680da6be36406ea0b8f40164915ac9cc40c0dad05a2ff6e8c6a8.
+//
+// Solidity: event ValidatorGroupActiveVoteRevoked(address indexed account, address indexed group, uint256 value, uint256 units)
+func (_Election *ElectionFilterer) WatchValidatorGroupActiveVoteRevoked(opts *bind.WatchOpts, sink chan<- *ElectionValidatorGroupActiveVoteRevoked, account []common.Address, group []common.Address) (event.Subscription, error) {
+
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+	var groupRule []interface{}
+	for _, groupItem := range group {
+		groupRule = append(groupRule, groupItem)
+	}
+
+	logs, sub, err := _Election.contract.WatchLogs(opts, "ValidatorGroupActiveVoteRevoked", accountRule, groupRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(ElectionValidatorGroupActiveVoteRevoked)
+				if err := _Election.contract.UnpackLog(event, "ValidatorGroupActiveVoteRevoked", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseValidatorGroupActiveVoteRevoked is a log parse operation binding the contract event 0xae7458f8697a680da6be36406ea0b8f40164915ac9cc40c0dad05a2ff6e8c6a8.
+//
+// Solidity: event ValidatorGroupActiveVoteRevoked(address indexed account, address indexed group, uint256 value, uint256 units)
+func (_Election *ElectionFilterer) ParseValidatorGroupActiveVoteRevoked(log types.Log) (*ElectionValidatorGroupActiveVoteRevoked, error) {
+	event := new(ElectionValidatorGroupActiveVoteRevoked)
+	if err := _Election.contract.UnpackLog(event, "ValidatorGroupActiveVoteRevoked", log); err != nil {
+		return nil, err
+	}
+	return event, nil
+}
+
 // ElectionValidatorGroupMarkedEligibleIterator is returned from FilterValidatorGroupMarkedEligible and is used to iterate over the raw logs and unpacked data for ValidatorGroupMarkedEligible events raised by the Election contract.
 type ElectionValidatorGroupMarkedEligibleIterator struct {
 	Event *ElectionValidatorGroupMarkedEligible // Event containing the contract specifics and raw log
@@ -2608,10 +2863,15 @@ type ElectionValidatorGroupMarkedEligible struct {
 
 // FilterValidatorGroupMarkedEligible is a free log retrieval operation binding the contract event 0x8f21dc7ff6f55d73e4fca52a4ef4fcc14fbda43ac338d24922519d51455d39c1.
 //
-// Solidity: event ValidatorGroupMarkedEligible(address group)
-func (_Election *ElectionFilterer) FilterValidatorGroupMarkedEligible(opts *bind.FilterOpts) (*ElectionValidatorGroupMarkedEligibleIterator, error) {
+// Solidity: event ValidatorGroupMarkedEligible(address indexed group)
+func (_Election *ElectionFilterer) FilterValidatorGroupMarkedEligible(opts *bind.FilterOpts, group []common.Address) (*ElectionValidatorGroupMarkedEligibleIterator, error) {
 
-	logs, sub, err := _Election.contract.FilterLogs(opts, "ValidatorGroupMarkedEligible")
+	var groupRule []interface{}
+	for _, groupItem := range group {
+		groupRule = append(groupRule, groupItem)
+	}
+
+	logs, sub, err := _Election.contract.FilterLogs(opts, "ValidatorGroupMarkedEligible", groupRule)
 	if err != nil {
 		return nil, err
 	}
@@ -2620,10 +2880,15 @@ func (_Election *ElectionFilterer) FilterValidatorGroupMarkedEligible(opts *bind
 
 // WatchValidatorGroupMarkedEligible is a free log subscription operation binding the contract event 0x8f21dc7ff6f55d73e4fca52a4ef4fcc14fbda43ac338d24922519d51455d39c1.
 //
-// Solidity: event ValidatorGroupMarkedEligible(address group)
-func (_Election *ElectionFilterer) WatchValidatorGroupMarkedEligible(opts *bind.WatchOpts, sink chan<- *ElectionValidatorGroupMarkedEligible) (event.Subscription, error) {
+// Solidity: event ValidatorGroupMarkedEligible(address indexed group)
+func (_Election *ElectionFilterer) WatchValidatorGroupMarkedEligible(opts *bind.WatchOpts, sink chan<- *ElectionValidatorGroupMarkedEligible, group []common.Address) (event.Subscription, error) {
 
-	logs, sub, err := _Election.contract.WatchLogs(opts, "ValidatorGroupMarkedEligible")
+	var groupRule []interface{}
+	for _, groupItem := range group {
+		groupRule = append(groupRule, groupItem)
+	}
+
+	logs, sub, err := _Election.contract.WatchLogs(opts, "ValidatorGroupMarkedEligible", groupRule)
 	if err != nil {
 		return nil, err
 	}
@@ -2657,7 +2922,7 @@ func (_Election *ElectionFilterer) WatchValidatorGroupMarkedEligible(opts *bind.
 
 // ParseValidatorGroupMarkedEligible is a log parse operation binding the contract event 0x8f21dc7ff6f55d73e4fca52a4ef4fcc14fbda43ac338d24922519d51455d39c1.
 //
-// Solidity: event ValidatorGroupMarkedEligible(address group)
+// Solidity: event ValidatorGroupMarkedEligible(address indexed group)
 func (_Election *ElectionFilterer) ParseValidatorGroupMarkedEligible(log types.Log) (*ElectionValidatorGroupMarkedEligible, error) {
 	event := new(ElectionValidatorGroupMarkedEligible)
 	if err := _Election.contract.UnpackLog(event, "ValidatorGroupMarkedEligible", log); err != nil {
@@ -2741,10 +3006,15 @@ type ElectionValidatorGroupMarkedIneligible struct {
 
 // FilterValidatorGroupMarkedIneligible is a free log retrieval operation binding the contract event 0x5c8cd4e832f3a7d79f9208c2acf25a412143aa3f751cfd3728c42a0fea4921a8.
 //
-// Solidity: event ValidatorGroupMarkedIneligible(address group)
-func (_Election *ElectionFilterer) FilterValidatorGroupMarkedIneligible(opts *bind.FilterOpts) (*ElectionValidatorGroupMarkedIneligibleIterator, error) {
+// Solidity: event ValidatorGroupMarkedIneligible(address indexed group)
+func (_Election *ElectionFilterer) FilterValidatorGroupMarkedIneligible(opts *bind.FilterOpts, group []common.Address) (*ElectionValidatorGroupMarkedIneligibleIterator, error) {
 
-	logs, sub, err := _Election.contract.FilterLogs(opts, "ValidatorGroupMarkedIneligible")
+	var groupRule []interface{}
+	for _, groupItem := range group {
+		groupRule = append(groupRule, groupItem)
+	}
+
+	logs, sub, err := _Election.contract.FilterLogs(opts, "ValidatorGroupMarkedIneligible", groupRule)
 	if err != nil {
 		return nil, err
 	}
@@ -2753,10 +3023,15 @@ func (_Election *ElectionFilterer) FilterValidatorGroupMarkedIneligible(opts *bi
 
 // WatchValidatorGroupMarkedIneligible is a free log subscription operation binding the contract event 0x5c8cd4e832f3a7d79f9208c2acf25a412143aa3f751cfd3728c42a0fea4921a8.
 //
-// Solidity: event ValidatorGroupMarkedIneligible(address group)
-func (_Election *ElectionFilterer) WatchValidatorGroupMarkedIneligible(opts *bind.WatchOpts, sink chan<- *ElectionValidatorGroupMarkedIneligible) (event.Subscription, error) {
+// Solidity: event ValidatorGroupMarkedIneligible(address indexed group)
+func (_Election *ElectionFilterer) WatchValidatorGroupMarkedIneligible(opts *bind.WatchOpts, sink chan<- *ElectionValidatorGroupMarkedIneligible, group []common.Address) (event.Subscription, error) {
 
-	logs, sub, err := _Election.contract.WatchLogs(opts, "ValidatorGroupMarkedIneligible")
+	var groupRule []interface{}
+	for _, groupItem := range group {
+		groupRule = append(groupRule, groupItem)
+	}
+
+	logs, sub, err := _Election.contract.WatchLogs(opts, "ValidatorGroupMarkedIneligible", groupRule)
 	if err != nil {
 		return nil, err
 	}
@@ -2790,10 +3065,163 @@ func (_Election *ElectionFilterer) WatchValidatorGroupMarkedIneligible(opts *bin
 
 // ParseValidatorGroupMarkedIneligible is a log parse operation binding the contract event 0x5c8cd4e832f3a7d79f9208c2acf25a412143aa3f751cfd3728c42a0fea4921a8.
 //
-// Solidity: event ValidatorGroupMarkedIneligible(address group)
+// Solidity: event ValidatorGroupMarkedIneligible(address indexed group)
 func (_Election *ElectionFilterer) ParseValidatorGroupMarkedIneligible(log types.Log) (*ElectionValidatorGroupMarkedIneligible, error) {
 	event := new(ElectionValidatorGroupMarkedIneligible)
 	if err := _Election.contract.UnpackLog(event, "ValidatorGroupMarkedIneligible", log); err != nil {
+		return nil, err
+	}
+	return event, nil
+}
+
+// ElectionValidatorGroupPendingVoteRevokedIterator is returned from FilterValidatorGroupPendingVoteRevoked and is used to iterate over the raw logs and unpacked data for ValidatorGroupPendingVoteRevoked events raised by the Election contract.
+type ElectionValidatorGroupPendingVoteRevokedIterator struct {
+	Event *ElectionValidatorGroupPendingVoteRevoked // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *ElectionValidatorGroupPendingVoteRevokedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(ElectionValidatorGroupPendingVoteRevoked)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(ElectionValidatorGroupPendingVoteRevoked)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *ElectionValidatorGroupPendingVoteRevokedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *ElectionValidatorGroupPendingVoteRevokedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// ElectionValidatorGroupPendingVoteRevoked represents a ValidatorGroupPendingVoteRevoked event raised by the Election contract.
+type ElectionValidatorGroupPendingVoteRevoked struct {
+	Account common.Address
+	Group   common.Address
+	Value   *big.Int
+	Raw     types.Log // Blockchain specific contextual infos
+}
+
+// FilterValidatorGroupPendingVoteRevoked is a free log retrieval operation binding the contract event 0x148075455e24d5cf538793db3e917a157cbadac69dd6a304186daf11b23f76fe.
+//
+// Solidity: event ValidatorGroupPendingVoteRevoked(address indexed account, address indexed group, uint256 value)
+func (_Election *ElectionFilterer) FilterValidatorGroupPendingVoteRevoked(opts *bind.FilterOpts, account []common.Address, group []common.Address) (*ElectionValidatorGroupPendingVoteRevokedIterator, error) {
+
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+	var groupRule []interface{}
+	for _, groupItem := range group {
+		groupRule = append(groupRule, groupItem)
+	}
+
+	logs, sub, err := _Election.contract.FilterLogs(opts, "ValidatorGroupPendingVoteRevoked", accountRule, groupRule)
+	if err != nil {
+		return nil, err
+	}
+	return &ElectionValidatorGroupPendingVoteRevokedIterator{contract: _Election.contract, event: "ValidatorGroupPendingVoteRevoked", logs: logs, sub: sub}, nil
+}
+
+// WatchValidatorGroupPendingVoteRevoked is a free log subscription operation binding the contract event 0x148075455e24d5cf538793db3e917a157cbadac69dd6a304186daf11b23f76fe.
+//
+// Solidity: event ValidatorGroupPendingVoteRevoked(address indexed account, address indexed group, uint256 value)
+func (_Election *ElectionFilterer) WatchValidatorGroupPendingVoteRevoked(opts *bind.WatchOpts, sink chan<- *ElectionValidatorGroupPendingVoteRevoked, account []common.Address, group []common.Address) (event.Subscription, error) {
+
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+	var groupRule []interface{}
+	for _, groupItem := range group {
+		groupRule = append(groupRule, groupItem)
+	}
+
+	logs, sub, err := _Election.contract.WatchLogs(opts, "ValidatorGroupPendingVoteRevoked", accountRule, groupRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(ElectionValidatorGroupPendingVoteRevoked)
+				if err := _Election.contract.UnpackLog(event, "ValidatorGroupPendingVoteRevoked", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseValidatorGroupPendingVoteRevoked is a log parse operation binding the contract event 0x148075455e24d5cf538793db3e917a157cbadac69dd6a304186daf11b23f76fe.
+//
+// Solidity: event ValidatorGroupPendingVoteRevoked(address indexed account, address indexed group, uint256 value)
+func (_Election *ElectionFilterer) ParseValidatorGroupPendingVoteRevoked(log types.Log) (*ElectionValidatorGroupPendingVoteRevoked, error) {
+	event := new(ElectionValidatorGroupPendingVoteRevoked)
+	if err := _Election.contract.UnpackLog(event, "ValidatorGroupPendingVoteRevoked", log); err != nil {
 		return nil, err
 	}
 	return event, nil
@@ -2871,12 +3299,13 @@ type ElectionValidatorGroupVoteActivated struct {
 	Account common.Address
 	Group   common.Address
 	Value   *big.Int
+	Units   *big.Int
 	Raw     types.Log // Blockchain specific contextual infos
 }
 
-// FilterValidatorGroupVoteActivated is a free log retrieval operation binding the contract event 0x50363f7a646042bcb294d6afdef2d53f4122379845e67627b6db367f31934f16.
+// FilterValidatorGroupVoteActivated is a free log retrieval operation binding the contract event 0x45aac85f38083b18efe2d441a65b9c1ae177c78307cb5a5d4aec8f7dbcaeabfe.
 //
-// Solidity: event ValidatorGroupVoteActivated(address indexed account, address indexed group, uint256 value)
+// Solidity: event ValidatorGroupVoteActivated(address indexed account, address indexed group, uint256 value, uint256 units)
 func (_Election *ElectionFilterer) FilterValidatorGroupVoteActivated(opts *bind.FilterOpts, account []common.Address, group []common.Address) (*ElectionValidatorGroupVoteActivatedIterator, error) {
 
 	var accountRule []interface{}
@@ -2895,9 +3324,9 @@ func (_Election *ElectionFilterer) FilterValidatorGroupVoteActivated(opts *bind.
 	return &ElectionValidatorGroupVoteActivatedIterator{contract: _Election.contract, event: "ValidatorGroupVoteActivated", logs: logs, sub: sub}, nil
 }
 
-// WatchValidatorGroupVoteActivated is a free log subscription operation binding the contract event 0x50363f7a646042bcb294d6afdef2d53f4122379845e67627b6db367f31934f16.
+// WatchValidatorGroupVoteActivated is a free log subscription operation binding the contract event 0x45aac85f38083b18efe2d441a65b9c1ae177c78307cb5a5d4aec8f7dbcaeabfe.
 //
-// Solidity: event ValidatorGroupVoteActivated(address indexed account, address indexed group, uint256 value)
+// Solidity: event ValidatorGroupVoteActivated(address indexed account, address indexed group, uint256 value, uint256 units)
 func (_Election *ElectionFilterer) WatchValidatorGroupVoteActivated(opts *bind.WatchOpts, sink chan<- *ElectionValidatorGroupVoteActivated, account []common.Address, group []common.Address) (event.Subscription, error) {
 
 	var accountRule []interface{}
@@ -2941,9 +3370,9 @@ func (_Election *ElectionFilterer) WatchValidatorGroupVoteActivated(opts *bind.W
 	}), nil
 }
 
-// ParseValidatorGroupVoteActivated is a log parse operation binding the contract event 0x50363f7a646042bcb294d6afdef2d53f4122379845e67627b6db367f31934f16.
+// ParseValidatorGroupVoteActivated is a log parse operation binding the contract event 0x45aac85f38083b18efe2d441a65b9c1ae177c78307cb5a5d4aec8f7dbcaeabfe.
 //
-// Solidity: event ValidatorGroupVoteActivated(address indexed account, address indexed group, uint256 value)
+// Solidity: event ValidatorGroupVoteActivated(address indexed account, address indexed group, uint256 value, uint256 units)
 func (_Election *ElectionFilterer) ParseValidatorGroupVoteActivated(log types.Log) (*ElectionValidatorGroupVoteActivated, error) {
 	event := new(ElectionValidatorGroupVoteActivated)
 	if err := _Election.contract.UnpackLog(event, "ValidatorGroupVoteActivated", log); err != nil {
@@ -3100,159 +3529,6 @@ func (_Election *ElectionFilterer) WatchValidatorGroupVoteCast(opts *bind.WatchO
 func (_Election *ElectionFilterer) ParseValidatorGroupVoteCast(log types.Log) (*ElectionValidatorGroupVoteCast, error) {
 	event := new(ElectionValidatorGroupVoteCast)
 	if err := _Election.contract.UnpackLog(event, "ValidatorGroupVoteCast", log); err != nil {
-		return nil, err
-	}
-	return event, nil
-}
-
-// ElectionValidatorGroupVoteRevokedIterator is returned from FilterValidatorGroupVoteRevoked and is used to iterate over the raw logs and unpacked data for ValidatorGroupVoteRevoked events raised by the Election contract.
-type ElectionValidatorGroupVoteRevokedIterator struct {
-	Event *ElectionValidatorGroupVoteRevoked // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *ElectionValidatorGroupVoteRevokedIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(ElectionValidatorGroupVoteRevoked)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(ElectionValidatorGroupVoteRevoked)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *ElectionValidatorGroupVoteRevokedIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *ElectionValidatorGroupVoteRevokedIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// ElectionValidatorGroupVoteRevoked represents a ValidatorGroupVoteRevoked event raised by the Election contract.
-type ElectionValidatorGroupVoteRevoked struct {
-	Account common.Address
-	Group   common.Address
-	Value   *big.Int
-	Raw     types.Log // Blockchain specific contextual infos
-}
-
-// FilterValidatorGroupVoteRevoked is a free log retrieval operation binding the contract event 0xa06c722f7d446349fdd811f3d539bc91c7b11df8a2f4e012685712a30068f668.
-//
-// Solidity: event ValidatorGroupVoteRevoked(address indexed account, address indexed group, uint256 value)
-func (_Election *ElectionFilterer) FilterValidatorGroupVoteRevoked(opts *bind.FilterOpts, account []common.Address, group []common.Address) (*ElectionValidatorGroupVoteRevokedIterator, error) {
-
-	var accountRule []interface{}
-	for _, accountItem := range account {
-		accountRule = append(accountRule, accountItem)
-	}
-	var groupRule []interface{}
-	for _, groupItem := range group {
-		groupRule = append(groupRule, groupItem)
-	}
-
-	logs, sub, err := _Election.contract.FilterLogs(opts, "ValidatorGroupVoteRevoked", accountRule, groupRule)
-	if err != nil {
-		return nil, err
-	}
-	return &ElectionValidatorGroupVoteRevokedIterator{contract: _Election.contract, event: "ValidatorGroupVoteRevoked", logs: logs, sub: sub}, nil
-}
-
-// WatchValidatorGroupVoteRevoked is a free log subscription operation binding the contract event 0xa06c722f7d446349fdd811f3d539bc91c7b11df8a2f4e012685712a30068f668.
-//
-// Solidity: event ValidatorGroupVoteRevoked(address indexed account, address indexed group, uint256 value)
-func (_Election *ElectionFilterer) WatchValidatorGroupVoteRevoked(opts *bind.WatchOpts, sink chan<- *ElectionValidatorGroupVoteRevoked, account []common.Address, group []common.Address) (event.Subscription, error) {
-
-	var accountRule []interface{}
-	for _, accountItem := range account {
-		accountRule = append(accountRule, accountItem)
-	}
-	var groupRule []interface{}
-	for _, groupItem := range group {
-		groupRule = append(groupRule, groupItem)
-	}
-
-	logs, sub, err := _Election.contract.WatchLogs(opts, "ValidatorGroupVoteRevoked", accountRule, groupRule)
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(ElectionValidatorGroupVoteRevoked)
-				if err := _Election.contract.UnpackLog(event, "ValidatorGroupVoteRevoked", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseValidatorGroupVoteRevoked is a log parse operation binding the contract event 0xa06c722f7d446349fdd811f3d539bc91c7b11df8a2f4e012685712a30068f668.
-//
-// Solidity: event ValidatorGroupVoteRevoked(address indexed account, address indexed group, uint256 value)
-func (_Election *ElectionFilterer) ParseValidatorGroupVoteRevoked(log types.Log) (*ElectionValidatorGroupVoteRevoked, error) {
-	event := new(ElectionValidatorGroupVoteRevoked)
-	if err := _Election.contract.UnpackLog(event, "ValidatorGroupVoteRevoked", log); err != nil {
 		return nil, err
 	}
 	return event, nil

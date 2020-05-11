@@ -64,8 +64,22 @@ func printBlockContext(rosettabBlock *types.Block) {
 	gpm, err := db.GasPriceMinimumFor(ctx, blockNumber)
 	utils.ExitOnError(err)
 
-	names := []string{"Governance", "GasPriceMinimum", "LockedGold", "Election", "StableToken", "Validators", "EpochRewards"}
-	addresses, err := db.RegistryAddressesStartOf(ctx, blockNumber, 0, names...)
+	tobinTax, err := db.TobinTaxFor(ctx, blockNumber)
+	utils.ExitOnError(err)
+
+	contractNames := []string{
+		"Governance",
+		"GasPriceMinimum",
+		"LockedGold",
+		"Election",
+		"EpochRewards",
+		"Reserve",
+	}
+
+	contractAddresses, err := db.RegistryAddressesStartOf(ctx, blockNumber, 0, contractNames...)
+	utils.ExitOnError(err)
+
+	carbonOffsetPartner, err := db.CarbonOffsetPartnerStartOf(ctx, blockNumber, 0)
 	utils.ExitOnError(err)
 
 	block, err := cc.Eth.BlockByNumber(ctx, blockNumber)
@@ -74,10 +88,13 @@ func printBlockContext(rosettabBlock *types.Block) {
 	printTitle("Block Context")
 	w := tabwriter.NewWriter(os.Stdout, 20, 5, 3, ' ', tabwriter.TabIndent)
 	fmt.Fprintf(w, "GasPriceMinimum:\t%s\n", gpm)
+	fmt.Fprintf(w, "TobinTax:\t%s\n", tobinTax)
 	fmt.Fprintf(w, "Coinbase:\t%s\n", block.Coinbase().Hex())
-
-	for _, name := range names {
-		if addr, ok := addresses[name]; ok {
+	if carbonOffsetPartner != common.ZeroAddress {
+		fmt.Fprintf(w, "CarbonOffsetPartner:\t%s\n", carbonOffsetPartner.Hex())
+	}
+	for _, name := range contractNames {
+		if addr, ok := contractAddresses[name]; ok {
 			fmt.Fprintf(w, "%s:\t%s\n", name, addr.Hex())
 		} else {
 			fmt.Fprintf(w, "%s:\t%s\n", name, "Not Deployed")
@@ -88,15 +105,17 @@ func printBlockContext(rosettabBlock *types.Block) {
 	printTitle("Block Transactions")
 	for i, rtx := range rosettabBlock.Transactions {
 		fmt.Printf("Transaction %d: %s\n", i, rtx.TransactionIdentifier.Hash)
-		txHash := common.HexToHash(rtx.TransactionIdentifier.Hash)
-		tx := block.Transaction(txHash)
-		receipt, err := cc.Eth.TransactionReceipt(ctx, txHash)
-		utils.ExitOnError(err)
+		if rtx.TransactionIdentifier.Hash != rosettabBlock.BlockIdentifier.Hash {
+			txHash := common.HexToHash(rtx.TransactionIdentifier.Hash)
+			tx := block.Transaction(txHash)
+			receipt, err := cc.Eth.TransactionReceipt(ctx, txHash)
+			utils.ExitOnError(err)
 
-		fmt.Printf("GasPrice: %s\tGasUsed: %d\tStatus:%d\n", tx.GasPrice(), receipt.GasUsed, receipt.Status)
+			fmt.Printf("GasPrice: %s\tGasUsed: %d\tStatus:%d\n", tx.GasPrice(), receipt.GasUsed, receipt.Status)
+		}
 		fmt.Println("Operations")
 		w = tabwriter.NewWriter(os.Stdout, 20, 5, 3, ' ', tabwriter.TabIndent)
-		fmt.Fprintf(w, "Account\tAmount\tType\tStatus\n")
+		fmt.Fprintf(w, "Account\tAmount\tType\tCurrency\tStatus\n")
 		for _, op := range rtx.Operations {
 			var acc string
 			if op.Account.SubAccount == nil {
@@ -106,15 +125,15 @@ func printBlockContext(rosettabBlock *types.Block) {
 			} else {
 				acc = fmt.Sprintf("%s - %s", op.Account.Address, op.Account.SubAccount.Address)
 			}
-			amount := "<nil>"
+			amount, currency := "<nil>", "<nil>"
 			if op.Amount != nil {
 				amount = op.Amount.Value
+				currency = op.Amount.Currency.Symbol
 			}
-			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", acc, amount, op.Type, op.Status)
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", acc, amount, op.Type, currency, op.Status)
 		}
 		w.Flush()
 	}
 
 	// fmt.Printf("Coinbase:\t%s\n", gpm)
-
 }

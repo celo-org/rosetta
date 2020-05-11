@@ -48,11 +48,13 @@ func NewTracer(ctx context.Context, cc *client.CeloClient, db db.RosettaDBReader
 func (tr *Tracer) TraceTransaction(blockHeader *types.Header, tx *types.Transaction, receipt *types.Receipt) ([]Operation, error) {
 	var operations []Operation
 
-	gasOperation, err := tr.TxGasDetails(blockHeader, tx, receipt)
-	if err != nil {
-		return nil, err
+	if tx.FeeCurrency() == nil { // nil implies cGLD
+		gasOperation, err := tr.TxGasDetails(blockHeader, tx, receipt)
+		if err != nil {
+			return nil, err
+		}
+		operations = append(operations, *gasOperation)
 	}
-	operations = append(operations, *gasOperation)
 
 	lockedGoldOperations, err := tr.TxLockedGoldTransfers(blockHeader, tx, receipt)
 	if err != nil {
@@ -69,12 +71,15 @@ func (tr *Tracer) TraceTransaction(blockHeader *types.Header, tx *types.Transact
 
 	// We assume both arrays are in order
 	// then look for the first lockedGold operation with a change in AccMain
-	// and look for the matching transfer
+	// and look for the matching transfer.
+	//
+	// TobinTax transfers for locked gold operations are included in transferOperations
+	// and are not filtered out here, though the duplicate locked gold operations are.
 	ti := 0
 	for _, lgOp := range lockedGoldOperations {
-		// only interested in lockedGold with credit/degits on AccMain
+		// only interested in lockedGold with credit/debits on AccMain
 		if lgOp.Type == OpLockGold || lgOp.Type == OpWithdrawGold || lgOp.Type == OpSlash {
-			// search for the next transfer that match this
+			// search for the next transfer that matches
 			for ; ti < len(transferOperations) && !MatchChangesOnSubAccount(&lgOp, &transferOperations[ti], AccMain); ti++ {
 				// if it doesn't match, it's good to add it to the operations
 				operations = append(operations, transferOperations[ti])
@@ -139,6 +144,7 @@ func (tr *Tracer) TxGasDetails(blockHeader *types.Header, tx *types.Transaction,
 }
 
 func (tr *Tracer) TxTransfers(blockHeader *types.Header, tx *types.Transaction, receipt *types.Receipt) ([]Operation, error) {
+
 	if receipt.Status == types.ReceiptStatusFailed {
 		return nil, nil
 	}
@@ -148,9 +154,35 @@ func (tr *Tracer) TxTransfers(blockHeader *types.Header, tx *types.Transaction, 
 		return nil, fmt.Errorf("can't run celo-rcp tx-tracer: %w", err)
 	}
 
-	transfers := make([]Operation, len(internalTransfers))
-	for i, it := range internalTransfers {
-		transfers[i] = *NewTransfer(it.From, it.To, it.Value, it.Status.String() == debug.TransferStatusSuccess.String())
+	tobinTax, err := tr.db.TobinTaxFor(tr.ctx, blockHeader.Number)
+	if err != nil {
+		return nil, err
+	}
+
+	var transfers []Operation
+
+	if tobinTax.Cmp(utils.Big0) > 0 {
+		reserve, err := tr.db.RegistryAddressStartOf(tr.ctx, blockHeader.Number, receipt.TransactionIndex, "Reserve")
+		if err != nil {
+			return nil, err
+		}
+
+		transfers = make([]Operation, 2*len(internalTransfers))
+		var successful bool
+		var tobinTaxAmount *big.Int
+		i := 0
+		for _, it := range internalTransfers {
+			successful = it.Status.String() == debug.TransferStatusSuccess.String()
+			tobinTaxAmount = utils.CalcTobinTaxAmount(it.Value, tobinTax)
+			transfers[i] = *NewTransfer(it.From, it.To, new(big.Int).Sub(it.Value, tobinTaxAmount), successful)
+			transfers[i+1] = *NewTransfer(it.From, reserve, tobinTaxAmount, successful)
+			i = i + 2
+		}
+	} else {
+		transfers = make([]Operation, len(internalTransfers))
+		for i, it := range internalTransfers {
+			transfers[i] = *NewTransfer(it.From, it.To, it.Value, it.Status.String() == debug.TransferStatusSuccess.String())
+		}
 	}
 	return transfers, nil
 }
@@ -210,14 +242,14 @@ func (tr *Tracer) TxLockedGoldTransfers(blockHeader *types.Header, tx *types.Tra
 				// activate() [ValidatorGroupVoteActivated] => lockVotingPending->lockVotingActive
 				event := eventRaw.(*contract.ElectionValidatorGroupVoteActivated)
 				transfers = append(transfers, *NewActiveVotes(event.Account, event.Group, event.Value))
-			case "ValidatorGroupVoteRevoked":
-				// revokePending() [ValidatorGroupVoteRevoked] => lockVotingPending->lockNonVoting
-				event := eventRaw.(*contract.ElectionValidatorGroupVoteRevoked)
+			case "ValidatorGroupPendingVoteRevoked":
+				// revokePending() [ValidatorGroupPendingVoteRevoked] => lockVotingPending->lockNonVoting
+				event := eventRaw.(*contract.ElectionValidatorGroupPendingVoteRevoked)
 				transfers = append(transfers, *NewRevokePendingVotes(event.Account, event.Group, event.Value))
-				// case "ValidatorGroupVoteRevoked":
-				// 	// revokeActive() [ValidatorGroupVoteRevoked] => lockVotingActive->lockNonVoting
-				// 	event := eventRaw.(contract.ElectionValidatorGroupVoteRevoked)
-				// 	transfers = append(transfers, *NewVote(event.Account, event.Group, event.Value))
+			case "ValidatorGroupActiveVoteRevoked":
+				// revokeActive() [ValidatorGroupActiveVoteRevoked] => lockVotingActive->lockNonVoting
+				event := eventRaw.(contract.ElectionValidatorGroupActiveVoteRevoked)
+				transfers = append(transfers, *NewRevokeActiveVotes(event.Account, event.Group, event.Value))
 			}
 
 		} else if eventLog.Address == lockedGoldAddr {

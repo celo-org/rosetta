@@ -26,11 +26,11 @@ import (
 
 var (
 	gethBinary  = os.ExpandEnv("${CELO_BLOCKCHAIN_PATH}/build/bin/geth")
-	genesis     = "./envs/rc0/genesis.json"
-	datadir     = "./envs/rc0/celo"
-	sqlitepath  = "./envs/rc0/rosetta.db"
+	genesis     = "./envs/alfajores/genesis.json"
+	datadir     = "./envs/alfajores/celo"
+	sqlitepath  = "./envs/alfajores/rosetta.db"
 	staticNodes = []string{
-		"enode://33ac194052ccd10ce54101c8340dbbe7831de02a3e7dcbca7fd35832ff8c53a72fd75e57ce8c8e73a0ace650dc2c2ec1e36f0440e904bc20a3cf5927f2323e85@34.83.199.225:30303",
+		"enode://e99a883d0b7d0bacb84cde98c4729933b49adbc94e718b77fdb31779c7ed9da6c49236330a9ae096f42bcbf6e803394229120201704b7a4a3ae8004993fa0876@35.247.115.108:30303",
 	}
 )
 

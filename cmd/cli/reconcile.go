@@ -24,6 +24,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/celo-org/rosetta/cmd/internal/utils"
+	"github.com/celo-org/rosetta/service/rpc"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/log"
@@ -147,7 +148,7 @@ func reconcileRange(blocks []*types.Block, checkDifferences func(id string, chan
 
 		for _, tx := range block.Transactions {
 			for _, op := range tx.Operations {
-				if op.Amount != nil {
+				if op.Amount != nil && op.Amount.Currency.Symbol == rpc.CeloGold.Symbol && op.Status == string(rpc.OperationSuccess) {
 					val, _ := new(big.Int).SetString(op.Amount.Value, 10)
 					blockChanges.Add(op.Account, val)
 					rangeChanges.Add(op.Account, val)

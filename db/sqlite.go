@@ -26,18 +26,24 @@ import (
 type rosettaSqlDb struct {
 	db *sql.DB
 
-	getLastBlockStmt          *sql.Stmt
-	updateLastBlockStmt       *sql.Stmt
-	getRegistryAddressStmt    *sql.Stmt
-	getGasPriceMinimumStmt    *sql.Stmt
-	insertGasPriceMinimumStmt *sql.Stmt
-	insertRegistryAddressStmt *sql.Stmt
+	getLastBlockStmt              *sql.Stmt
+	updateLastBlockStmt           *sql.Stmt
+	getRegistryAddressStmt        *sql.Stmt
+	getGasPriceMinimumStmt        *sql.Stmt
+	getTobinTaxStmt               *sql.Stmt
+	getCarbonOffsetPartnerStmt    *sql.Stmt
+	insertGasPriceMinimumStmt     *sql.Stmt
+	insertTobinTaxStmt            *sql.Stmt
+	insertRegistryAddressStmt     *sql.Stmt
+	insertCarbonOffsetPartnerStmt *sql.Stmt
 }
 
 func initDatabase(db *sql.DB) error {
 	schema := []string{
 		"CREATE table IF NOT EXISTS registry (contract text, fromBlock integer, fromTx integer, address blob)",
 		"CREATE table IF NOT EXISTS gasPriceMinimum (fromBlock integer, val blob)",
+		"CREATE table IF NOT EXISTS tobinTax (fromBlock integer, val blob)",
+		"CREATE table IF NOT EXISTS carbonOffsetPartner (fromBlock integer, fromTx integer, address blob)",
 		"CREATE table IF NOT EXISTS stats (lastBlock integer not null DEFAULT 0)",
 	}
 
@@ -83,7 +89,17 @@ func NewSqliteDb(dbpath string) (*rosettaSqlDb, error) {
 		return nil, err
 	}
 
+	insertTobinTaxStmt, err := db.Prepare("INSERT INTO tobinTax (fromBlock, val) VALUES (?, ?)")
+	if err != nil {
+		return nil, err
+	}
+
 	insertRegistryAddressStmt, err := db.Prepare("INSERT INTO registry (contract, fromBlock, fromTx, address) VALUES (?, ?, ?, ?)")
+	if err != nil {
+		return nil, err
+	}
+
+	insertCarbonOffsetPartnerStmt, err := db.Prepare("INSERT INTO carbonOffsetPartner (fromBlock, fromTx, address) VALUES (?, ?, ?)")
 	if err != nil {
 		return nil, err
 	}
@@ -115,14 +131,40 @@ func NewSqliteDb(dbpath string) (*rosettaSqlDb, error) {
 		return nil, err
 	}
 
+	getTobinTaxStmt, err := db.Prepare(`
+		SELECT val 
+			FROM tobinTax 
+			WHERE fromBlock <= $1 
+			ORDER BY fromblock DESC
+			LIMIT 1
+	`)
+	if err != nil {
+		return nil, err
+	}
+
+	getCarbonOffsetPartnerStmt, err := db.Prepare(`
+		SELECT address 
+			FROM carbonOffsetPartner 
+			WHERE fromBlock < $1 OR (fromBlock = $1 AND fromTx < $2)
+			ORDER BY fromblock DESC, fromTx DESC 
+			LIMIT 1
+	`)
+	if err != nil {
+		return nil, err
+	}
+
 	return &rosettaSqlDb{
-		db:                        db,
-		getLastBlockStmt:          getLastBlockStmt,
-		updateLastBlockStmt:       updateLastBlockStmt,
-		getRegistryAddressStmt:    getRegistryAddressStmt,
-		getGasPriceMinimumStmt:    getGasPriceMinimumStmt,
-		insertGasPriceMinimumStmt: insertGasPriceMinimumStmt,
-		insertRegistryAddressStmt: insertRegistryAddressStmt,
+		db:                            db,
+		getLastBlockStmt:              getLastBlockStmt,
+		updateLastBlockStmt:           updateLastBlockStmt,
+		getRegistryAddressStmt:        getRegistryAddressStmt,
+		getGasPriceMinimumStmt:        getGasPriceMinimumStmt,
+		getTobinTaxStmt:               getTobinTaxStmt,
+		getCarbonOffsetPartnerStmt:    getCarbonOffsetPartnerStmt,
+		insertGasPriceMinimumStmt:     insertGasPriceMinimumStmt,
+		insertTobinTaxStmt:            insertTobinTaxStmt,
+		insertRegistryAddressStmt:     insertRegistryAddressStmt,
+		insertCarbonOffsetPartnerStmt: insertCarbonOffsetPartnerStmt,
 	}, nil
 }
 
@@ -172,6 +214,25 @@ func (cs *rosettaSqlDb) GasPriceMinimumFor(ctx context.Context, block *big.Int) 
 	return new(big.Int).SetBytes(gpmBytes), nil
 }
 
+//TODO(Alec): What about "Error calling getOrComputeTobinTaxFunctionSelector" in Geth?
+
+func (cs *rosettaSqlDb) TobinTaxFor(ctx context.Context, block *big.Int) (*big.Int, error) {
+	if err := cs.CheckBlockNumber(ctx, block); err != nil {
+		return nil, err
+	}
+
+	var tobinTaxNumerator []byte
+
+	if err := cs.getTobinTaxStmt.QueryRowContext(ctx, block.Uint64()).Scan(&tobinTaxNumerator); err != nil {
+		if err == sql.ErrNoRows {
+			return big.NewInt(0), nil
+		}
+		return nil, err
+	}
+
+	return new(big.Int).SetBytes(tobinTaxNumerator), nil
+}
+
 func (cs *rosettaSqlDb) RegistryAddressStartOf(ctx context.Context, block *big.Int, txIndex uint, contractName string) (common.Address, error) {
 	if err := cs.CheckBlockNumber(ctx, block); err != nil {
 		return common.ZeroAddress, err
@@ -207,6 +268,23 @@ func (cs *rosettaSqlDb) RegistryAddressesStartOf(ctx context.Context, block *big
 	return addresses, nil
 }
 
+func (cs *rosettaSqlDb) CarbonOffsetPartnerStartOf(ctx context.Context, block *big.Int, txIndex uint) (common.Address, error) {
+	if err := cs.CheckBlockNumber(ctx, block); err != nil {
+		return common.ZeroAddress, err
+	}
+
+	var addr common.Address
+
+	if err := cs.getCarbonOffsetPartnerStmt.QueryRowContext(ctx, block.Uint64(), txIndex).Scan(&addr); err != nil {
+		if err == sql.ErrNoRows {
+			return common.ZeroAddress, nil
+		}
+		return common.ZeroAddress, err
+	}
+
+	return addr, nil
+}
+
 func (cs *rosettaSqlDb) ApplyChanges(ctx context.Context, changeSet *BlockChangeSet) error {
 
 	tx, err := cs.db.BeginTx(ctx, nil)
@@ -222,16 +300,6 @@ func (cs *rosettaSqlDb) ApplyChanges(ctx context.Context, changeSet *BlockChange
 		return err
 	}
 
-	if changeSet.GasPriceMinimum != nil {
-		_, err = tx.StmtContext(ctx, cs.insertGasPriceMinimumStmt).ExecContext(ctx, changeSet.BlockNumber.Int64(), changeSet.GasPriceMinimum.Bytes())
-		if err != nil {
-			if rollbackErr := tx.Rollback(); rollbackErr != nil {
-				return rollbackErr
-			}
-			return err
-		}
-	}
-
 	setRegisteredAddressOnStmtPrep := tx.StmtContext(ctx, cs.insertRegistryAddressStmt)
 
 	for _, rc := range changeSet.RegistryChanges {
@@ -242,6 +310,34 @@ func (cs *rosettaSqlDb) ApplyChanges(ctx context.Context, changeSet *BlockChange
 			return err
 		}
 	}
+
+	if changeSet.GasPriceMinimum != nil {
+		if _, err = tx.StmtContext(ctx, cs.insertGasPriceMinimumStmt).ExecContext(ctx, changeSet.BlockNumber.Int64(), changeSet.GasPriceMinimum.Bytes()); err != nil {
+			if rollbackErr := tx.Rollback(); rollbackErr != nil {
+				return rollbackErr
+			}
+			return err
+		}
+	}
+
+	if changeSet.TobinTax != nil {
+		if _, err = tx.StmtContext(ctx, cs.insertTobinTaxStmt).ExecContext(ctx, changeSet.BlockNumber.Int64(), changeSet.TobinTax.Bytes()); err != nil {
+			if rollbackErr := tx.Rollback(); rollbackErr != nil {
+				return rollbackErr
+			}
+			return err
+		}
+	}
+
+	if changeSet.CarbonOffsetPartnerChange.Address != common.ZeroAddress {
+		if _, err = tx.StmtContext(ctx, cs.insertCarbonOffsetPartnerStmt).ExecContext(ctx, changeSet.BlockNumber.Int64(), int64(changeSet.CarbonOffsetPartnerChange.TxIndex), changeSet.CarbonOffsetPartnerChange.Address); err != nil {
+			if rollbackErr := tx.Rollback(); rollbackErr != nil {
+				return rollbackErr
+			}
+			return err
+		}
+	}
+
 	if err := tx.Commit(); err != nil {
 		return err
 	}

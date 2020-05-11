@@ -1250,7 +1250,7 @@ func (_StableToken *StableTokenTransactorSession) TransferWithComment(to common.
 	return _StableToken.Contract.TransferWithComment(&_StableToken.TransactOpts, to, value, comment)
 }
 
-// TryParseLog attempts to parse a log. Returns the parsed log, eventName and whether it was successful
+// TryParseLog attempts to parse a log. Returns the parsed log, evenName and whether it was succesfull
 func (_StableToken *StableTokenFilterer) TryParseLog(log types.Log) (eventName string, event interface{}, ok bool, err error) {
 	eventName, ok, err = _StableToken.contract.LogEventName(log)
 	if err != nil || !ok {

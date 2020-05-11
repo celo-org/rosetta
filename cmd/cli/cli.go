@@ -43,7 +43,7 @@ func init() {
 	CliCmd.AddCommand(reconcileCmd)
 
 	CliCmd.PersistentFlags().StringVar(&serverUrl, "url", "http://localhost:8080", "Base url for rosetta rpc")
-	CliCmd.PersistentFlags().StringVar(&dbPath, "db", "./envs/rc0/rosetta.db", "RosettaDb path")
+	CliCmd.PersistentFlags().StringVar(&dbPath, "db", "./envs/alfajores/rosetta.db", "RosettaDb path")
 	CliCmd.PersistentFlags().StringVar(&dbPath, "nodeUrl", "http://localhost:8545", "Geth Node url")
 }
 
@@ -63,7 +63,7 @@ func getFetcher() (*fetcher.Fetcher, *types.NetworkIdentifier, *types.NetworkSta
 }
 
 func getDb() db.RosettaDB {
-	celoStore, err := db.NewSqliteDb("./envs/rc0/rosetta.db")
+	celoStore, err := db.NewSqliteDb("./envs/alfajores/rosetta.db")
 	utils.ExitOnError(err)
 	return celoStore
 }

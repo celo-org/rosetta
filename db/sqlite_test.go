@@ -179,6 +179,63 @@ func TestGasPriceMinimum(t *testing.T) {
 
 }
 
+func TestTobinTax(t *testing.T) {
+	RegisterTestingT(t)
+	ctx := context.Background()
+
+	celoDb, err := NewSqliteDb(":memory:")
+	Ω(err).ShouldNot(HaveOccurred())
+
+	err = celoDb.ApplyChanges(ctx, &BlockChangeSet{
+		BlockNumber: big.NewInt(10),
+		TobinTax:    big.NewInt(50000),
+	})
+	Ω(err).ShouldNot(HaveOccurred())
+
+	err = celoDb.ApplyChanges(ctx, &BlockChangeSet{
+		BlockNumber: big.NewInt(15),
+		TobinTax:    big.NewInt(100000),
+	})
+	Ω(err).ShouldNot(HaveOccurred())
+
+	var tobinTax *big.Int
+
+	t.Run("Before", func(t *testing.T) {
+		RegisterTestingT(t)
+		tobinTax, err = celoDb.TobinTaxFor(ctx, big.NewInt(9))
+		Ω(err).ShouldNot(HaveOccurred())
+		Ω(tobinTax.Uint64()).Should(Equal(uint64(0)))
+	})
+
+	t.Run("Same Block", func(t *testing.T) {
+		RegisterTestingT(t)
+		tobinTax, err = celoDb.TobinTaxFor(ctx, big.NewInt(10))
+		Ω(err).ShouldNot(HaveOccurred())
+		Ω(tobinTax.Uint64()).Should(Equal(uint64(50000)))
+	})
+
+	t.Run("After Block", func(t *testing.T) {
+		RegisterTestingT(t)
+		tobinTax, err = celoDb.TobinTaxFor(ctx, big.NewInt(11))
+		Ω(err).ShouldNot(HaveOccurred())
+		Ω(tobinTax.Uint64()).Should(Equal(uint64(50000)))
+	})
+
+	t.Run("On Next Change", func(t *testing.T) {
+		RegisterTestingT(t)
+		tobinTax, err = celoDb.TobinTaxFor(ctx, big.NewInt(15))
+		Ω(err).ShouldNot(HaveOccurred())
+		Ω(tobinTax.Uint64()).Should(Equal(uint64(100000)))
+	})
+
+	t.Run("After Last Persisted Change", func(t *testing.T) {
+		RegisterTestingT(t)
+		tobinTax, err = celoDb.TobinTaxFor(ctx, big.NewInt(17))
+		Ω(err).Should(Equal(ErrFutureBlock))
+	})
+
+}
+
 func TestGasPriceMinimum_VeryLargeNumber(t *testing.T) {
 	RegisterTestingT(t)
 	ctx := context.Background()
@@ -201,4 +258,78 @@ func TestGasPriceMinimum_VeryLargeNumber(t *testing.T) {
 	Ω(gpm.String()).Should(Equal(value.String()))
 }
 
-//TODO(Alec): Add more tests
+func TestSetCarbonOffsetPartner(t *testing.T) {
+	RegisterTestingT(t)
+	ctx := context.Background()
+
+	celoDb, err := NewSqliteDb(":memory:")
+	Ω(err).ShouldNot(HaveOccurred())
+
+	err = celoDb.ApplyChanges(ctx, &BlockChangeSet{
+		BlockNumber: big.NewInt(10),
+		CarbonOffsetPartnerChange: CarbonOffsetPartnerChange{
+			TxIndex: 4,
+			Address: common.HexToAddress("0x34"),
+		},
+	})
+	Ω(err).ShouldNot(HaveOccurred())
+
+	err = celoDb.ApplyChanges(ctx, &BlockChangeSet{
+		BlockNumber: big.NewInt(15),
+		CarbonOffsetPartnerChange: CarbonOffsetPartnerChange{
+			TxIndex: 4,
+			Address: common.HexToAddress("0x111"),
+		},
+	})
+	Ω(err).ShouldNot(HaveOccurred())
+
+	var addr common.Address
+
+	t.Run("Before", func(t *testing.T) {
+		RegisterTestingT(t)
+		addr, err = celoDb.CarbonOffsetPartnerStartOf(ctx, big.NewInt(2), 8)
+		Ω(err).ShouldNot(HaveOccurred())
+		Ω(addr).Should(Equal(common.ZeroAddress))
+	})
+
+	t.Run("Same Block, Before Tx", func(t *testing.T) {
+		RegisterTestingT(t)
+		addr, err = celoDb.CarbonOffsetPartnerStartOf(ctx, big.NewInt(10), 4)
+		Ω(err).ShouldNot(HaveOccurred())
+		Ω(addr).Should(Equal(common.ZeroAddress))
+	})
+
+	t.Run("Same Block & Tx", func(t *testing.T) {
+		RegisterTestingT(t)
+		addr, err = celoDb.CarbonOffsetPartnerStartOf(ctx, big.NewInt(10), 5)
+		Ω(err).ShouldNot(HaveOccurred())
+		Ω(addr).Should(Equal(common.HexToAddress("0x34")))
+	})
+
+	t.Run("Same Block & After Tx", func(t *testing.T) {
+		RegisterTestingT(t)
+		addr, err = celoDb.CarbonOffsetPartnerStartOf(ctx, big.NewInt(10), 7)
+		Ω(err).ShouldNot(HaveOccurred())
+		Ω(addr).Should(Equal(common.HexToAddress("0x34")))
+	})
+
+	t.Run("After Block & Before Tx", func(t *testing.T) {
+		RegisterTestingT(t)
+		addr, err = celoDb.CarbonOffsetPartnerStartOf(ctx, big.NewInt(11), 3)
+		Ω(err).ShouldNot(HaveOccurred())
+		Ω(addr).Should(Equal(common.HexToAddress("0x34")))
+	})
+
+	t.Run("On Next Change", func(t *testing.T) {
+		RegisterTestingT(t)
+		addr, err = celoDb.CarbonOffsetPartnerStartOf(ctx, big.NewInt(15), 5)
+		Ω(err).ShouldNot(HaveOccurred())
+		Ω(addr).Should(Equal(common.HexToAddress("0x111")))
+	})
+
+	t.Run("After Last Persisted Change", func(t *testing.T) {
+		RegisterTestingT(t)
+		addr, err = celoDb.CarbonOffsetPartnerStartOf(ctx, big.NewInt(16), 1)
+		Ω(err).Should(Equal(ErrFutureBlock))
+	})
+}

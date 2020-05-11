@@ -14,7 +14,9 @@
 
 package utils
 
-import "math/big"
+import (
+	"math/big"
+)
 
 var Big0 = big.NewInt(0)
 var Big1 = big.NewInt(1)

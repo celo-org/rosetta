@@ -42,7 +42,7 @@ var (
 )
 
 // EpochRewardsABI is the input ABI used to generate the binding from.
-const EpochRewardsABI = "[{\"constant\":true,\"inputs\":[{\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"validatorSignerAddressFromCurrentSet\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"initialized\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"carbonOffsettingPartner\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"sender\",\"type\":\"address\"},{\"name\":\"blsKey\",\"type\":\"bytes\"},{\"name\":\"blsPop\",\"type\":\"bytes\"}],\"name\":\"checkProofOfPossession\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"blockNumber\",\"type\":\"uint256\"}],\"name\":\"getEpochNumberOfBlock\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"header\",\"type\":\"bytes\"}],\"name\":\"getVerifiedSealBitmapFromHeader\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"index\",\"type\":\"uint256\"},{\"name\":\"blockNumber\",\"type\":\"uint256\"}],\"name\":\"validatorSignerAddressFromSet\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"header\",\"type\":\"bytes\"}],\"name\":\"hashHeader\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"minQuorumSizeInCurrentSet\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"startTime\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"registry\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"numberValidatorsInCurrentSet\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"header\",\"type\":\"bytes\"}],\"name\":\"getBlockNumberFromHeader\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"isOwner\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getEpochNumber\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"blockNumber\",\"type\":\"uint256\"}],\"name\":\"numberValidatorsInSet\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"registryAddress\",\"type\":\"address\"}],\"name\":\"setRegistry\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getEpochSize\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"targetValidatorEpochPayment\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"blockNumber\",\"type\":\"uint256\"}],\"name\":\"minQuorumSize\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"aNumerator\",\"type\":\"uint256\"},{\"name\":\"aDenominator\",\"type\":\"uint256\"},{\"name\":\"bNumerator\",\"type\":\"uint256\"},{\"name\":\"bDenominator\",\"type\":\"uint256\"},{\"name\":\"exponent\",\"type\":\"uint256\"},{\"name\":\"_decimals\",\"type\":\"uint256\"}],\"name\":\"fractionMulExp\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"},{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"blockNumber\",\"type\":\"uint256\"}],\"name\":\"getParentSealBitmap\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"fraction\",\"type\":\"uint256\"}],\"name\":\"TargetVotingGoldFractionSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"fraction\",\"type\":\"uint256\"}],\"name\":\"CommunityRewardFractionSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"partner\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"fraction\",\"type\":\"uint256\"}],\"name\":\"CarbonOffsettingFundSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"payment\",\"type\":\"uint256\"}],\"name\":\"TargetValidatorEpochPaymentSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"max\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"adjustmentFactor\",\"type\":\"uint256\"}],\"name\":\"TargetVotingYieldParametersSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"max\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"underspendAdjustmentFactor\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"overspendAdjustmentFactor\",\"type\":\"uint256\"}],\"name\":\"RewardsMultiplierParametersSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"fraction\",\"type\":\"uint256\"}],\"name\":\"TargetVotingYieldUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"registryAddress\",\"type\":\"address\"}],\"name\":\"RegistrySet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"constant\":false,\"inputs\":[{\"name\":\"registryAddress\",\"type\":\"address\"},{\"name\":\"targetVotingYieldInitial\",\"type\":\"uint256\"},{\"name\":\"targetVotingYieldMax\",\"type\":\"uint256\"},{\"name\":\"targetVotingYieldAdjustmentFactor\",\"type\":\"uint256\"},{\"name\":\"rewardsMultiplierMax\",\"type\":\"uint256\"},{\"name\":\"rewardsMultiplierUnderspendAdjustmentFactor\",\"type\":\"uint256\"},{\"name\":\"rewardsMultiplierOverspendAdjustmentFactor\",\"type\":\"uint256\"},{\"name\":\"_targetVotingGoldFraction\",\"type\":\"uint256\"},{\"name\":\"_targetValidatorEpochPayment\",\"type\":\"uint256\"},{\"name\":\"_communityRewardFraction\",\"type\":\"uint256\"},{\"name\":\"_carbonOffsettingPartner\",\"type\":\"address\"},{\"name\":\"_carbonOffsettingFraction\",\"type\":\"uint256\"}],\"name\":\"initialize\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getTargetVotingYieldParameters\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"},{\"name\":\"\",\"type\":\"uint256\"},{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getRewardsMultiplierParameters\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"},{\"name\":\"\",\"type\":\"uint256\"},{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"setCommunityRewardFraction\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getCommunityRewardFraction\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"partner\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"setCarbonOffsettingFund\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getCarbonOffsettingFraction\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"setTargetVotingGoldFraction\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getTargetVotingGoldFraction\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"setTargetValidatorEpochPayment\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"max\",\"type\":\"uint256\"},{\"name\":\"underspendAdjustmentFactor\",\"type\":\"uint256\"},{\"name\":\"overspendAdjustmentFactor\",\"type\":\"uint256\"}],\"name\":\"setRewardsMultiplierParameters\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"max\",\"type\":\"uint256\"},{\"name\":\"adjustmentFactor\",\"type\":\"uint256\"}],\"name\":\"setTargetVotingYieldParameters\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getTargetGoldTotalSupply\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getTargetVoterRewards\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getTargetTotalEpochPaymentsInGold\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getRewardsMultiplier\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getVotingGoldFraction\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"updateTargetVotingYield\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"isReserveLow\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"calculateTargetEpochRewards\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"},{\"name\":\"\",\"type\":\"uint256\"},{\"name\":\"\",\"type\":\"uint256\"},{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}]"
+const EpochRewardsABI = "[{\"constant\":true,\"inputs\":[{\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"validatorSignerAddressFromCurrentSet\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"initialized\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"carbonOffsettingPartner\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"sender\",\"type\":\"address\"},{\"name\":\"blsKey\",\"type\":\"bytes\"},{\"name\":\"blsPop\",\"type\":\"bytes\"}],\"name\":\"checkProofOfPossession\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"blockNumber\",\"type\":\"uint256\"}],\"name\":\"getEpochNumberOfBlock\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"header\",\"type\":\"bytes\"}],\"name\":\"getVerifiedSealBitmapFromHeader\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"index\",\"type\":\"uint256\"},{\"name\":\"blockNumber\",\"type\":\"uint256\"}],\"name\":\"validatorSignerAddressFromSet\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"header\",\"type\":\"bytes\"}],\"name\":\"hashHeader\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"minQuorumSizeInCurrentSet\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"startTime\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"registry\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"numberValidatorsInCurrentSet\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"header\",\"type\":\"bytes\"}],\"name\":\"getBlockNumberFromHeader\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"isOwner\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getEpochNumber\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"blockNumber\",\"type\":\"uint256\"}],\"name\":\"numberValidatorsInSet\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"registryAddress\",\"type\":\"address\"}],\"name\":\"setRegistry\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getEpochSize\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"targetValidatorEpochPayment\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"blockNumber\",\"type\":\"uint256\"}],\"name\":\"minQuorumSize\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"aNumerator\",\"type\":\"uint256\"},{\"name\":\"aDenominator\",\"type\":\"uint256\"},{\"name\":\"bNumerator\",\"type\":\"uint256\"},{\"name\":\"bDenominator\",\"type\":\"uint256\"},{\"name\":\"exponent\",\"type\":\"uint256\"},{\"name\":\"_decimals\",\"type\":\"uint256\"}],\"name\":\"fractionMulExp\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"},{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"blockNumber\",\"type\":\"uint256\"}],\"name\":\"getParentSealBitmap\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"fraction\",\"type\":\"uint256\"}],\"name\":\"TargetVotingGoldFractionSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"fraction\",\"type\":\"uint256\"}],\"name\":\"CommunityRewardFractionSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"partner\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"fraction\",\"type\":\"uint256\"}],\"name\":\"CarbonOffsettingFundSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"payment\",\"type\":\"uint256\"}],\"name\":\"TargetValidatorEpochPaymentSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"max\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"adjustmentFactor\",\"type\":\"uint256\"}],\"name\":\"TargetVotingYieldParametersSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"target\",\"type\":\"uint256\"}],\"name\":\"TargetVotingYieldSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"max\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"underspendAdjustmentFactor\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"overspendAdjustmentFactor\",\"type\":\"uint256\"}],\"name\":\"RewardsMultiplierParametersSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"fraction\",\"type\":\"uint256\"}],\"name\":\"TargetVotingYieldUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"registryAddress\",\"type\":\"address\"}],\"name\":\"RegistrySet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"constant\":false,\"inputs\":[{\"name\":\"registryAddress\",\"type\":\"address\"},{\"name\":\"targetVotingYieldInitial\",\"type\":\"uint256\"},{\"name\":\"targetVotingYieldMax\",\"type\":\"uint256\"},{\"name\":\"targetVotingYieldAdjustmentFactor\",\"type\":\"uint256\"},{\"name\":\"rewardsMultiplierMax\",\"type\":\"uint256\"},{\"name\":\"rewardsMultiplierUnderspendAdjustmentFactor\",\"type\":\"uint256\"},{\"name\":\"rewardsMultiplierOverspendAdjustmentFactor\",\"type\":\"uint256\"},{\"name\":\"_targetVotingGoldFraction\",\"type\":\"uint256\"},{\"name\":\"_targetValidatorEpochPayment\",\"type\":\"uint256\"},{\"name\":\"_communityRewardFraction\",\"type\":\"uint256\"},{\"name\":\"_carbonOffsettingPartner\",\"type\":\"address\"},{\"name\":\"_carbonOffsettingFraction\",\"type\":\"uint256\"}],\"name\":\"initialize\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getTargetVotingYieldParameters\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"},{\"name\":\"\",\"type\":\"uint256\"},{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getRewardsMultiplierParameters\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"},{\"name\":\"\",\"type\":\"uint256\"},{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"setCommunityRewardFraction\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getCommunityRewardFraction\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"partner\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"setCarbonOffsettingFund\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getCarbonOffsettingFraction\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"setTargetVotingGoldFraction\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getTargetVotingGoldFraction\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"setTargetValidatorEpochPayment\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"max\",\"type\":\"uint256\"},{\"name\":\"underspendAdjustmentFactor\",\"type\":\"uint256\"},{\"name\":\"overspendAdjustmentFactor\",\"type\":\"uint256\"}],\"name\":\"setRewardsMultiplierParameters\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"max\",\"type\":\"uint256\"},{\"name\":\"adjustmentFactor\",\"type\":\"uint256\"}],\"name\":\"setTargetVotingYieldParameters\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"targetVotingYield\",\"type\":\"uint256\"}],\"name\":\"setTargetVotingYield\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getTargetGoldTotalSupply\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getTargetVoterRewards\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getTargetTotalEpochPaymentsInGold\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getRewardsMultiplier\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getVotingGoldFraction\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"updateTargetVotingYield\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"isReserveLow\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"calculateTargetEpochRewards\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"},{\"name\":\"\",\"type\":\"uint256\"},{\"name\":\"\",\"type\":\"uint256\"},{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}]"
 
 // EpochRewards is an auto generated Go binding around an Ethereum contract.
 type EpochRewards struct {
@@ -1271,6 +1271,27 @@ func (_EpochRewards *EpochRewardsTransactorSession) SetTargetVotingGoldFraction(
 	return _EpochRewards.Contract.SetTargetVotingGoldFraction(&_EpochRewards.TransactOpts, value)
 }
 
+// SetTargetVotingYield is a paid mutator transaction binding the contract method 0xcd52782e.
+//
+// Solidity: function setTargetVotingYield(uint256 targetVotingYield) returns(bool)
+func (_EpochRewards *EpochRewardsTransactor) SetTargetVotingYield(opts *bind.TransactOpts, targetVotingYield *big.Int) (*types.Transaction, error) {
+	return _EpochRewards.contract.Transact(opts, "setTargetVotingYield", targetVotingYield)
+}
+
+// SetTargetVotingYield is a paid mutator transaction binding the contract method 0xcd52782e.
+//
+// Solidity: function setTargetVotingYield(uint256 targetVotingYield) returns(bool)
+func (_EpochRewards *EpochRewardsSession) SetTargetVotingYield(targetVotingYield *big.Int) (*types.Transaction, error) {
+	return _EpochRewards.Contract.SetTargetVotingYield(&_EpochRewards.TransactOpts, targetVotingYield)
+}
+
+// SetTargetVotingYield is a paid mutator transaction binding the contract method 0xcd52782e.
+//
+// Solidity: function setTargetVotingYield(uint256 targetVotingYield) returns(bool)
+func (_EpochRewards *EpochRewardsTransactorSession) SetTargetVotingYield(targetVotingYield *big.Int) (*types.Transaction, error) {
+	return _EpochRewards.Contract.SetTargetVotingYield(&_EpochRewards.TransactOpts, targetVotingYield)
+}
+
 // SetTargetVotingYieldParameters is a paid mutator transaction binding the contract method 0x5918bb58.
 //
 // Solidity: function setTargetVotingYieldParameters(uint256 max, uint256 adjustmentFactor) returns(bool)
@@ -1334,7 +1355,7 @@ func (_EpochRewards *EpochRewardsTransactorSession) UpdateTargetVotingYield() (*
 	return _EpochRewards.Contract.UpdateTargetVotingYield(&_EpochRewards.TransactOpts)
 }
 
-// TryParseLog attempts to parse a log. Returns the parsed log, eventName and whether it was successful
+// TryParseLog attempts to parse a log. Returns the parsed log, evenName and whether it was succesfull
 func (_EpochRewards *EpochRewardsFilterer) TryParseLog(log types.Log) (eventName string, event interface{}, ok bool, err error) {
 	eventName, ok, err = _EpochRewards.contract.LogEventName(log)
 	if err != nil || !ok {
@@ -1358,6 +1379,8 @@ func (_EpochRewards *EpochRewardsFilterer) TryParseLog(log types.Log) (eventName
 		event, err = _EpochRewards.ParseTargetVotingGoldFractionSet(log)
 	case "TargetVotingYieldParametersSet":
 		event, err = _EpochRewards.ParseTargetVotingYieldParametersSet(log)
+	case "TargetVotingYieldSet":
+		event, err = _EpochRewards.ParseTargetVotingYieldSet(log)
 	case "TargetVotingYieldUpdated":
 		event, err = _EpochRewards.ParseTargetVotingYieldUpdated(log)
 	}
@@ -1444,10 +1467,15 @@ type EpochRewardsCarbonOffsettingFundSet struct {
 
 // FilterCarbonOffsettingFundSet is a free log retrieval operation binding the contract event 0xe296227209b47bb8f4a76768ebd564dcde1c44be325a5d262f27c1fd4fd4538b.
 //
-// Solidity: event CarbonOffsettingFundSet(address partner, uint256 fraction)
-func (_EpochRewards *EpochRewardsFilterer) FilterCarbonOffsettingFundSet(opts *bind.FilterOpts) (*EpochRewardsCarbonOffsettingFundSetIterator, error) {
+// Solidity: event CarbonOffsettingFundSet(address indexed partner, uint256 fraction)
+func (_EpochRewards *EpochRewardsFilterer) FilterCarbonOffsettingFundSet(opts *bind.FilterOpts, partner []common.Address) (*EpochRewardsCarbonOffsettingFundSetIterator, error) {
 
-	logs, sub, err := _EpochRewards.contract.FilterLogs(opts, "CarbonOffsettingFundSet")
+	var partnerRule []interface{}
+	for _, partnerItem := range partner {
+		partnerRule = append(partnerRule, partnerItem)
+	}
+
+	logs, sub, err := _EpochRewards.contract.FilterLogs(opts, "CarbonOffsettingFundSet", partnerRule)
 	if err != nil {
 		return nil, err
 	}
@@ -1456,10 +1484,15 @@ func (_EpochRewards *EpochRewardsFilterer) FilterCarbonOffsettingFundSet(opts *b
 
 // WatchCarbonOffsettingFundSet is a free log subscription operation binding the contract event 0xe296227209b47bb8f4a76768ebd564dcde1c44be325a5d262f27c1fd4fd4538b.
 //
-// Solidity: event CarbonOffsettingFundSet(address partner, uint256 fraction)
-func (_EpochRewards *EpochRewardsFilterer) WatchCarbonOffsettingFundSet(opts *bind.WatchOpts, sink chan<- *EpochRewardsCarbonOffsettingFundSet) (event.Subscription, error) {
+// Solidity: event CarbonOffsettingFundSet(address indexed partner, uint256 fraction)
+func (_EpochRewards *EpochRewardsFilterer) WatchCarbonOffsettingFundSet(opts *bind.WatchOpts, sink chan<- *EpochRewardsCarbonOffsettingFundSet, partner []common.Address) (event.Subscription, error) {
 
-	logs, sub, err := _EpochRewards.contract.WatchLogs(opts, "CarbonOffsettingFundSet")
+	var partnerRule []interface{}
+	for _, partnerItem := range partner {
+		partnerRule = append(partnerRule, partnerItem)
+	}
+
+	logs, sub, err := _EpochRewards.contract.WatchLogs(opts, "CarbonOffsettingFundSet", partnerRule)
 	if err != nil {
 		return nil, err
 	}
@@ -1493,7 +1526,7 @@ func (_EpochRewards *EpochRewardsFilterer) WatchCarbonOffsettingFundSet(opts *bi
 
 // ParseCarbonOffsettingFundSet is a log parse operation binding the contract event 0xe296227209b47bb8f4a76768ebd564dcde1c44be325a5d262f27c1fd4fd4538b.
 //
-// Solidity: event CarbonOffsettingFundSet(address partner, uint256 fraction)
+// Solidity: event CarbonOffsettingFundSet(address indexed partner, uint256 fraction)
 func (_EpochRewards *EpochRewardsFilterer) ParseCarbonOffsettingFundSet(log types.Log) (*EpochRewardsCarbonOffsettingFundSet, error) {
 	event := new(EpochRewardsCarbonOffsettingFundSet)
 	if err := _EpochRewards.contract.UnpackLog(event, "CarbonOffsettingFundSet", log); err != nil {
@@ -2460,6 +2493,139 @@ func (_EpochRewards *EpochRewardsFilterer) WatchTargetVotingYieldParametersSet(o
 func (_EpochRewards *EpochRewardsFilterer) ParseTargetVotingYieldParametersSet(log types.Log) (*EpochRewardsTargetVotingYieldParametersSet, error) {
 	event := new(EpochRewardsTargetVotingYieldParametersSet)
 	if err := _EpochRewards.contract.UnpackLog(event, "TargetVotingYieldParametersSet", log); err != nil {
+		return nil, err
+	}
+	return event, nil
+}
+
+// EpochRewardsTargetVotingYieldSetIterator is returned from FilterTargetVotingYieldSet and is used to iterate over the raw logs and unpacked data for TargetVotingYieldSet events raised by the EpochRewards contract.
+type EpochRewardsTargetVotingYieldSetIterator struct {
+	Event *EpochRewardsTargetVotingYieldSet // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *EpochRewardsTargetVotingYieldSetIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(EpochRewardsTargetVotingYieldSet)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(EpochRewardsTargetVotingYieldSet)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *EpochRewardsTargetVotingYieldSetIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *EpochRewardsTargetVotingYieldSetIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// EpochRewardsTargetVotingYieldSet represents a TargetVotingYieldSet event raised by the EpochRewards contract.
+type EpochRewardsTargetVotingYieldSet struct {
+	Target *big.Int
+	Raw    types.Log // Blockchain specific contextual infos
+}
+
+// FilterTargetVotingYieldSet is a free log retrieval operation binding the contract event 0x152c3fc1e1cd415804bc9ae15876b37e62d8909358b940e6f4847ca927f46637.
+//
+// Solidity: event TargetVotingYieldSet(uint256 target)
+func (_EpochRewards *EpochRewardsFilterer) FilterTargetVotingYieldSet(opts *bind.FilterOpts) (*EpochRewardsTargetVotingYieldSetIterator, error) {
+
+	logs, sub, err := _EpochRewards.contract.FilterLogs(opts, "TargetVotingYieldSet")
+	if err != nil {
+		return nil, err
+	}
+	return &EpochRewardsTargetVotingYieldSetIterator{contract: _EpochRewards.contract, event: "TargetVotingYieldSet", logs: logs, sub: sub}, nil
+}
+
+// WatchTargetVotingYieldSet is a free log subscription operation binding the contract event 0x152c3fc1e1cd415804bc9ae15876b37e62d8909358b940e6f4847ca927f46637.
+//
+// Solidity: event TargetVotingYieldSet(uint256 target)
+func (_EpochRewards *EpochRewardsFilterer) WatchTargetVotingYieldSet(opts *bind.WatchOpts, sink chan<- *EpochRewardsTargetVotingYieldSet) (event.Subscription, error) {
+
+	logs, sub, err := _EpochRewards.contract.WatchLogs(opts, "TargetVotingYieldSet")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(EpochRewardsTargetVotingYieldSet)
+				if err := _EpochRewards.contract.UnpackLog(event, "TargetVotingYieldSet", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseTargetVotingYieldSet is a log parse operation binding the contract event 0x152c3fc1e1cd415804bc9ae15876b37e62d8909358b940e6f4847ca927f46637.
+//
+// Solidity: event TargetVotingYieldSet(uint256 target)
+func (_EpochRewards *EpochRewardsFilterer) ParseTargetVotingYieldSet(log types.Log) (*EpochRewardsTargetVotingYieldSet, error) {
+	event := new(EpochRewardsTargetVotingYieldSet)
+	if err := _EpochRewards.contract.UnpackLog(event, "TargetVotingYieldSet", log); err != nil {
 		return nil, err
 	}
 	return event, nil

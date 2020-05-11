@@ -21,6 +21,8 @@ var contractsToGenerate = []string{
 	"Election",
 	"EpochRewards",
 	"Validators",
+	"GoldToken",
+	"Reserve",
 	"Accounts",
 	"ReleaseGold",
 }
