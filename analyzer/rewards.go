@@ -108,7 +108,7 @@ func (rctx *rewardsContext) getGoldToken() (*contract.GoldToken, error) {
 	if err != nil && err != db.ErrContractNotFound {
 		return nil, err
 	}
-	if address == common.ZeroAddress {
+	if address == common.ZeroAddress || err == db.ErrContractNotFound {
 		// we don't have the address  =>
 		// We assume rewards are active AFTER migration. So, we return nil
 		return nil, nil
