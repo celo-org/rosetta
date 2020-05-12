@@ -105,7 +105,7 @@ func (rctx *rewardsContext) computeRewards(rewardsMap map[common.Address]*big.In
 
 func (rctx *rewardsContext) getGoldToken() (*contract.GoldToken, error) {
 	address, err := rctx.db.RegistryAddressStartOf(rctx.ctx, rctx.nextBlockNumber(), 0, "GoldToken")
-	if err != nil {
+	if err != nil && err != db.ErrContractNotFound {
 		return nil, err
 	}
 	if address == common.ZeroAddress {
