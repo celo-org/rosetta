@@ -22,6 +22,7 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
 )
 
@@ -124,8 +125,8 @@ func (t *Transaction) Signed() bool {
 	return t.V != nil && t.R != nil && t.S != nil
 }
 
-func (tx *Transaction) AsGethTransaction() *types.Transaction {
-	return types.NewTransaction(
+func (tx *Transaction) AsGethTransaction() (*types.Transaction, error) {
+	gethTx := types.NewTransaction(
 		tx.Nonce,
 		tx.To,
 		tx.Value,
@@ -136,13 +137,39 @@ func (tx *Transaction) AsGethTransaction() *types.Transaction {
 		tx.GatewayFee,
 		tx.Data,
 	)
+	if tx.Signed() {
+		signer := types.NewEIP155Signer(tx.ChainId)
+		signedGethTx, err := gethTx.WithSignature(signer, tx.GetSigBytes())
+		if err != nil {
+			return nil, err
+		}
+		return signedGethTx, nil
+	}
+	return gethTx, nil
 }
 
-func (tx *Transaction) Hash() common.Hash {
-	return tx.AsGethTransaction().Hash()
+func (tx *Transaction) GetSigBytes() []byte {
+	v := byte(tx.V.Uint64() - 27)
+	r, s := tx.R.Bytes(), tx.S.Bytes()
+	sig := make([]byte, crypto.SignatureLength)
+	copy(sig[32-len(r):32], r)
+	copy(sig[64-len(s):64], s)
+	sig[64] = v
+	return sig
+}
+
+func (tx *Transaction) Hash() (common.Hash, error) {
+	gethTx, err := tx.AsGethTransaction()
+	if err != nil {
+		return common.Hash{}, err
+	}
+	return gethTx.Hash(), nil
 }
 
 func (tx *Transaction) Serialize() ([]byte, error) {
-	gethTx := tx.AsGethTransaction()
+	gethTx, err := tx.AsGethTransaction()
+	if err != nil {
+		return nil, err
+	}
 	return rlp.EncodeToBytes(gethTx)
 }
