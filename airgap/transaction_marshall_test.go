@@ -48,9 +48,7 @@ func TestTransactionMarshalling(t *testing.T) {
 					Gas:                 98,
 					ChainId:             big.NewInt(2000),
 				},
-				V: big.NewInt(2000),
-				R: big.NewInt(2000),
-				S: big.NewInt(2000),
+				Signature: []byte{1, 2, 3},
 			},
 		},
 		{
@@ -67,6 +65,7 @@ func TestTransactionMarshalling(t *testing.T) {
 					Gas:        98,
 					ChainId:    big.NewInt(2000),
 				},
+				Signature: []byte{},
 			},
 		},
 	}

@@ -113,19 +113,15 @@ func (tm *TxMetadata) AsCallMessage() ethereum.CallMsg {
 
 type Transaction struct {
 	*TxMetadata `json:"metadata"`
-
-	// Signature values
-	V *big.Int `json:"v"`
-	R *big.Int `json:"r"`
-	S *big.Int `json:"s"`
+	Signature   []byte `json:"signature"`
 }
 
-func (t *Transaction) Signed() bool {
-	return t.V != nil && t.R != nil && t.S != nil
+func (tx *Transaction) Signed() bool {
+	return len(tx.Signature) > 0
 }
 
-func (tx *Transaction) AsGethTransaction() *types.Transaction {
-	return types.NewTransaction(
+func (tx *Transaction) AsGethTransaction() (*types.Transaction, error) {
+	gethTx := types.NewTransaction(
 		tx.Nonce,
 		tx.To,
 		tx.Value,
@@ -136,13 +132,44 @@ func (tx *Transaction) AsGethTransaction() *types.Transaction {
 		tx.GatewayFee,
 		tx.Data,
 	)
+	if tx.Signed() {
+		signer := types.NewEIP155Signer(tx.ChainId)
+		signedGethTx, err := gethTx.WithSignature(signer, tx.Signature)
+		if err != nil {
+			return nil, err
+		}
+		return signedGethTx, nil
+	}
+	return gethTx, nil
 }
 
-func (tx *Transaction) Hash() common.Hash {
-	return tx.AsGethTransaction().Hash()
+type SignatureValues struct {
+	V *big.Int `json:"v"`
+	R *big.Int `json:"r"`
+	S *big.Int `json:"s"`
+}
+
+func (tx *Transaction) GetSignatureValues() (*SignatureValues, error) {
+	gethTx, err := tx.AsGethTransaction()
+	if err != nil {
+		return nil, err
+	}
+	v, r, s := gethTx.RawSignatureValues()
+	return &SignatureValues{v, r, s}, nil
+}
+
+func (tx *Transaction) Hash() (common.Hash, error) {
+	gethTx, err := tx.AsGethTransaction()
+	if err != nil {
+		return common.Hash{}, err
+	}
+	return gethTx.Hash(), nil
 }
 
 func (tx *Transaction) Serialize() ([]byte, error) {
-	gethTx := tx.AsGethTransaction()
+	gethTx, err := tx.AsGethTransaction()
+	if err != nil {
+		return nil, err
+	}
 	return rlp.EncodeToBytes(gethTx)
 }
