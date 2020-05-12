@@ -33,9 +33,7 @@ func (tx Transaction) MarshalJSON() ([]byte, error) {
 		Value               *string         `json:"value,omitempty"`
 		Gas                 uint64          `json:"gas"`
 		ChainId             string          `json:"chainId"`
-		V                   *string         `json:"v,omitempty"`
-		R                   *string         `json:"r,omitempty"`
-		S                   *string         `json:"s,omitempty"`
+		Signature           string          `json:"signature"`
 	}
 
 	data.From = tx.From
@@ -49,9 +47,7 @@ func (tx Transaction) MarshalJSON() ([]byte, error) {
 	data.Value = bigIntToString(tx.Value)
 	data.Gas = tx.Gas
 	data.ChainId = *bigIntToString(tx.ChainId)
-	data.V = bigIntToString(tx.V)
-	data.R = bigIntToString(tx.R)
-	data.S = bigIntToString(tx.S)
+	data.Signature = common.Bytes2Hex(tx.Signature)
 
 	return json.Marshal(data)
 }
@@ -70,9 +66,7 @@ func (tx *Transaction) UnmarshalJSON(b []byte) error {
 		Value               *string         `json:"value,omitempty"`
 		Gas                 uint64          `json:"gas"`
 		ChainId             string          `json:"chainId"`
-		V                   *string         `json:"v,omitempty"`
-		R                   *string         `json:"r,omitempty"`
-		S                   *string         `json:"s,omitempty"`
+		Signature           string          `json:"signature"`
 	}
 
 	if err = json.Unmarshal(b, &data); err != nil {
@@ -104,18 +98,7 @@ func (tx *Transaction) UnmarshalJSON(b []byte) error {
 	if err != nil {
 		return err
 	}
-	tx.V, err = stringToBigInt(data.V)
-	if err != nil {
-		return err
-	}
-	tx.R, err = stringToBigInt(data.R)
-	if err != nil {
-		return err
-	}
-	tx.S, err = stringToBigInt(data.S)
-	if err != nil {
-		return err
-	}
+	tx.Signature = common.Hex2Bytes(data.Signature)
 
 	return nil
 }

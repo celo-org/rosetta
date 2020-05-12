@@ -82,14 +82,14 @@ func (c *clientImpl) SignTx(tx *Transaction, privateKey *ecdsa.PrivateKey) (*Tra
 		tx.GatewayFee,
 		tx.Data,
 	)
-	signedTx, err := types.SignTx(gethTx, signer, privateKey)
+
+	h := signer.Hash(gethTx)
+	sig, err := crypto.Sign(h[:], privateKey)
 	if err != nil {
 		return nil, err
 	}
 
-	tx.V, tx.R, tx.S = signedTx.RawSignatureValues()
-
-	// TODO copy tx?
+	tx.Signature = sig
 	return tx, nil
 }
 

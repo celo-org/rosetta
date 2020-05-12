@@ -22,7 +22,6 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
 )
 
@@ -114,15 +113,11 @@ func (tm *TxMetadata) AsCallMessage() ethereum.CallMsg {
 
 type Transaction struct {
 	*TxMetadata `json:"metadata"`
-
-	// Signature values
-	V *big.Int `json:"v"`
-	R *big.Int `json:"r"`
-	S *big.Int `json:"s"`
+	Signature   []byte `json:"signature"`
 }
 
-func (t *Transaction) Signed() bool {
-	return t.V != nil && t.R != nil && t.S != nil
+func (tx *Transaction) Signed() bool {
+	return len(tx.Signature) > 0
 }
 
 func (tx *Transaction) AsGethTransaction() (*types.Transaction, error) {
@@ -139,7 +134,7 @@ func (tx *Transaction) AsGethTransaction() (*types.Transaction, error) {
 	)
 	if tx.Signed() {
 		signer := types.NewEIP155Signer(tx.ChainId)
-		signedGethTx, err := gethTx.WithSignature(signer, tx.GetSigBytes())
+		signedGethTx, err := gethTx.WithSignature(signer, tx.Signature)
 		if err != nil {
 			return nil, err
 		}
@@ -148,14 +143,19 @@ func (tx *Transaction) AsGethTransaction() (*types.Transaction, error) {
 	return gethTx, nil
 }
 
-func (tx *Transaction) GetSigBytes() []byte {
-	v := byte(tx.V.Uint64() - 27)
-	r, s := tx.R.Bytes(), tx.S.Bytes()
-	sig := make([]byte, crypto.SignatureLength)
-	copy(sig[32-len(r):32], r)
-	copy(sig[64-len(s):64], s)
-	sig[64] = v
-	return sig
+type SignatureValues struct {
+	V *big.Int `json:"v"`
+	R *big.Int `json:"r"`
+	S *big.Int `json:"s"`
+}
+
+func (tx *Transaction) GetSignatureValues() (*SignatureValues, error) {
+	gethTx, err := tx.AsGethTransaction()
+	if err != nil {
+		return nil, err
+	}
+	v, r, s := gethTx.RawSignatureValues()
+	return &SignatureValues{v, r, s}, nil
 }
 
 func (tx *Transaction) Hash() (common.Hash, error) {
