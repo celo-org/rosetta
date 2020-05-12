@@ -92,9 +92,9 @@ func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes c
 			tobinRecipientAccount            10
 		*/
 
-		// if err := bp.tobinTaxChange(bcs); err != nil {
-		// 	return err
-		// }
+		if err := bp.tobinTaxChange(bcs); err != nil {
+			return err
+		}
 
 		if err := bp.writeChanges(bcs); err != nil {
 			return err
@@ -296,7 +296,6 @@ func (bp *processor) carbonOffsetPartner(bcs *db.BlockChangeSet) error {
 	return nil
 }
 
-//nolint:unused
 func (bp *processor) tobinTaxChange(bcs *db.BlockChangeSet) error {
 	if bp.reserveAddress == common.ZeroAddress {
 		return nil
