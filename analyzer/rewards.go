@@ -105,10 +105,10 @@ func (rctx *rewardsContext) computeRewards(rewardsMap map[common.Address]*big.In
 
 func (rctx *rewardsContext) getGoldToken() (*contract.GoldToken, error) {
 	address, err := rctx.db.RegistryAddressStartOf(rctx.ctx, rctx.nextBlockNumber(), 0, "GoldToken")
-	if err != nil {
+	if err != nil && err != db.ErrContractNotFound {
 		return nil, err
 	}
-	if address == common.ZeroAddress {
+	if address == common.ZeroAddress || err == db.ErrContractNotFound {
 		// we don't have the address  =>
 		// We assume rewards are active AFTER migration. So, we return nil
 		return nil, nil
