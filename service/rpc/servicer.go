@@ -415,33 +415,27 @@ func (s *Servicer) ConstructionSubmit(ctx context.Context, request *types.Constr
 // ----------------------------------------------------------------------------------------
 
 func (s *Servicer) blockHeader(ctx context.Context, blockIdentifier *types.PartialBlockIdentifier) (*ethclient.HeaderAndTxnHashes, *types.Error) {
-	var err error
-	var blockHeader *ethclient.HeaderAndTxnHashes
+	if blockIdentifier == nil || blockIdentifier.Hash == nil {
+		var number *big.Int
+		if blockIdentifier != nil && blockIdentifier.Index != nil {
+			number = big.NewInt(*blockIdentifier.Index)
+		}
 
-	if blockIdentifier.Hash != nil {
-		hash := common.HexToHash(*blockIdentifier.Hash)
-		blockHeader, err = s.cc.Eth.HeaderAndTxnHashesByHash(ctx, hash)
+		blockHeader, err := s.cc.Eth.HeaderAndTxnHashesByNumber(ctx, number)
 		if err != nil {
 			return nil, LogErrFetchBlockHeader(err)
 		}
-
-		// If both were specified check the result matches
-		if blockIdentifier.Index != nil && blockHeader.Number.Cmp(big.NewInt(*blockIdentifier.Index)) != 0 {
-			return nil, LogErrValidation(ErrBadBlockIdentifier)
-		}
-
-	} else if blockIdentifier.Index != nil {
-		blockHeader, err = s.cc.Eth.HeaderAndTxnHashesByNumber(ctx, big.NewInt(*blockIdentifier.Index))
-		if err != nil {
-			return nil, LogErrFetchBlockHeader(err)
-		}
-	} else {
-		blockHeader, err = s.cc.Eth.HeaderAndTxnHashesByNumber(ctx, nil)
-		if err != nil {
-			return nil, LogErrFetchBlockHeader(err)
-		}
+		return blockHeader, nil
 	}
 
+	hash := common.HexToHash(*blockIdentifier.Hash)
+	blockHeader, err := s.cc.Eth.HeaderAndTxnHashesByHash(ctx, hash)
+	if err != nil {
+		return nil, LogErrFetchBlockHeader(err)
+	}
+	// If both Index and Hash were specified check the result matches
+	if blockIdentifier.Index != nil && blockHeader.Number.Cmp(big.NewInt(*blockIdentifier.Index)) != 0 {
+		return nil, LogErrValidation(ErrBadBlockIdentifier)
+	}
 	return blockHeader, nil
-
 }
