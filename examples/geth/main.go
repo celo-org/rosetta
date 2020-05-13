@@ -40,7 +40,14 @@ func main() {
 	ctx, stopFn := context.WithCancel(context.Background())
 	defer stopFn()
 
-	gethSrv := geth.NewGethService(gethBinary, datadir, genesis, staticNodes)
+	gethOpts := &geth.GethOpts{
+		GethBinary:  gethBinary,
+		GenesisPath: genesis,
+		Datadir:     datadir,
+		StaticNodes: staticNodes,
+	}
+
+	gethSrv := geth.NewGethService(gethOpts)
 
 	sm := service.NewServiceManager(ctx)
 	sm.Add(gethSrv)

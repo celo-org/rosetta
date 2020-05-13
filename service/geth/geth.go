@@ -32,11 +32,17 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 )
 
+type GethOpts struct {
+	GethBinary  string
+	GenesisPath string
+	IpcPath     string
+	Datadir     string
+	StaticNodes []string
+}
+
 type gethService struct {
-	genesisPath string
-	gethBinary  string
-	paths       GethPaths
-	staticNodes []string
+	opts *GethOpts
+
 	chainParams *celo.ChainParameters
 
 	cmd     *exec.Cmd
@@ -44,22 +50,15 @@ type gethService struct {
 	logger  log.Logger
 }
 
-func NewGethService(
-	gethBinary string,
-	datadir string,
-	genesisPath string,
-	staticNodes []string) *gethService {
+func NewGethService(opts *GethOpts) *gethService {
 	return &gethService{
-		genesisPath: genesisPath,
-		gethBinary:  gethBinary,
-		paths:       GethPaths(datadir),
-		staticNodes: staticNodes,
-		logger:      log.New("service", "geth"),
+		opts:   opts,
+		logger: log.New("service", "geth"),
 	}
 }
 
 func (gs *gethService) IpcFilePath() string {
-	return gs.paths.IpcFile()
+	return gs.opts.IpcFile()
 }
 
 func (gs *gethService) ChainParameters() *celo.ChainParameters {
@@ -75,12 +74,12 @@ func (gs *gethService) Running() bool {
 }
 
 func (gs *gethService) Setup() error {
-	if err := os.MkdirAll(gs.paths.Datadir(), os.ModePerm); err != nil {
+	if err := os.MkdirAll(gs.opts.Datadir, os.ModePerm); err != nil {
 		return fmt.Errorf("Can't create celo-blockchain datadir: %w", err)
 	}
 
 	// Read Genesis to get chain parameters
-	gs.chainParams = chainParamsFromGenesisFile(gs.genesisPath)
+	gs.chainParams = chainParamsFromGenesisFile(gs.opts.GenesisPath)
 
 	if err := gs.ensureGethInit(); err != nil {
 		return err
@@ -103,7 +102,7 @@ func (gs *gethService) Start(ctx context.Context) error {
 		return err
 	}
 
-	gethStderr, err := os.OpenFile(gs.paths.LogFile(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	gethStderr, err := os.OpenFile(gs.opts.LogFile(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		gs.logger.Error("Can't open geth logfile", "err", err)
 		return err
@@ -132,20 +131,20 @@ func (gs *gethService) Start(ctx context.Context) error {
 }
 
 func (gs *gethService) gethCmd(args ...string) *exec.Cmd {
-	datadir := gs.paths.Datadir()
+	datadir := gs.opts.Datadir
 	fullArgs := append([]string{"--datadir", datadir}, args...)
-	return exec.Command(gs.gethBinary, fullArgs...) //nolint:gosec
+	return exec.Command(gs.opts.GethBinary, fullArgs...) //nolint:gosec
 }
 
 func (gs *gethService) setupStaticNodes() error {
 	var staticNodesRaw []byte
 	var err error
 
-	if staticNodesRaw, err = json.Marshal(gs.staticNodes); err != nil {
+	if staticNodesRaw, err = json.Marshal(gs.opts.StaticNodes); err != nil {
 		return fmt.Errorf("Can't serialize static nodes: %w", err)
 	}
 	//nolint:gosec
-	if err = ioutil.WriteFile(gs.paths.StaticNodesFile(), staticNodesRaw, 0644); err != nil {
+	if err = ioutil.WriteFile(gs.opts.StaticNodesFile(), staticNodesRaw, 0644); err != nil {
 		return fmt.Errorf("Can't serialize static nodes: %w", err)
 	}
 
@@ -154,7 +153,7 @@ func (gs *gethService) setupStaticNodes() error {
 
 func (gs *gethService) ensureGethInit() error {
 	// Check if geth is initialized already
-	flagFile := gs.paths.GethInitializedFile()
+	flagFile := gs.opts.GethInitializedFile()
 
 	if fileutils.FileExists(flagFile) {
 		gs.logger.Info("Geth Already initialized... skipping init")
@@ -162,7 +161,7 @@ func (gs *gethService) ensureGethInit() error {
 	}
 
 	gs.logger.Info("Running geth init")
-	out, err := gs.gethCmd("init", gs.genesisPath).CombinedOutput()
+	out, err := gs.gethCmd("init", gs.opts.GenesisPath).CombinedOutput()
 	if err != nil {
 		gs.logger.Error("Error running geth init", "err", err)
 		fmt.Println(string(out))
@@ -184,6 +183,7 @@ func (gs *gethService) startGeth(stdErr *os.File) error {
 		"--rpcaddr", "127.0.0.1",
 		"--rpcapi", "eth,net,web3,debug,admin,personal",
 		"--ws",
+		"--ipcpath", gs.IpcFilePath(),
 		"--light.serve", "0",
 		"--light.maxpeers", "0",
 		"--maxpeers", "1100",
@@ -207,26 +207,23 @@ func (gs *gethService) startGeth(stdErr *os.File) error {
 	return nil
 }
 
-type GethPaths string
-
-func (g GethPaths) GethInitializedFile() string {
-	return filepath.Join(g.Datadir(), ".geth-initialized")
+func (gopts GethOpts) GethInitializedFile() string {
+	return filepath.Join(gopts.Datadir, ".geth-initialized")
 }
 
-func (g GethPaths) LogFile() string {
-	return filepath.Join(g.Datadir(), "celo.log")
+func (gopts GethOpts) LogFile() string {
+	return filepath.Join(gopts.Datadir, "celo.log")
 }
 
-func (g GethPaths) IpcFile() string {
-	return filepath.Join(g.Datadir(), "geth.ipc")
+func (gopts GethOpts) IpcFile() string {
+	if gopts.IpcPath == "" {
+		return filepath.Join(gopts.Datadir, "geth.ipc")
+	}
+	return gopts.IpcPath
 }
 
-func (g GethPaths) StaticNodesFile() string {
-	return filepath.Join(g.Datadir(), "/Celo/static-nodes.json")
-}
-
-func (g GethPaths) Datadir() string {
-	return string(g)
+func (gopts GethOpts) StaticNodesFile() string {
+	return filepath.Join(gopts.Datadir, "/Celo/static-nodes.json")
 }
 
 func chainParamsFromGenesisFile(genesisPath string) *celo.ChainParameters {

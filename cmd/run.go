@@ -48,7 +48,6 @@ var rosettaRpcConfig rpc.RosettaServerConfig
 
 type ConfigPaths string
 
-var gethBinary string
 var staticNodes []string
 
 func init() {
@@ -70,6 +69,10 @@ func init() {
 	flagSet.String("geth", "", "Path to the celo-blockchain binary")
 	utils.ExitOnError(viper.BindPFlag("geth", flagSet.Lookup("geth")))
 	utils.ExitOnError(serveCmd.MarkFlagFilename("geth"))
+
+	flagSet.String("ipcpath", "", "Path to the geth ipc file")
+	utils.ExitOnError(viper.BindPFlag("ipcpath", flagSet.Lookup("ipcpath")))
+	utils.ExitOnError(serveCmd.MarkFlagFilename("ipcpath"))
 
 	flagSet.String("genesis", "", "path to the genesis.json")
 	utils.ExitOnError(viper.BindPFlag("genesis", flagSet.Lookup("genesis")))
@@ -102,14 +105,18 @@ func getDatadir(cmd *cobra.Command) string {
 
 func runRunCmd(cmd *cobra.Command, args []string) {
 	datadir := getDatadir(cmd)
-	gethDataDir := filepath.Join(datadir, "celo")
-	sqlitePath := filepath.Join(datadir, "rosetta.db")
-
 	exitOnMissingConfig(cmd, "geth")
 	exitOnMissingConfig(cmd, "genesis")
 
-	gethBinary = viper.GetString("geth")
-	genesisPath := viper.GetString("genesis")
+	gethOpts := &geth.GethOpts{
+		GethBinary:  viper.GetString("geth"),
+		GenesisPath: viper.GetString("genesis"),
+		Datadir:     filepath.Join(datadir, "celo"),
+		IpcPath:     viper.GetString("ipcpath"),
+		StaticNodes: staticNodes,
+	}
+
+	sqlitePath := filepath.Join(datadir, "rosetta.db")
 
 	// TODO - create context that encapsulate Stop on Signal behaviour
 	srvCtx, stopServices := context.WithCancel(context.Background())
@@ -121,13 +128,13 @@ func runRunCmd(cmd *cobra.Command, args []string) {
 		stopServices()
 	}()
 
-	if err := runAllServices(srvCtx, gethDataDir, genesisPath, sqlitePath); err != nil {
+	if err := runAllServices(srvCtx, sqlitePath, gethOpts); err != nil {
 		log.Error("Rosetta run failed", "err", err)
 		os.Exit(1)
 	}
 }
 
-func runAllServices(ctx context.Context, gethDataDir, genesisPath, sqlitePath string) error {
+func runAllServices(ctx context.Context, sqlitePath string, gethOpts *geth.GethOpts) error {
 	ctx, stopServices := context.WithCancel(ctx)
 	defer stopServices()
 
@@ -138,12 +145,7 @@ func runAllServices(ctx context.Context, gethDataDir, genesisPath, sqlitePath st
 
 	sm := service.NewServiceManager(ctx)
 
-	gethSrv := geth.NewGethService(
-		gethBinary,
-		gethDataDir,
-		genesisPath,
-		staticNodes,
-	)
+	gethSrv := geth.NewGethService(gethOpts)
 
 	if err := gethSrv.Setup(); err != nil {
 		return fmt.Errorf("error on geth setup: %w", err)
