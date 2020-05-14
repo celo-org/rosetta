@@ -58,7 +58,15 @@ func main() {
 	}()
 
 	sm := service.NewServiceManager(ctx)
-	gethSrv := geth.NewGethService(gethBinary, datadir, genesis, staticNodes)
+
+	gethOpts := &geth.GethOpts{
+		GethBinary:  gethBinary,
+		GenesisPath: genesis,
+		Datadir:     datadir,
+		StaticNodes: staticNodes,
+	}
+
+	gethSrv := geth.NewGethService(gethOpts)
 	sm.Add(gethSrv)
 
 	// Wait for geth to start and connect to it
