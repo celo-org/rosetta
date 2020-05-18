@@ -36,6 +36,7 @@ type GethOpts struct {
 	GethBinary  string
 	GenesisPath string
 	IpcPath     string
+	LogsPath    string
 	Datadir     string
 	StaticNodes []string
 }
@@ -76,6 +77,12 @@ func (gs *gethService) Running() bool {
 func (gs *gethService) Setup() error {
 	if err := os.MkdirAll(gs.opts.Datadir, os.ModePerm); err != nil {
 		return fmt.Errorf("Can't create celo-blockchain datadir: %w", err)
+	}
+
+	if gs.opts.LogsPath != "" {
+		if err := os.MkdirAll(filepath.Dir(gs.opts.LogsPath), os.ModePerm); err != nil {
+			return fmt.Errorf("Can't create custom logs directory: %w", err)
+		}
 	}
 
 	// Read Genesis to get chain parameters
@@ -212,7 +219,10 @@ func (gopts GethOpts) GethInitializedFile() string {
 }
 
 func (gopts GethOpts) LogFile() string {
-	return filepath.Join(gopts.Datadir, "celo.log")
+	if gopts.LogsPath == "" {
+		return filepath.Join(gopts.Datadir, "celo.log")
+	}
+	return gopts.LogsPath
 }
 
 func (gopts GethOpts) IpcFile() string {

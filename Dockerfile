@@ -72,8 +72,10 @@ RUN apk add --no-cache ca-certificates
 COPY --from=builder /rosetta/rosetta /usr/local/bin/
 RUN echo $COMMIT_SHA > /version.txt
 RUN mkdir /data
+RUN mkdir /logs
 RUN mkdir -p /var
 EXPOSE 8080/tcp
+ENV ROSETTA_LOGS="/logs/celo.log"
 ENV ROSETTA_IPCPATH="/var/geth.ipc"
 ENV ROSETTA_DATADIR="/data"
 ENV ROSETTA_GETH="/usr/local/bin/geth"

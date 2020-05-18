@@ -60,6 +60,10 @@ func init() {
 	utils.ExitOnError(viper.BindPFlag("datadir", flagSet.Lookup("datadir")))
 	utils.ExitOnError(serveCmd.MarkFlagDirname("datadir"))
 
+	flagSet.String("logs", "", "Path to logs file")
+	utils.ExitOnError(viper.BindPFlag("logs", flagSet.Lookup("logs")))
+	utils.ExitOnError(serveCmd.MarkFlagDirname("logs"))
+
 	// RPC Service Flags
 	flagSet.UintVar(&rosettaRpcConfig.Port, "port", 8080, "Listening port for http server")
 	flagSet.StringVar(&rosettaRpcConfig.Interface, "address", "", "Listening address for http server")
@@ -112,6 +116,7 @@ func runRunCmd(cmd *cobra.Command, args []string) {
 		GethBinary:  viper.GetString("geth"),
 		GenesisPath: viper.GetString("genesis"),
 		Datadir:     filepath.Join(datadir, "celo"),
+		LogsPath:    viper.GetString("logs"),
 		IpcPath:     viper.GetString("ipcpath"),
 		StaticNodes: staticNodes,
 	}
