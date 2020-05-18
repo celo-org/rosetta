@@ -46,7 +46,20 @@ func NewTracer(ctx context.Context, cc *client.CeloClient, db db.RosettaDBReader
 }
 
 func (tr *Tracer) TraceTransaction(blockHeader *types.Header, tx *types.Transaction, receipt *types.Receipt) ([]Operation, error) {
-	var operations []Operation
+	lockedGoldOps, err := tr.TxLockedGoldTransfers(blockHeader, tx, receipt)
+	if err != nil {
+		return nil, err
+	}
+
+	transferOps, err := tr.TxTransfers(blockHeader, tx, receipt)
+	if err != nil {
+		return nil, err
+	}
+
+	operations, err := reconcileOps(lockedGoldOps, transferOps)
+	if err != nil {
+		return nil, err
+	}
 
 	if tx.FeeCurrency() == nil { // nil implies cGLD
 		gasOperation, err := tr.TxGasDetails(blockHeader, tx, receipt)
@@ -56,16 +69,11 @@ func (tr *Tracer) TraceTransaction(blockHeader *types.Header, tx *types.Transact
 		operations = append(operations, *gasOperation)
 	}
 
-	lockedGoldOperations, err := tr.TxLockedGoldTransfers(blockHeader, tx, receipt)
-	if err != nil {
-		return nil, err
-	}
-	operations = append(operations, lockedGoldOperations...)
+	return operations, nil
+}
 
-	transferOperations, err := tr.TxTransfers(blockHeader, tx, receipt)
-	if err != nil {
-		return nil, err
-	}
+func reconcileOps(lockedGoldOps, transferOps []Operation) ([]Operation, error) {
+	var ops []Operation
 
 	/* TODO: Fix Tobin Tax
 	For a locked gold operation that got a tobin tax of 10%  you'll have
@@ -73,13 +81,13 @@ func (tr *Tracer) TraceTransaction(blockHeader *types.Header, tx *types.Transact
 		tax 10
 	The event will be `GoldLocked(fromAccount, 90)`
 	The Transfer Operation
-		fromAccountMain       -100
+		fromAccountMain       -100 ***
 		lockedGolContractMain   90
 		tobinRecipientAccount   10
 	LockedGold operation (created from GoldLocked event) will be:
-		fromAccountMain                 -90
+		fromAccountMain                 -90 xxx
 		fromAccountLockedNonVoting       90
-		lockedGolContractMain            90
+		lockedGolContractMain            90 xxx
 	Now we need to figure out that both are the SAME operation group, and output
 		fromAccountMain                 -100
 		fromAccountLockedNonVoting       90
@@ -87,37 +95,45 @@ func (tr *Tracer) TraceTransaction(blockHeader *types.Header, tx *types.Transact
 		tobinRecipientAccount            10
 	*/
 
+	/*
+
+		if lgOp.fromAccountMain.diff - trOp.fromAccountMain.diff == trOp.tobinRecipientAccount.diff
+			&& lgOp.lockedGoldContractMain.diff == trOp.lockedGoldContractMain.diff {
+
+
+
+		}
+
+	*/
+
 	// Only add non-redundant transfers
 
 	// We assume both arrays are in order
 	// then look for the first lockedGold operation with a change in AccMain
 	// and look for the matching transfer.
-	//
-	// TobinTax transfers for locked gold operations are included in transferOperations
-	// and are not filtered out here, though the duplicate locked gold operations are.
-	ti := 0
-	for _, lgOp := range lockedGoldOperations {
-		// only interested in lockedGold with credit/debits on AccMain
-		if lgOp.Type == OpLockGold || lgOp.Type == OpWithdrawGold || lgOp.Type == OpSlash {
-			// search for the next transfer that matches
-			for ; ti < len(transferOperations) && !MatchChangesOnSubAccount(&lgOp, &transferOperations[ti], AccMain); ti++ {
-				// if it doesn't match, it's good to add it to the operations
-				operations = append(operations, transferOperations[ti])
-			}
-			if ti == len(transferOperations) {
-				// we didn't find it... this means we have a bug
-				tr.logger.Error("BUG: Can't find matching transfer for LockedGold op", "block", blockHeader.Number, "txHash", tx.Hash())
-			}
-			ti++ // we skip the matched operation and continue
+	// ti := 0
+	// for _, lgOp := range lockedGoldOperations {
+	// 	// only interested in lockedGold with credit/debits on AccMain
+	// 	if lgOp.Type == OpLockGold || lgOp.Type == OpWithdrawGold || lgOp.Type == OpSlash {
+	// 		// search for the next transfer that matches
+	// 		for ; ti < len(transferOperations) && !MatchLockedGoldOpsWithTransfers(&lgOp, &transferOperations[ti], AccMain); ti++ { //Math changes on all subaccounts?
+	// 			// if it doesn't match, it's good to add it to the operations
+	// 			operations = append(operations, transferOperations[ti])
+	// 		}
+	// 		if ti == len(transferOperations) {
+	// 			// we didn't find it... this means we have a bug
+	// 			tr.logger.Error("BUG: Can't find matching transfer for LockedGold op", "block", blockHeader.Number, "txHash", tx.Hash())
+	// 		}
+	// 		ti++ // we skip the matched operation and continue
 
-		}
-	}
-	// add the rest of the transfers
-	if ti < len(transferOperations) {
-		operations = append(operations, transferOperations[ti:]...)
-	}
+	// 	}
+	// }
+	// // add the rest of the transfers
+	// if ti < len(transferOperations) {
+	// 	operations = append(operations, transferOperations[ti:]...)
+	// }
 
-	return operations, nil
+	return ops, nil
 }
 
 func (tr *Tracer) TxGasDetails(blockHeader *types.Header, tx *types.Transaction, receipt *types.Receipt) (*Operation, error) {
@@ -181,7 +197,7 @@ func (tr *Tracer) TxTransfers(blockHeader *types.Header, tx *types.Transaction, 
 
 	var transfers []Operation
 
-	if tobinTax.Cmp(utils.Big0) > 0 {
+	if tobinTax != nil && tobinTax.Cmp(utils.Big0) > 0 {
 		reserve, err := tr.db.RegistryAddressStartOf(tr.ctx, blockHeader.Number, receipt.TransactionIndex, "Reserve")
 		if err != nil {
 			return nil, err
