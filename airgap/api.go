@@ -18,7 +18,6 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"errors"
-	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum"
@@ -201,9 +200,6 @@ func (tx *Transaction) Deserialize(data []byte, chainId *big.Int) error {
 		return errors.New("can't deserialize unsigned transactions")
 	}
 	tx.Signature = valuesToSignature(chainId, v, r, s)
-
-	fmt.Println("Signature", common.Bytes2Hex(tx.Signature))
-
 	tx.From, err = types.Sender(types.NewEIP155Signer(chainId), gethTx)
 	if err != nil {
 		return err

@@ -22,7 +22,6 @@ import (
 	"github.com/celo-org/rosetta/airgap"
 	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/k0kubun/pp"
 )
 
 // airGapServerMethod is a function that returns the tx.data for that method + parameters
@@ -48,12 +47,6 @@ func NewAirgapServer(chainId *big.Int, srvCtx ServerContext) (airgap.Server, err
 }
 
 func (b *airgGapServerImpl) SubmitTx(ctx context.Context, rawTx []byte) (*common.Hash, error) {
-
-	fmt.Println("printing the tx", common.Bytes2Hex(rawTx))
-	var tx airgap.Transaction
-	tx.Deserialize(rawTx, b.chainId)
-	pp.Println(tx)
-
 	return b.srvCtx.SendRawTransaction(ctx, rawTx)
 }
 
