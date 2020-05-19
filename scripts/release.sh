@@ -7,10 +7,10 @@ VERSION_FILE="service/rpc/versions.go"
 echo "Fetching last changes from git"
 git fetch
 
-# if [ -n "$(git status --porcelain)" ]; then 
-#   echo "There are uncommitted changes. Can't proceed"
-#   exit 1
-# fi
+if [ -n "$(git status --porcelain)" ]; then 
+  echo "There are uncommitted changes. Can't proceed"
+  exit 1
+fi
 
 if [[ $(git rev-parse --abbrev-ref HEAD) != "master" ]]; then 
   echo "Not in master branch. Can't proceed"
