@@ -17,10 +17,10 @@ if [[ $(git rev-parse --abbrev-ref HEAD) != "master" ]]; then
   exit 2
 fi
 
-# if [[ $(git rev-parse origin/master) != $(git rev-parse HEAD) ]]; then
-#   echo "Branch not up-to-date. Can't proceed"
-#   exit 3
-# fi
+if [[ $(git rev-parse origin/master) != $(git rev-parse HEAD) ]]; then
+  echo "Branch not up-to-date. Can't proceed"
+  exit 3
+fi
 
 LAST_VERSION=$(grep "MiddlewareVersion" $VERSION_FILE | sed -e 's/.*\= "//' -e 's/\".*//')
 
