@@ -71,17 +71,10 @@ func (c *clientImpl) ConstructTxFromMetadata(tm *TxMetadata) (*Transaction, erro
 // SignTx signs an unsignedTx using the private seed and return a signedTx that can be submitted to the node
 func (c *clientImpl) SignTx(tx *Transaction, privateKey *ecdsa.PrivateKey) (*Transaction, error) {
 	signer := types.NewEIP155Signer(tx.ChainId)
-	gethTx := types.NewTransaction(
-		tx.Nonce,
-		tx.To,
-		tx.Value,
-		tx.Gas,
-		tx.GasPrice,
-		tx.FeeCurrency,
-		tx.GatewayFeeRecipient,
-		tx.GatewayFee,
-		tx.Data,
-	)
+	gethTx, err := tx.AsGethTransaction()
+	if err != nil {
+		return nil, err
+	}
 
 	h := signer.Hash(gethTx)
 	sig, err := crypto.Sign(h[:], privateKey)

@@ -17,6 +17,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"math/big"
 
 	"github.com/celo-org/rosetta/airgap"
 	"github.com/celo-org/rosetta/celo/wrapper"
@@ -28,10 +29,11 @@ type airGapServerMethod func(context.Context, []interface{}) ([]byte, error)
 
 type airgGapServerImpl struct {
 	srvCtx           ServerContext
+	chainId          *big.Int
 	supportedMethods map[*airgap.CeloMethod]airGapServerMethod
 }
 
-func NewAirgapServer(srvCtx ServerContext) (airgap.Server, error) {
+func NewAirgapServer(chainId *big.Int, srvCtx ServerContext) (airgap.Server, error) {
 	supportedMethods, err := hydrateMethods(srvCtx)
 	if err != nil {
 		return nil, err
@@ -39,6 +41,7 @@ func NewAirgapServer(srvCtx ServerContext) (airgap.Server, error) {
 
 	return &airgGapServerImpl{
 		srvCtx:           srvCtx,
+		chainId:          chainId,
 		supportedMethods: supportedMethods,
 	}, nil
 }
@@ -65,6 +68,7 @@ func (b *airgGapServerImpl) ObtainMetadata(ctx context.Context, options *airgap.
 		GatewayFee:          nil,
 		GatewayFeeRecipient: nil,
 		Value:               options.Value,
+		ChainId:             b.chainId,
 	}
 
 	if options.To != nil {

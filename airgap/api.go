@@ -17,11 +17,13 @@ package airgap
 import (
 	"context"
 	"crypto/ecdsa"
+	"errors"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
 )
 
@@ -172,4 +174,51 @@ func (tx *Transaction) Serialize() ([]byte, error) {
 		return nil, err
 	}
 	return rlp.EncodeToBytes(gethTx)
+}
+
+func (tx *Transaction) Deserialize(data []byte, chainId *big.Int) error {
+	var err error
+
+	gethTx := new(types.Transaction)
+	if err = rlp.DecodeBytes(data, gethTx); err != nil {
+		return err
+	}
+	tx.TxMetadata = &TxMetadata{}
+	tx.Nonce = gethTx.Nonce()
+	tx.GasPrice = gethTx.GasPrice()
+	tx.GatewayFee = gethTx.GatewayFee()
+	tx.GatewayFeeRecipient = gethTx.GatewayFeeRecipient()
+	tx.FeeCurrency = gethTx.FeeCurrency()
+	tx.To = *gethTx.To()
+	tx.Data = gethTx.Data()
+	tx.Value = gethTx.Value()
+	tx.Gas = gethTx.Gas()
+	tx.ChainId = chainId
+
+	v, r, s := gethTx.RawSignatureValues()
+	if v == nil || r == nil || s == nil {
+		return errors.New("can't deserialize unsigned transactions")
+	}
+	tx.Signature = valuesToSignature(chainId, v, r, s)
+	tx.From, err = types.Sender(types.NewEIP155Signer(chainId), gethTx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func valuesToSignature(chainId, v, r, s *big.Int) []byte {
+	sig := make([]byte, crypto.SignatureLength)
+
+	// doing the inverse of signer.SignatureValues()
+	copy(sig, r.Bytes())
+	copy(sig[32:64], s.Bytes())
+
+	// v = byte[64] + 35 + chainId * 2
+	// byte[64] = v - 35 - chainId * 2
+	chainMul := new(big.Int).Mul(chainId, big.NewInt(2))
+	sig[64] = byte(new(big.Int).Sub(v, chainMul).Int64() - 35)
+
+	return sig
 }

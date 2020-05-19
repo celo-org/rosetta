@@ -53,7 +53,7 @@ func TestClientServer(t *testing.T) {
 
 	client := airgap.NewClient()
 	argBuilder := airgap.NewArgBuilder()
-	server, err := NewAirgapServer(&serverContextStub{})
+	server, err := NewAirgapServer(big.NewInt(400), &serverContextStub{})
 	Ω(err).ShouldNot(HaveOccurred())
 
 	t.Run("Vote()", func(t *testing.T) {

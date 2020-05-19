@@ -29,6 +29,7 @@ import (
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/felixge/httpsnoop"
+	"github.com/gorilla/handlers"
 )
 
 type RosettaServerConfig struct {
@@ -59,6 +60,7 @@ func NewRosettaServer(cc *client.CeloClient, db db.RosettaDBReader, cfg *Rosetta
 		return nil, err
 	}
 
+	mainHandler = handlers.RecoveryHandler(handlers.PrintRecoveryStack(true))(mainHandler)
 	mainHandler = requestLogHandler(mainHandler)
 	mainHandler = http.TimeoutHandler(mainHandler, cfg.RequestTimeout, "Request Timed out")
 

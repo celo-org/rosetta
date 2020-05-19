@@ -49,7 +49,7 @@ func NewServicer(celoClient *client.CeloClient, db db.RosettaDBReader, cp *celo.
 		return nil, err
 	}
 
-	airgap, err := server.NewAirgapServer(srvCtx)
+	airgap, err := server.NewAirgapServer(cp.ChainId, srvCtx)
 	if err != nil {
 		return nil, err
 	}
@@ -397,7 +397,9 @@ func (s *Servicer) ConstructionMetadata(ctx context.Context, request *types.Cons
 }
 
 func (s *Servicer) ConstructionSubmit(ctx context.Context, request *types.ConstructionSubmitRequest) (*types.ConstructionSubmitResponse, *types.Error) {
-	txhash, err := s.airgap.SubmitTx(ctx, []byte(request.SignedTransaction))
+	rawTx := common.Hex2Bytes(request.SignedTransaction)
+
+	txhash, err := s.airgap.SubmitTx(ctx, rawTx)
 	if err != nil {
 		return nil, LogErrCeloClient("SendRawTx", err)
 	}
