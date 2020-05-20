@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/celo-org/rosetta/celo/client"
@@ -41,51 +42,47 @@ var serveCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Start rosetta server",
 	Args:  cobra.NoArgs,
-	Run:   runRunCmd,
-}
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		viper.SetEnvPrefix("ROSETTA")
+		viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+		viper.AutomaticEnv()
 
-var rosettaRpcConfig rpc.RosettaServerConfig
+		return viper.BindPFlags(cmd.Flags())
+	},
+	Run: runRunCmd,
+}
 
 type ConfigPaths string
 
-var staticNodes []string
-
 func init() {
-	RootCmd.AddCommand(serveCmd)
-
 	flagSet := serveCmd.Flags()
 
 	// Common Flags
 	flagSet.String("datadir", "", "datadir to use")
-	utils.ExitOnError(viper.BindPFlag("datadir", flagSet.Lookup("datadir")))
 	utils.ExitOnError(serveCmd.MarkFlagDirname("datadir"))
 
-	flagSet.String("logs", "", "Path to logs file")
-	utils.ExitOnError(viper.BindPFlag("logs", flagSet.Lookup("logs")))
-	utils.ExitOnError(serveCmd.MarkFlagDirname("logs"))
-
 	// RPC Service Flags
-	flagSet.UintVar(&rosettaRpcConfig.Port, "port", 8080, "Listening port for http server")
-	flagSet.StringVar(&rosettaRpcConfig.Interface, "address", "", "Listening address for http server")
-	flagSet.DurationVar(&rosettaRpcConfig.RequestTimeout, "reqTimeout", 25*time.Second, "Timeout when serving a request")
+	flagSet.Uint("rpc.port", 8080, "Listening port for http server")
+	flagSet.String("rpc.address", "", "Listening address for http server")
+	flagSet.Duration("rpc.reqTimeout", 25*time.Second, "Timeout when serving a request")
 
 	// Geth Service Flags
-	flagSet.String("geth", "", "Path to the celo-blockchain binary")
-	utils.ExitOnError(viper.BindPFlag("geth", flagSet.Lookup("geth")))
-	utils.ExitOnError(serveCmd.MarkFlagFilename("geth"))
+	flagSet.String("geth.binary", "", "Path to the celo-blockchain binary")
+	utils.ExitOnError(serveCmd.MarkFlagFilename("geth.binary"))
 
-	flagSet.String("ipcpath", "", "Path to the geth ipc file")
-	utils.ExitOnError(viper.BindPFlag("ipcpath", flagSet.Lookup("ipcpath")))
-	utils.ExitOnError(serveCmd.MarkFlagFilename("ipcpath"))
+	flagSet.String("geth.logfile", "", "Path to logs file")
+	utils.ExitOnError(serveCmd.MarkFlagDirname("geth.logfile"))
 
-	flagSet.String("genesis", "", "path to the genesis.json")
-	utils.ExitOnError(viper.BindPFlag("genesis", flagSet.Lookup("genesis")))
-	utils.ExitOnError(serveCmd.MarkFlagFilename("genesis", "json"))
+	flagSet.String("geth.ipcpath", "", "Path to the geth ipc file")
+	utils.ExitOnError(serveCmd.MarkFlagFilename("geth.ipcpath"))
 
-	flagSet.StringArrayVar(&staticNodes, "staticNode", []string{}, "StaticNode to use (can be repeated many times")
-	utils.ExitOnError(serveCmd.MarkFlagRequired("staticNode"))
+	flagSet.String("geth.genesis", "", "path to the genesis.json")
+	utils.ExitOnError(serveCmd.MarkFlagFilename("geth.genesis", "json"))
 
-	// Monitor Service Flags
+	flagSet.String("geth.staticnodes", "", "StaticNode to use (separated by ,)")
+	flagSet.String("geth.bootnodes", "", "Bootnodes to use (separated by ,)")
+	flagSet.String("geth.verbosity", "", "Geth log verbosity (number between [1-5])")
+	flagSet.String("geth.publicip", "", "Public Ip to configure geth (sometimes required for discovery)")
 
 }
 
@@ -94,34 +91,57 @@ func getDatadir(cmd *cobra.Command) string {
 
 	absDatadir, err := filepath.Abs(viper.GetString("datadir"))
 	if err != nil {
-		log.Crit("Can't resolve datadir path", "datadir", absDatadir, "err", err)
+		printUsageAndExit(cmd, fmt.Sprintf("Can't resolve datadir path: %s, error: %s", absDatadir, err))
 	}
 
 	isDir, err := fileutils.IsDirectory(absDatadir)
 	if err != nil {
-		log.Crit("Can't access datadir", "datadir", absDatadir, "err", err)
+		printUsageAndExit(cmd, fmt.Sprintf("Can't access datadir path: %s, error: %s", absDatadir, err))
 	} else if !isDir {
-		log.Crit("Datadir is not a directory", "datadir", absDatadir)
+		printUsageAndExit(cmd, fmt.Sprintf("Datadir is not a directory: %s, error: %s", absDatadir, err))
 	}
 
 	return absDatadir
 }
 
-func runRunCmd(cmd *cobra.Command, args []string) {
-	datadir := getDatadir(cmd)
-	exitOnMissingConfig(cmd, "geth")
-	exitOnMissingConfig(cmd, "genesis")
-
-	gethOpts := &geth.GethOpts{
-		GethBinary:  viper.GetString("geth"),
-		GenesisPath: viper.GetString("genesis"),
+func readGethOption(cmd *cobra.Command, datadir string) *geth.GethOpts {
+	opts := &geth.GethOpts{
+		GethBinary:  viper.GetString("geth.binary"),
+		GenesisPath: viper.GetString("geth.genesis"),
 		Datadir:     filepath.Join(datadir, "celo"),
-		LogsPath:    viper.GetString("logs"),
-		IpcPath:     viper.GetString("ipcpath"),
-		StaticNodes: staticNodes,
+		LogsPath:    viper.GetString("geth.logfile"),
+		IpcPath:     viper.GetString("geth.ipcpath"),
+		Bootnodes:   viper.GetString("geth.bootnodes"),
+		Verbosity:   viper.GetString("geth.verbosity"),
+		StaticNodes: viper.GetString("geth.staticnodes"),
+		PublicIp:    viper.GetString("geth.publicip"),
 	}
 
+	if opts.GethBinary == "" {
+		printUsageAndExit(cmd, "Missing config option for 'geth.binary'")
+	}
+	if opts.GenesisPath == "" {
+		printUsageAndExit(cmd, "Missing config option for 'geth.gensis'")
+	}
+
+	if opts.Bootnodes == "" && opts.StaticNodes == "" {
+		printUsageAndExit(cmd, "Either bootnodes or staticNodes are required to start geth")
+	}
+
+	return opts
+}
+
+func runRunCmd(cmd *cobra.Command, args []string) {
+	datadir := getDatadir(cmd)
+	gethOpts := readGethOption(cmd, datadir)
 	sqlitePath := filepath.Join(datadir, "rosetta.db")
+
+	rpcConfig :=
+		&rpc.RosettaServerConfig{
+			Interface:      viper.GetString("rpc.address"),
+			Port:           viper.GetUint("rpc.port"),
+			RequestTimeout: viper.GetDuration("rpc.reqTimeout"),
+		}
 
 	// TODO - create context that encapsulate Stop on Signal behaviour
 	srvCtx, stopServices := context.WithCancel(context.Background())
@@ -133,13 +153,13 @@ func runRunCmd(cmd *cobra.Command, args []string) {
 		stopServices()
 	}()
 
-	if err := runAllServices(srvCtx, sqlitePath, gethOpts); err != nil {
+	if err := runAllServices(srvCtx, sqlitePath, gethOpts, rpcConfig); err != nil {
 		log.Error("Rosetta run failed", "err", err)
 		os.Exit(1)
 	}
 }
 
-func runAllServices(ctx context.Context, sqlitePath string, gethOpts *geth.GethOpts) error {
+func runAllServices(ctx context.Context, sqlitePath string, gethOpts *geth.GethOpts, rpcConfig *rpc.RosettaServerConfig) error {
 	ctx, stopServices := context.WithCancel(ctx)
 	defer stopServices()
 
@@ -158,7 +178,7 @@ func runAllServices(ctx context.Context, sqlitePath string, gethOpts *geth.GethO
 
 	sm.Add(gethSrv)
 
-	gethStarted := utils.WaitUntil(500*time.Millisecond, 30*time.Second, func() bool {
+	gethStarted := utils.WaitUntil(500*time.Millisecond, 5*time.Minute, func() bool {
 		return fileutils.FileExists(gethSrv.IpcFilePath())
 	})
 
@@ -174,7 +194,7 @@ func runAllServices(ctx context.Context, sqlitePath string, gethOpts *geth.GethO
 		return fmt.Errorf("can't connect to geth: %w", err)
 	}
 
-	rpcService, err := rpc.NewRosettaServer(cc, celoStore, &rosettaRpcConfig, chainParams)
+	rpcService, err := rpc.NewRosettaServer(cc, celoStore, rpcConfig, chainParams)
 	if err != nil {
 		return fmt.Errorf("can't create rpc server: %w", err)
 	}

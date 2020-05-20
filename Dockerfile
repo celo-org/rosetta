@@ -74,12 +74,18 @@ RUN echo $COMMIT_SHA > /version.txt
 RUN mkdir /data
 RUN mkdir /logs
 RUN mkdir -p /var
+
 EXPOSE 8080/tcp
-ENV ROSETTA_LOGS="/logs/celo.log"
-ENV ROSETTA_IPCPATH="/var/geth.ipc"
+EXPOSE 30503/tcp
+EXPOSE 30503/udp
+
 ENV ROSETTA_DATADIR="/data"
-ENV ROSETTA_GETH="/usr/local/bin/geth"
-ENV ROSETTA_GENESIS="/data/genesis.json"
+ENV ROSETTA_RPC_PORT="8080"
+ENV ROSETTA_GETH_LOGFILE="/logs/celo.log"
+ENV ROSETTA_GETH_IPCPATH="/var/geth.ipc"
+ENV ROSETTA_GETH_BINARY="/usr/local/bin/geth"
+ENV ROSETTA_GETH_GENESIS="/data/genesis.json"
+
 ENTRYPOINT ["/usr/local/bin/rosetta"]
 CMD ["run"]
 
