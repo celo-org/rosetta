@@ -248,7 +248,7 @@ func (tr *Tracer) TxLockedGoldTransfers(blockHeader *types.Header, tx *types.Tra
 				transfers = append(transfers, *NewRevokePendingVotes(event.Account, event.Group, event.Value))
 			case "ValidatorGroupActiveVoteRevoked":
 				// revokeActive() [ValidatorGroupActiveVoteRevoked] => lockVotingActive->lockNonVoting
-				event := eventRaw.(contract.ElectionValidatorGroupActiveVoteRevoked)
+				event := eventRaw.(*contract.ElectionValidatorGroupActiveVoteRevoked)
 				transfers = append(transfers, *NewRevokeActiveVotes(event.Account, event.Group, event.Value))
 			}
 
