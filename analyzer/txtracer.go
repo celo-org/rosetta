@@ -266,7 +266,11 @@ func (tr *Tracer) TxLockedGoldTransfers(blockHeader *types.Header, tx *types.Tra
 				// lock() [GoldLocked + transfer] => main->lockNonVoting
 				event := eventRaw.(*contract.LockedGoldGoldLocked)
 				transfers = append(transfers, *NewLockGold(event.Account, lockedGoldAddr, event.Value))
-				// relock() [GoldLocked] => lockPending->lockNonVoting
+
+			case "GoldRelocked":
+				// relock() [GoldRelocked] => lockPending->lockNonVoting
+				event := eventRaw.(*contract.LockedGoldGoldRelocked)
+				transfers = append(transfers, *NewRelockGold(event.Account, event.Value))
 
 			case "GoldUnlocked":
 				// unlock() [GoldUnlocked] => lockNonVoting->lockPending
