@@ -174,7 +174,7 @@ func (gs *gethService) ensureGethInit() error {
 	}
 
 	gs.logger.Info("Running geth init")
-	out, err := gs.gethCmd("init", "--nousb", gs.opts.GenesisPath).CombinedOutput()
+	out, err := gs.gethCmd("init", gs.opts.GenesisPath).CombinedOutput()
 	if err != nil {
 		gs.logger.Error("Error running geth init", "err", err)
 		fmt.Println(string(out))
@@ -196,7 +196,6 @@ func (gs *gethService) startGeth(stdErr *os.File) error {
 		"--rpc",
 		"--rpcaddr", "127.0.0.1",
 		"--rpcapi", "eth,net,web3,debug,admin,personal",
-		"--verbosity", gs.opts.Verbosity,
 		"--ipcpath", gs.IpcFilePath(),
 		"--light.serve", "0",
 		"--light.maxpeers", "0",
