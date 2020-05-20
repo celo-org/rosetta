@@ -37,6 +37,8 @@ var RootCmd = &cobra.Command{
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
+	log.Root().SetHandler(log.LvlFilterHandler(log.LvlInfo, log.StreamHandler(os.Stderr, log.TerminalFormat(true))))
+
 	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -44,40 +46,8 @@ func Execute() {
 }
 
 func init() {
-	viper.SetEnvPrefix("ROSETTA")
-	viper.AutomaticEnv() // read in environment variables that match
-
-	log.Root().SetHandler(log.LvlFilterHandler(log.LvlInfo, log.StreamHandler(os.Stderr, log.TerminalFormat(true))))
-
 	RootCmd.AddCommand(cli.CliCmd)
-
-	cobra.OnInitialize(initConfig)
-}
-
-// initConfig reads in config file and ENV variables if set.
-func initConfig() {
-	// if cfgFile != "" {
-	// 	// Use config file from the flag.
-	// 	viper.SetConfigFile(cfgFile)
-	// } else {
-	// 	// Find home directory.
-	// 	home, err := homedir.Dir()
-	// 	if err != nil {
-	// 		fmt.Println(err)
-	// 		os.Exit(1)
-	// 	}
-
-	// fmt.Println("datadir=", viper.Get("datadir"))
-
-	// 	// Search config in home directory with name ".rosetta" (without extension).
-	// 	viper.AddConfigPath(home)
-	// 	viper.SetConfigName(".rosetta")
-	// }
-
-	// // If a config file is found, read it in.
-	// if err := viper.ReadInConfig(); err == nil {
-	// 	fmt.Println("Using config file:", viper.ConfigFileUsed())
-	// }
+	RootCmd.AddCommand(serveCmd)
 }
 
 func exitOnMissingConfig(cmd *cobra.Command, configKey string) {
@@ -86,4 +56,10 @@ func exitOnMissingConfig(cmd *cobra.Command, configKey string) {
 		cmd.Printf("Missing required config: %s\n", configKey)
 		os.Exit(1)
 	}
+}
+
+func printUsageAndExit(cmd *cobra.Command, msg string) {
+	cmd.Println(cmd.UsageString())
+	cmd.Println(msg)
+	os.Exit(1)
 }

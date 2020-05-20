@@ -38,7 +38,9 @@ type GethOpts struct {
 	IpcPath     string
 	LogsPath    string
 	Datadir     string
-	StaticNodes []string
+	StaticNodes string
+	Bootnodes   string
+	Verbosity   string
 }
 
 type gethService struct {
@@ -105,8 +107,10 @@ func (gs *gethService) Start(ctx context.Context) error {
 		return err
 	}
 
-	if err := gs.setupStaticNodes(); err != nil {
-		return err
+	if gs.opts.StaticNodes != "" {
+		if err := gs.setupStaticNodes(); err != nil {
+			return err
+		}
 	}
 
 	gethStderr, err := os.OpenFile(gs.opts.LogFile(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -147,7 +151,8 @@ func (gs *gethService) setupStaticNodes() error {
 	var staticNodesRaw []byte
 	var err error
 
-	if staticNodesRaw, err = json.Marshal(gs.opts.StaticNodes); err != nil {
+	staticNodes := strings.Split(gs.opts.StaticNodes, ",")
+	if staticNodesRaw, err = json.Marshal(staticNodes); err != nil {
 		return fmt.Errorf("Can't serialize static nodes: %w", err)
 	}
 	//nolint:gosec
@@ -168,7 +173,7 @@ func (gs *gethService) ensureGethInit() error {
 	}
 
 	gs.logger.Info("Running geth init")
-	out, err := gs.gethCmd("init", gs.opts.GenesisPath).CombinedOutput()
+	out, err := gs.gethCmd("init", "--nousb", gs.opts.GenesisPath).CombinedOutput()
 	if err != nil {
 		gs.logger.Error("Error running geth init", "err", err)
 		fmt.Println(string(out))
@@ -183,20 +188,28 @@ func (gs *gethService) ensureGethInit() error {
 
 func (gs *gethService) startGeth(stdErr *os.File) error {
 	gethArgs := []string{
-		"--verbosity", "3",
 		"--syncmode", "full",
 		"--networkid", gs.chainParams.ChainId.String(),
+		"--gcmode", "archive",
+		"--nousb",
 		"--rpc",
 		"--rpcaddr", "127.0.0.1",
 		"--rpcapi", "eth,net,web3,debug,admin,personal",
-		"--ws",
+		"--verbosity", gs.opts.Verbosity,
 		"--ipcpath", gs.IpcFilePath(),
 		"--light.serve", "0",
 		"--light.maxpeers", "0",
 		"--maxpeers", "1100",
-		"--gcmode", "archive",
 		"--consoleformat", "term",
 		// "--consoleoutput", "split",
+	}
+
+	if gs.opts.Verbosity != "" {
+		gethArgs = append(gethArgs, "--verbosity", gs.opts.Verbosity)
+	}
+
+	if gs.opts.Bootnodes != "" {
+		gethArgs = append(gethArgs, "--bootnodes", gs.opts.Bootnodes)
 	}
 
 	fmt.Println("geth", strings.Join(gethArgs, " "))
