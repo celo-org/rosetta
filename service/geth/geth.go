@@ -41,6 +41,7 @@ type GethOpts struct {
 	StaticNodes string
 	Bootnodes   string
 	Verbosity   string
+	PublicIp    string
 }
 
 type gethService struct {
@@ -210,6 +211,10 @@ func (gs *gethService) startGeth(stdErr *os.File) error {
 
 	if gs.opts.Bootnodes != "" {
 		gethArgs = append(gethArgs, "--bootnodes", gs.opts.Bootnodes)
+	}
+
+	if gs.opts.PublicIp != "" {
+		gethArgs = append(gethArgs, "--nat", "extip:"+gs.opts.PublicIp)
 	}
 
 	fmt.Println("geth", strings.Join(gethArgs, " "))

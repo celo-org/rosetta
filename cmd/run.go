@@ -82,6 +82,7 @@ func init() {
 	flagSet.String("geth.staticnodes", "", "StaticNode to use (separated by ,)")
 	flagSet.String("geth.bootnodes", "", "Bootnodes to use (separated by ,)")
 	flagSet.String("geth.verbosity", "", "Geth log verbosity (number between [1-5])")
+	flagSet.String("geth.publicip", "", "Public Ip to configure geth (sometimes required for discovery)")
 
 }
 
@@ -113,6 +114,7 @@ func readGethOption(cmd *cobra.Command, datadir string) *geth.GethOpts {
 		Bootnodes:   viper.GetString("geth.bootnodes"),
 		Verbosity:   viper.GetString("geth.verbosity"),
 		StaticNodes: viper.GetString("geth.staticnodes"),
+		PublicIp:    viper.GetString("geth.publicip"),
 	}
 
 	if opts.GethBinary == "" {
@@ -120,6 +122,10 @@ func readGethOption(cmd *cobra.Command, datadir string) *geth.GethOpts {
 	}
 	if opts.GenesisPath == "" {
 		printUsageAndExit(cmd, "Missing config option for 'geth.gensis'")
+	}
+
+	if opts.Bootnodes == "" && opts.StaticNodes == "" {
+		printUsageAndExit(cmd, "Either bootnodes or staticNodes are required to start geth")
 	}
 
 	return opts
