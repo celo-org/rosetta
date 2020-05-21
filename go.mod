@@ -3,7 +3,7 @@ module github.com/celo-org/rosetta
 go 1.13
 
 require (
-	github.com/celo-org/kliento v0.0.0-20200428005346-e515c2c18075
+	github.com/celo-org/kliento v0.1.0
 	github.com/coinbase/rosetta-sdk-go v0.1.8
 	github.com/ethereum/go-ethereum v1.9.8
 	github.com/felixge/httpsnoop v1.0.1
@@ -18,8 +18,6 @@ require (
 	golang.org/x/net v0.0.0-20190921015927-1a5e07d1ff72
 	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
 )
-
-replace github.com/celo-org/kliento => ../kliento
 
 // DO NOT CHANGE DIRECTORY: Create a symlink so this works
 // replace github.com/ethereum/go-ethereum => ../celo-blockchain

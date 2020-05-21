@@ -66,6 +66,8 @@ github.com/celo-org/celo-blockchain v0.0.0-20200519153823-adbdc7f8c27e h1:MptBWn
 github.com/celo-org/celo-blockchain v0.0.0-20200519153823-adbdc7f8c27e/go.mod h1:6GX5rWDFQxsdozGooAztxubMiFHZFgmSkUAdOQdZksA=
 github.com/celo-org/celo-bls-go v0.1.4 h1:d99spabDiuyMJ4uYa/0MbpCsEhaWSYNIujIoZ5Bu38o=
 github.com/celo-org/celo-bls-go v0.1.4/go.mod h1:eXUCLXu5F1yfd3M+3VaUk5ZUXaA0sLK2rWdLC1Cfaqo=
+github.com/celo-org/kliento v0.1.0 h1:MUqjzVQk1A4+TzvH/GF69ZAGQybs9LYgUJHsexm9Mgo=
+github.com/celo-org/kliento v0.1.0/go.mod h1:OrzUyeaXpAgTfhl0+wUG4Y+Tfn+wpL49t2/5S9z9zjQ=
 github.com/cenkalti/backoff v2.2.1+incompatible h1:tNowT99t7UNflLxfYYSlKYsBpXdEet03Pg2g16Swow4=
 github.com/cenkalti/backoff v2.2.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/cespare/cp v0.1.0 h1:SE+dxFebS7Iik5LK0tsi1k9ZCxEaFX4AjQmoyA+1dJk=
