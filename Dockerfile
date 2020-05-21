@@ -19,33 +19,12 @@
 
 
 #---------------------------------------------------------------------
-# Stage 0: Build Rust library
-# Outputs: rust build output @ /bls-zexe/target/
-#---------------------------------------------------------------------
-FROM ubuntu:16.04 as rustbuilder
-
-RUN apt update && apt install -y curl musl-tools
-RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
-ENV PATH=$PATH:~/.cargo/bin
-RUN $HOME/.cargo/bin/rustup install 1.41.0 && $HOME/.cargo/bin/rustup default 1.41.0 && $HOME/.cargo/bin/rustup target add x86_64-unknown-linux-musl
-COPY ./external/bls-zexe /bls-zexe
-RUN cd /bls-zexe && $HOME/.cargo/bin/cargo build --target x86_64-unknown-linux-musl --release
-
-
-#---------------------------------------------------------------------
 # Stage 1: Build Rosetta
 # Outputs: binary @ /rosetta/rosetta 
 #---------------------------------------------------------------------
 FROM golang:1.13-alpine as builder
 WORKDIR /rosetta
 RUN apk add --no-cache make gcc musl-dev linux-headers git
-
-
-
-# Copy BLS library + rust build output
-COPY external ./external
-RUN mkdir -p external/bls-zexe/target/release/
-COPY --from=rustbuilder /bls-zexe/target/x86_64-unknown-linux-musl/release/libepoch_snark.a external/bls-zexe/target/release/
 
 # Downnload dependencies & cache them in docker layer
 COPY go.mod .
@@ -59,13 +38,13 @@ RUN go build -o rosetta .
 
 
 #---------------------------------------------------------------------
-# Stage 1: Build Final container
+# Stage 2: Build Final container
 # Integrates celo-blockchain & rosetta builds into a single container
 # Outputs: rosetta & geth binaries on /usr/loca/bin
 #---------------------------------------------------------------------
 
-# f8eeadd284a21115e6b65546d3e92807452e3252 is the latest image from celo-blockchain branch alfajores-tracing-fix
-FROM us.gcr.io/celo-testnet/geth:f8eeadd284a21115e6b65546d3e92807452e3252
+# adbdc7f8c27e50e77b407cb328193bd3ee823643 is mainet(1.0.0) + a few compatible commits that include tracing fix
+FROM us.gcr.io/celo-testnet/geth:adbdc7f8c27e50e77b407cb328193bd3ee823643
 ARG COMMIT_SHA
 
 RUN apk add --no-cache ca-certificates
