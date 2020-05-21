@@ -18,8 +18,8 @@ import (
 	"context"
 	"math/big"
 
-	"github.com/celo-org/rosetta/celo/client"
-	"github.com/celo-org/rosetta/celo/contract"
+	"github.com/celo-org/kliento/client"
+	"github.com/celo-org/kliento/contracts"
 	"github.com/celo-org/rosetta/db"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -75,7 +75,7 @@ func (rctx *rewardsContext) prevBlockNumber() *big.Int {
 	return new(big.Int).Sub(rctx.header.Number, big.NewInt(1))
 }
 
-func (rctx *rewardsContext) computeRewards(rewardsMap map[common.Address]*big.Int, token *contract.GoldToken) error {
+func (rctx *rewardsContext) computeRewards(rewardsMap map[common.Address]*big.Int, token *contracts.GoldToken) error {
 	blockNumber := rctx.blockNumber().Uint64()
 
 	iter, err := token.FilterTransfer(&bind.FilterOpts{
@@ -103,7 +103,7 @@ func (rctx *rewardsContext) computeRewards(rewardsMap map[common.Address]*big.In
 	return nil
 }
 
-func (rctx *rewardsContext) getGoldToken() (*contract.GoldToken, error) {
+func (rctx *rewardsContext) getGoldToken() (*contracts.GoldToken, error) {
 	address, err := rctx.db.RegistryAddressStartOf(rctx.ctx, rctx.nextBlockNumber(), 0, "GoldToken")
 	if err != nil && err != db.ErrContractNotFound {
 		return nil, err
@@ -114,7 +114,7 @@ func (rctx *rewardsContext) getGoldToken() (*contract.GoldToken, error) {
 		return nil, nil
 	}
 
-	goldToken, err := contract.NewGoldToken(address, rctx.cc.Eth)
+	goldToken, err := contracts.NewGoldToken(address, rctx.cc.Eth)
 	if err != nil {
 		return nil, err
 	}

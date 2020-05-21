@@ -19,9 +19,9 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/celo-org/rosetta/celo/client"
-	"github.com/celo-org/rosetta/celo/client/debug"
-	"github.com/celo-org/rosetta/celo/contract"
+	"github.com/celo-org/kliento/client"
+	"github.com/celo-org/kliento/client/debug"
+	"github.com/celo-org/kliento/contracts"
 	"github.com/celo-org/rosetta/db"
 	"github.com/celo-org/rosetta/internal/utils"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -195,7 +195,7 @@ func (tr *Tracer) TxLockedGoldTransfers(blockHeader *types.Header, tx *types.Tra
 	} else if err != nil {
 		return nil, fmt.Errorf("can't get lockedGoldAddress: %w", err)
 	}
-	lockedGold, err := contract.NewLockedGold(lockedGoldAddr, tr.cc.Eth)
+	lockedGold, err := contracts.NewLockedGold(lockedGoldAddr, tr.cc.Eth)
 	if err != nil {
 		return nil, fmt.Errorf("can't initialize LockedGold contract: %w", err)
 	}
@@ -207,14 +207,14 @@ func (tr *Tracer) TxLockedGoldTransfers(blockHeader *types.Header, tx *types.Tra
 	} else if err != nil {
 		return nil, fmt.Errorf("can't get electionAddress: %w", err)
 	}
-	election, err := contract.NewElection(electionAddr, tr.cc.Eth)
+	election, err := contracts.NewElection(electionAddr, tr.cc.Eth)
 	if err != nil {
 		return nil, fmt.Errorf("can't initialize Election contract: %w", err)
 	}
 
 	governanceAddr, err := tr.db.RegistryAddressStartOf(tr.ctx, receipt.BlockNumber, receipt.TransactionIndex, "Governance")
 	if err != nil && err != db.ErrContractNotFound {
-		// We only need governace for slashing and you can't slash if there no governance contract. So we ignore the error
+		// We only need governace for slashing and you can't slash if there no governance contracts. So we ignore the error
 		return nil, fmt.Errorf("can't get governanceAddress: %w", err)
 	}
 
@@ -236,19 +236,19 @@ func (tr *Tracer) TxLockedGoldTransfers(blockHeader *types.Header, tx *types.Tra
 			switch eventName {
 			case "ValidatorGroupVoteCast":
 				// vote() [ValidatorGroupVoteCast] => lockNonVoting->lockVotingPending
-				event := eventRaw.(*contract.ElectionValidatorGroupVoteCast)
+				event := eventRaw.(*contracts.ElectionValidatorGroupVoteCast)
 				transfers = append(transfers, *NewVote(event.Account, event.Group, event.Value))
 			case "ValidatorGroupVoteActivated":
 				// activate() [ValidatorGroupVoteActivated] => lockVotingPending->lockVotingActive
-				event := eventRaw.(*contract.ElectionValidatorGroupVoteActivated)
+				event := eventRaw.(*contracts.ElectionValidatorGroupVoteActivated)
 				transfers = append(transfers, *NewActiveVotes(event.Account, event.Group, event.Value))
 			case "ValidatorGroupPendingVoteRevoked":
 				// revokePending() [ValidatorGroupPendingVoteRevoked] => lockVotingPending->lockNonVoting
-				event := eventRaw.(*contract.ElectionValidatorGroupPendingVoteRevoked)
+				event := eventRaw.(*contracts.ElectionValidatorGroupPendingVoteRevoked)
 				transfers = append(transfers, *NewRevokePendingVotes(event.Account, event.Group, event.Value))
 			case "ValidatorGroupActiveVoteRevoked":
 				// revokeActive() [ValidatorGroupActiveVoteRevoked] => lockVotingActive->lockNonVoting
-				event := eventRaw.(*contract.ElectionValidatorGroupActiveVoteRevoked)
+				event := eventRaw.(*contracts.ElectionValidatorGroupActiveVoteRevoked)
 				transfers = append(transfers, *NewRevokeActiveVotes(event.Account, event.Group, event.Value))
 			}
 
@@ -264,27 +264,27 @@ func (tr *Tracer) TxLockedGoldTransfers(blockHeader *types.Header, tx *types.Tra
 			switch eventName {
 			case "GoldLocked":
 				// lock() [GoldLocked + transfer] => main->lockNonVoting
-				event := eventRaw.(*contract.LockedGoldGoldLocked)
+				event := eventRaw.(*contracts.LockedGoldGoldLocked)
 				transfers = append(transfers, *NewLockGold(event.Account, lockedGoldAddr, event.Value))
 
 			case "GoldRelocked":
 				// relock() [GoldRelocked] => lockPending->lockNonVoting
-				event := eventRaw.(*contract.LockedGoldGoldRelocked)
+				event := eventRaw.(*contracts.LockedGoldGoldRelocked)
 				transfers = append(transfers, *NewRelockGold(event.Account, event.Value))
 
 			case "GoldUnlocked":
 				// unlock() [GoldUnlocked] => lockNonVoting->lockPending
-				event := eventRaw.(*contract.LockedGoldGoldUnlocked)
+				event := eventRaw.(*contracts.LockedGoldGoldUnlocked)
 				transfers = append(transfers, *NewUnlockGold(event.Account, event.Value))
 
 			case "GoldWithdrawn":
 				// withdraw() [GoldWithdrawn + transfer] => lockPending->main
-				event := eventRaw.(*contract.LockedGoldGoldWithdrawn)
+				event := eventRaw.(*contracts.LockedGoldGoldWithdrawn)
 				transfers = append(transfers, *NewWithdrawGold(event.Account, lockedGoldAddr, event.Value))
 
 			case "AccountSlashed":
 				// slash() [AccountSlashed + transfer] => account:lockNonVoting -> beneficiary:lockNonVoting + governance:main
-				event := eventRaw.(*contract.LockedGoldAccountSlashed)
+				event := eventRaw.(*contracts.LockedGoldAccountSlashed)
 				transfers = append(transfers, *NewSlash(event.Slashed, event.Reporter, governanceAddr, lockedGoldAddr, event.Penalty, event.Reward))
 
 			}

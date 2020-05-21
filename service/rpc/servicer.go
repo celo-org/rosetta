@@ -19,12 +19,12 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/celo-org/kliento/client"
+	"github.com/celo-org/kliento/utils/chain"
+	"github.com/celo-org/kliento/wrappers"
 	"github.com/celo-org/rosetta/airgap"
 	"github.com/celo-org/rosetta/airgap/server"
 	"github.com/celo-org/rosetta/analyzer"
-	"github.com/celo-org/rosetta/celo"
-	"github.com/celo-org/rosetta/celo/client"
-	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/celo-org/rosetta/db"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -38,12 +38,12 @@ import (
 type Servicer struct {
 	cc          *client.CeloClient
 	db          db.RosettaDBReader
-	chainParams *celo.ChainParameters
+	chainParams *chain.ChainParameters
 	airgap      airgap.Server
 }
 
 // NewServicer creates a default api service
-func NewServicer(celoClient *client.CeloClient, db db.RosettaDBReader, cp *celo.ChainParameters) (*Servicer, error) {
+func NewServicer(celoClient *client.CeloClient, db db.RosettaDBReader, cp *chain.ChainParameters) (*Servicer, error) {
 	srvCtx, err := server.NewServerContext(celoClient)
 	if err != nil {
 		return nil, err
@@ -187,7 +187,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 		return createResponse(NewAmount(goldAmt, CeloGold)), nil
 	}
 
-	registryWrapper, err := wrapper.NewRegistry(s.cc)
+	registryWrapper, err := wrappers.NewRegistry(s.cc)
 	if err == client.ErrContractNotDeployed {
 		// Nothing is deployed => ignore lockedGold & election balances
 		return emptyResponse, nil
@@ -242,7 +242,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 		return nil, LogErrCeloClient("NewElection", err)
 	}
 
-	sumVotes := func(targetVotes wrapper.VotesByGroup) *big.Int {
+	sumVotes := func(targetVotes wrappers.VotesByGroup) *big.Int {
 		sum := big.NewInt(0)
 		for _, amount := range targetVotes {
 			sum.Add(sum, amount)

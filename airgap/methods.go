@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/celo-org/rosetta/celo/wrapper"
+	"github.com/celo-org/kliento/wrappers"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -27,22 +27,22 @@ var ReleaseGold = "ReleaseGold"
 // values taken from contract method names for ABI usage
 var (
 	// Accounts
-	CreateAccount              = registerMethod(wrapper.AccountsRegistryId.String(), "createAccount", nil)
-	AuthorizeVoteSigner        = registerMethod(wrapper.AccountsRegistryId.String(), "authorizeVoteSigner", []argParser{addressParser, bytesParser})
-	AuthorizeAttestationSigner = registerMethod(wrapper.AccountsRegistryId.String(), "authorizeAttestationSigner", []argParser{addressParser, bytesParser})
-	AuthorizeValidatorSigner   = registerMethod(wrapper.AccountsRegistryId.String(), "authorizeValidatorSigner", []argParser{addressParser, bytesParser})
+	CreateAccount              = registerMethod(wrappers.AccountsRegistryId.String(), "createAccount", nil)
+	AuthorizeVoteSigner        = registerMethod(wrappers.AccountsRegistryId.String(), "authorizeVoteSigner", []argParser{addressParser, bytesParser})
+	AuthorizeAttestationSigner = registerMethod(wrappers.AccountsRegistryId.String(), "authorizeAttestationSigner", []argParser{addressParser, bytesParser})
+	AuthorizeValidatorSigner   = registerMethod(wrappers.AccountsRegistryId.String(), "authorizeValidatorSigner", []argParser{addressParser, bytesParser})
 
 	// Locked Gold
-	LockGold     = registerMethod(wrapper.LockedGoldRegistryId.String(), "lock", nil)
-	UnlockGold   = registerMethod(wrapper.LockedGoldRegistryId.String(), "unlock", []argParser{bigIntParser})
-	RelockGold   = registerMethod(wrapper.LockedGoldRegistryId.String(), "relock", []argParser{bigIntParser, bigIntParser})
-	WithdrawGold = registerMethod(wrapper.LockedGoldRegistryId.String(), "withdraw", []argParser{bigIntParser})
+	LockGold     = registerMethod(wrappers.LockedGoldRegistryId.String(), "lock", nil)
+	UnlockGold   = registerMethod(wrappers.LockedGoldRegistryId.String(), "unlock", []argParser{bigIntParser})
+	RelockGold   = registerMethod(wrappers.LockedGoldRegistryId.String(), "relock", []argParser{bigIntParser, bigIntParser})
+	WithdrawGold = registerMethod(wrappers.LockedGoldRegistryId.String(), "withdraw", []argParser{bigIntParser})
 
 	// Election
-	Vote               = registerMethod(wrapper.ElectionRegistryId.String(), "vote", []argParser{addressParser, bigIntParser})
-	ActivateVotes      = registerMethod(wrapper.ElectionRegistryId.String(), "activate", []argParser{addressParser, addressParser})
-	RevokePendingVotes = registerMethod(wrapper.ElectionRegistryId.String(), "revokePending", []argParser{addressParser, addressParser, bigIntParser})
-	RevokeActiveVotes  = registerMethod(wrapper.ElectionRegistryId.String(), "revokeActive", []argParser{addressParser, addressParser, bigIntParser})
+	Vote               = registerMethod(wrappers.ElectionRegistryId.String(), "vote", []argParser{addressParser, bigIntParser})
+	ActivateVotes      = registerMethod(wrappers.ElectionRegistryId.String(), "activate", []argParser{addressParser, addressParser})
+	RevokePendingVotes = registerMethod(wrappers.ElectionRegistryId.String(), "revokePending", []argParser{addressParser, addressParser, bigIntParser})
+	RevokeActiveVotes  = registerMethod(wrappers.ElectionRegistryId.String(), "revokeActive", []argParser{addressParser, addressParser, bigIntParser})
 
 	// ReleaseGold
 	ReleaseGoldWithdraw = registerMethod(ReleaseGold, "withdraw", []argParser{bigIntParser})

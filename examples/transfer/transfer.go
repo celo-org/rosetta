@@ -22,7 +22,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/celo-org/rosetta/celo/client"
+	"github.com/celo-org/kliento/client"
 	"github.com/celo-org/rosetta/internal/config"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts"

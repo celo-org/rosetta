@@ -19,7 +19,7 @@ import (
 	"math/big"
 	"sync"
 
-	"github.com/celo-org/rosetta/celo/client"
+	"github.com/celo-org/kliento/client"
 	"github.com/celo-org/rosetta/internal/utils"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/log"
