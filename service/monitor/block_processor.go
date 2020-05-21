@@ -21,7 +21,7 @@ import (
 
 	"github.com/celo-org/kliento/client"
 	"github.com/celo-org/kliento/contracts"
-	"github.com/celo-org/kliento/wrappers"
+	"github.com/celo-org/kliento/registry"
 	"github.com/celo-org/rosetta/db"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -35,7 +35,7 @@ type processor struct {
 	headers             <-chan *types.Header
 	changes             chan<- *db.BlockChangeSet
 	cc                  *client.CeloClient
-	registry            *wrappers.RegistryWrapper
+	registry            *contracts.Registry
 	epochRewardsAddress common.Address
 	gpmAddress          common.Address
 	reserveAddress      common.Address
@@ -103,7 +103,7 @@ func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes c
 }
 
 func newProcessor(ctx context.Context, headers <-chan *types.Header, changes chan<- *db.BlockChangeSet, cc *client.CeloClient, db_ db.RosettaDBReader, logger log.Logger) (*processor, error) {
-	registry, err := wrappers.NewRegistry(cc)
+	registry, err := contracts.NewRegistry(registry.RegistryAddress, cc.Eth)
 	if err != nil {
 		return nil, err
 	}
@@ -182,7 +182,7 @@ func (bp *processor) initNextBlockChangeSet() (*db.BlockChangeSet, error) {
 func (bp *processor) registryChanges(bcs *db.BlockChangeSet) error {
 	blockNumber := bcs.BlockNumber.Uint64()
 
-	iter, err := bp.registry.Contract().FilterRegistryUpdated(&bind.FilterOpts{
+	iter, err := bp.registry.FilterRegistryUpdated(&bind.FilterOpts{
 		End:     &blockNumber,
 		Start:   blockNumber,
 		Context: bp.ctx,

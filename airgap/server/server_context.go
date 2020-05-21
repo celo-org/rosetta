@@ -19,7 +19,8 @@ import (
 	"math/big"
 
 	"github.com/celo-org/kliento/client"
-	"github.com/celo-org/kliento/wrappers"
+	"github.com/celo-org/kliento/contracts/helpers"
+	"github.com/celo-org/kliento/registry"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -27,11 +28,11 @@ import (
 )
 
 type ServerContext interface {
-	addressFor(ctx context.Context, identifier wrappers.RegistryKey) (common.Address, error)
+	addressFor(ctx context.Context, identifier registry.ContractID) (common.Address, error)
 
-	authorizeMetadata(ctx context.Context, popSignature []byte) (*wrappers.EncodedSignature, error)
-	voteMetadata(ctx context.Context, group common.Address, value *big.Int) (*wrappers.AddressLesserGreater, error)
-	revokeMetadata(ctx context.Context, account common.Address, group common.Address, value *big.Int) (*wrappers.RevokeMetadata, error)
+	authorizeMetadata(ctx context.Context, popSignature []byte) (*helpers.SignatureValues, error)
+	voteMetadata(ctx context.Context, group common.Address, value *big.Int) (*helpers.AddressLesserGreater, error)
+	revokeMetadata(ctx context.Context, account common.Address, group common.Address, value *big.Int) (*helpers.RevokeMetadata, error)
 
 	// From EthClient
 
@@ -44,11 +45,11 @@ type ServerContext interface {
 type serverContextImpl struct {
 	*ethclient.Client
 
-	registry *wrappers.RegistryWrapper
+	registry registry.Registry
 }
 
 func NewServerContext(cc *client.CeloClient) (ServerContext, error) {
-	registry, err := wrappers.NewRegistry(cc)
+	registry, err := registry.New(cc)
 	if err != nil {
 		return nil, err
 	}
@@ -59,30 +60,28 @@ func NewServerContext(cc *client.CeloClient) (ServerContext, error) {
 	}, nil
 }
 
-func (sc *serverContextImpl) addressFor(ctx context.Context, identifier wrappers.RegistryKey) (common.Address, error) {
-	return sc.registry.GetAddressForString(ctx, nil, identifier.String())
+func (sc *serverContextImpl) addressFor(ctx context.Context, identifier registry.ContractID) (common.Address, error) {
+	return sc.registry.GetAddressFor(ctx, nil, identifier)
 }
 
-func (sc *serverContextImpl) authorizeMetadata(ctx context.Context, popSignature []byte) (*wrappers.EncodedSignature, error) {
-	accounts, err := sc.registry.GetAccountsWrapper(ctx, nil)
+func (sc *serverContextImpl) authorizeMetadata(ctx context.Context, popSignature []byte) (*helpers.SignatureValues, error) {
+	return helpers.GetSignatureValues(popSignature)
+}
+
+func (sc *serverContextImpl) voteMetadata(ctx context.Context, group common.Address, value *big.Int) (*helpers.AddressLesserGreater, error) {
+	election, err := sc.registry.GetElectionContract(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
-	return accounts.AuthorizeMetadata(popSignature)
+	he := helpers.Election{election}
+	return he.VoteMetadata(&bind.CallOpts{Context: ctx}, group, value)
 }
 
-func (sc *serverContextImpl) voteMetadata(ctx context.Context, group common.Address, value *big.Int) (*wrappers.AddressLesserGreater, error) {
-	elections, err := sc.registry.GetElectionWrapper(ctx, nil)
+func (sc *serverContextImpl) revokeMetadata(ctx context.Context, account common.Address, group common.Address, value *big.Int) (*helpers.RevokeMetadata, error) {
+	election, err := sc.registry.GetElectionContract(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
-	return elections.VoteMetadata(&bind.CallOpts{Context: ctx}, group, value)
-}
-
-func (sc *serverContextImpl) revokeMetadata(ctx context.Context, account common.Address, group common.Address, value *big.Int) (*wrappers.RevokeMetadata, error) {
-	elections, err := sc.registry.GetElectionWrapper(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-	return elections.RevokeMetadata(&bind.CallOpts{Context: ctx}, account, group, value)
+	he := helpers.Election{election}
+	return he.RevokeMetadata(&bind.CallOpts{Context: ctx}, account, group, value)
 }

@@ -19,15 +19,15 @@ import (
 	"fmt"
 
 	"github.com/celo-org/kliento/contracts"
-	"github.com/celo-org/kliento/wrappers"
+	"github.com/celo-org/kliento/registry"
 	"github.com/celo-org/rosetta/airgap"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 )
 
 var abiFactoryMap = map[string]func() (*abi.ABI, error){
-	wrappers.AccountsRegistryId.String():   contracts.ParseAccountsABI,
-	wrappers.ElectionRegistryId.String():   contracts.ParseElectionABI,
-	wrappers.LockedGoldRegistryId.String(): contracts.ParseLockedGoldABI,
+	registry.AccountsContractID.String():   contracts.ParseAccountsABI,
+	registry.ElectionContractID.String():   contracts.ParseElectionABI,
+	registry.LockedGoldContractID.String(): contracts.ParseLockedGoldABI,
 	airgap.ReleaseGold:                     contracts.ParseReleaseGoldABI,
 }
 
