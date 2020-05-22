@@ -42,30 +42,21 @@ type Transfer struct {
 var TobinTaxDenominator *big.Int = new(big.Int).Exp(big.NewInt(10), big.NewInt(24), nil)
 
 type TobinTax struct {
-	Numerator   *big.Int
-	Denominator *big.Int
-	Recipient   common.Address
-}
-
-type TobinTaxResult struct {
-	TaxAmount      *big.Int
-	AfterTaxAmount *big.Int
+	Numerator *big.Int
+	Recipient common.Address
 }
 
 func NewTobinTax(numerator *big.Int, recipient common.Address) *TobinTax {
 	return &TobinTax{
-		Numerator:   numerator,
-		Denominator: TobinTaxDenominator,
-		Recipient:   recipient,
+		Numerator: numerator,
+		Recipient: recipient,
 	}
 }
 
-func (tt *TobinTax) Apply(value *big.Int) *TobinTaxResult {
-	taxAmount := new(big.Int).Div(new(big.Int).Mul(value, tt.Numerator), tt.Denominator)
-	return &TobinTaxResult{
-		TaxAmount:      taxAmount,
-		AfterTaxAmount: new(big.Int).Sub(value, taxAmount),
-	}
+func (tt *TobinTax) Apply(value *big.Int) (taxAmount, afterTaxAmount *big.Int) {
+	taxAmount = new(big.Int).Div(new(big.Int).Mul(value, tt.Numerator), TobinTaxDenominator)
+	afterTaxAmount = new(big.Int).Sub(value, taxAmount)
+	return
 }
 
 func (tt *TobinTax) IsDefined() bool {

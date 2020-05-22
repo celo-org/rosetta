@@ -92,7 +92,7 @@ func (tr *Tracer) TraceTransaction(blockHeader *types.Header, tx *types.Transact
 			return nil, err
 		}
 
-		ops, err = ReconcileLockedGoldTransfers(lockedGoldOps, transferOps)
+		ops, err = ReconcileLockedGoldTransfers(lockedGoldOps, transferOps, tobinTax, contracts["LockedGold"])
 		if err != nil {
 			return nil, err
 		}
@@ -240,7 +240,7 @@ func (tr *Tracer) TxLockedGoldTransfers(tx *types.Transaction, receipt *types.Re
 			case "GoldLocked":
 				// lock() [GoldLocked + transfer] => main->lockNonVoting
 				event := eventRaw.(*contract.LockedGoldGoldLocked)
-				transfers = append(transfers, *NewLockGold(event.Account, lockedGoldAddr, event.Value, tobinTax))
+				transfers = append(transfers, *NewLockGold(event.Account, lockedGoldAddr, event.Value))
 
 			case "GoldRelocked":
 				// relock() [GoldRelocked] => lockPending->lockNonVoting
