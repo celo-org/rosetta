@@ -34,7 +34,7 @@ RUN go mod download
 # Build project
 #  (this saves to redownload everything when go.mod/sum didn't change)
 COPY . .
-RUN go build -o rosetta .
+RUN go build --tags musl -o rosetta .
 
 
 #---------------------------------------------------------------------
