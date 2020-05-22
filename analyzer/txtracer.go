@@ -20,7 +20,6 @@ import (
 	"math/big"
 
 	"github.com/celo-org/rosetta/celo/client"
-	"github.com/celo-org/rosetta/celo/client/debug"
 	"github.com/celo-org/rosetta/celo/contract"
 	"github.com/celo-org/rosetta/db"
 	"github.com/celo-org/rosetta/internal/utils"
@@ -55,8 +54,22 @@ func (tr *Tracer) GetRegistryAddresses(receipt *types.Receipt, contractNames ...
 	return contracts, nil
 }
 
+func (tr *Tracer) GetTobinTax(blockNumber *big.Int, reserve common.Address) (*TobinTax, error) {
+	numerator, err := tr.db.TobinTaxFor(tr.ctx, blockNumber)
+	if err != nil {
+		return nil, err
+	}
+
+	if numerator.Cmp(utils.Big0) > 0 && reserve == common.ZeroAddress {
+		// Error: If we find tobinTax in the db, we should also find reserveAddr
+		return nil, db.ErrContractNotFound
+	}
+
+	return NewTobinTax(numerator, reserve), nil
+}
+
 func (tr *Tracer) TraceTransaction(blockHeader *types.Header, tx *types.Transaction, receipt *types.Receipt) ([]Operation, error) {
-	var ops []Operation
+	ops := make([]Operation, 0)
 
 	if receipt.Status == types.ReceiptStatusSuccessful {
 		contracts, err := tr.GetRegistryAddresses(receipt, "Reserve", "LockedGold", "Election", "Governance")
@@ -64,24 +77,29 @@ func (tr *Tracer) TraceTransaction(blockHeader *types.Header, tx *types.Transact
 			return nil, err
 		}
 
-		lockedGoldOps, err := tr.TxLockedGoldTransfers(blockHeader, tx, receipt, contracts)
+		tobinTax, err := tr.GetTobinTax(receipt.BlockNumber, contracts["Reserve"])
 		if err != nil {
 			return nil, err
 		}
 
-		transferOps, tobinTax, err := tr.TxTransfers(blockHeader, tx, receipt, contracts)
+		lockedGoldOps, err := tr.TxLockedGoldTransfers(tx, receipt, tobinTax, contracts)
 		if err != nil {
 			return nil, err
 		}
 
-		ops, err = ReconcileLockedGoldTransfers(lockedGoldOps, transferOps, tobinTax, contracts)
+		transferOps, err := tr.TxTransfers(tx, receipt, tobinTax)
+		if err != nil {
+			return nil, err
+		}
+
+		ops, err = ReconcileLockedGoldTransfers(lockedGoldOps, transferOps)
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	if tx.FeeCurrency() == nil { // nil implies cGLD
-		gasOp, err := tr.TxGasDetails(blockHeader, tx, receipt)
+		gasOp, err := tr.TxGasDetails(blockHeader.Coinbase, tx, receipt)
 		if err != nil {
 			return nil, err
 		}
@@ -91,10 +109,10 @@ func (tr *Tracer) TraceTransaction(blockHeader *types.Header, tx *types.Transact
 	return ops, nil
 }
 
-func (tr *Tracer) TxGasDetails(blockHeader *types.Header, tx *types.Transaction, receipt *types.Receipt) (*Operation, error) {
+func (tr *Tracer) TxGasDetails(coinbase common.Address, tx *types.Transaction, receipt *types.Receipt) (*Operation, error) {
 	balanceChanges := NewBalanceSet()
 
-	gpm, err := tr.db.GasPriceMinimumFor(tr.ctx, blockHeader.Number)
+	gpm, err := tr.db.GasPriceMinimumFor(tr.ctx, receipt.BlockNumber)
 	if err != nil {
 		return nil, fmt.Errorf("can't get gasPriceMinimun: %w", err)
 	}
@@ -106,7 +124,7 @@ func (tr *Tracer) TxGasDetails(blockHeader *types.Header, tx *types.Transaction,
 	totalTxFee := new(big.Int).Mul(tx.GasPrice(), gasUsed)
 
 	// The "tip" goes to the coinbase address
-	balanceChanges.Add(blockHeader.Coinbase, new(big.Int).Sub(totalTxFee, baseTxFee))
+	balanceChanges.Add(coinbase, new(big.Int).Sub(totalTxFee, baseTxFee))
 
 	// We want to get state AFTER the tx, since gas fees are processed by the end of the TX
 	governanceAddress, err := tr.db.RegistryAddressStartOf(tr.ctx, receipt.BlockNumber, receipt.TransactionIndex+1, "Governance")
@@ -126,7 +144,7 @@ func (tr *Tracer) TxGasDetails(blockHeader *types.Header, tx *types.Transaction,
 	}
 
 	// TODO find a better way to do this?
-	from, err := tr.cc.Eth.TransactionSender(tr.ctx, tx, blockHeader.Hash(), receipt.TransactionIndex)
+	from, err := tr.cc.Eth.TransactionSender(tr.ctx, tx, receipt.BlockHash, receipt.TransactionIndex)
 	if err != nil {
 		return nil, fmt.Errorf("can't get transaction sender: %w", err)
 	}
@@ -134,67 +152,22 @@ func (tr *Tracer) TxGasDetails(blockHeader *types.Header, tx *types.Transaction,
 	return NewFee(balanceChanges.ToMap()), nil
 }
 
-func (tr *Tracer) TxTransfers(blockHeader *types.Header, tx *types.Transaction, receipt *types.Receipt, contracts map[string]common.Address) ([]Operation, *big.Int, error) {
+func (tr *Tracer) TxTransfers(tx *types.Transaction, receipt *types.Receipt, tobinTax *TobinTax) ([]Operation, error) {
 	if receipt.Status == types.ReceiptStatusFailed {
-		return nil, nil, fmt.Errorf("Cannot trace transfers on failed tx: %v  blockNumber: %v", receipt.TransactionIndex, receipt.BlockNumber)
+		return nil, fmt.Errorf("Cannot trace transfers on failed tx: %v  blockNumber: %v", receipt.TransactionIndex, receipt.BlockNumber)
 	}
 
 	internalTransfers, err := tr.cc.Debug.TransactionTransfers(tr.ctx, tx.Hash())
 	if err != nil {
-		return nil, nil, fmt.Errorf("can't run celo-rpc tx-tracer: %w", err)
+		return nil, fmt.Errorf("can't run celo-rpc tx-tracer: %w", err)
 	}
 
-	tobinTax, err := tr.db.TobinTaxFor(tr.ctx, blockHeader.Number)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	var transfers []Operation
-
-	if tobinTax.Cmp(utils.Big0) > 0 {
-		if contracts == nil {
-			var err error
-			contracts, err = tr.GetRegistryAddresses(receipt, "Reserve")
-			if err != nil {
-				return nil, nil, err
-			}
-		}
-		reserve, ok := contracts["Reserve"]
-		if !ok {
-			return nil, nil, db.ErrContractNotFound
-		}
-
-		transfers = make([]Operation, 2*len(internalTransfers))
-		var successful bool
-		var tobinTaxAmount *big.Int
-		i := 0
-		for _, it := range internalTransfers {
-			successful = it.Status.String() == debug.TransferStatusSuccess.String()
-			tobinTaxAmount = utils.CalcTobinTaxAmount(it.Value, tobinTax)
-			transfers[i] = *NewTransfer(it.From, it.To, new(big.Int).Sub(it.Value, tobinTaxAmount), successful)
-			transfers[i+1] = *NewTransfer(it.From, reserve, tobinTaxAmount, successful)
-			i = i + 2
-		}
-	} else {
-		transfers = make([]Operation, len(internalTransfers))
-		for i, it := range internalTransfers {
-			transfers[i] = *NewTransfer(it.From, it.To, it.Value, it.Status.String() == debug.TransferStatusSuccess.String())
-		}
-	}
-	return transfers, tobinTax, nil
+	return InternalTransfersToOperations(internalTransfers, tobinTax), nil
 }
 
-func (tr *Tracer) TxLockedGoldTransfers(blockHeader *types.Header, tx *types.Transaction, receipt *types.Receipt, contracts map[string]common.Address) ([]Operation, error) {
+func (tr *Tracer) TxLockedGoldTransfers(tx *types.Transaction, receipt *types.Receipt, tobinTax *TobinTax, contracts map[string]common.Address) ([]Operation, error) {
 	if receipt.Status == types.ReceiptStatusFailed {
 		return nil, fmt.Errorf("Cannot trace LockedGold transfers on failed tx: %v  blockNumber: %v", receipt.TransactionIndex, receipt.BlockNumber)
-	}
-
-	if contracts == nil {
-		var err error
-		contracts, err = tr.GetRegistryAddresses(receipt, "LockedGold", "Election", "Governance")
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	lockedGoldAddr, ok := contracts["LockedGold"]
@@ -267,7 +240,7 @@ func (tr *Tracer) TxLockedGoldTransfers(blockHeader *types.Header, tx *types.Tra
 			case "GoldLocked":
 				// lock() [GoldLocked + transfer] => main->lockNonVoting
 				event := eventRaw.(*contract.LockedGoldGoldLocked)
-				transfers = append(transfers, *NewLockGold(event.Account, lockedGoldAddr, event.Value))
+				transfers = append(transfers, *NewLockGold(event.Account, lockedGoldAddr, event.Value, tobinTax))
 				// relock() [GoldLocked] => lockPending->lockNonVoting
 
 			case "GoldUnlocked":
@@ -278,12 +251,12 @@ func (tr *Tracer) TxLockedGoldTransfers(blockHeader *types.Header, tx *types.Tra
 			case "GoldWithdrawn":
 				// withdraw() [GoldWithdrawn + transfer] => lockPending->main
 				event := eventRaw.(*contract.LockedGoldGoldWithdrawn)
-				transfers = append(transfers, *NewWithdrawGold(event.Account, lockedGoldAddr, event.Value))
+				transfers = append(transfers, *NewWithdrawGold(event.Account, lockedGoldAddr, event.Value, tobinTax))
 
 			case "AccountSlashed":
 				// slash() [AccountSlashed + transfer] => account:lockNonVoting -> beneficiary:lockNonVoting + governance:main
 				event := eventRaw.(*contract.LockedGoldAccountSlashed)
-				transfers = append(transfers, *NewSlash(event.Slashed, event.Reporter, governanceAddr, lockedGoldAddr, event.Penalty, event.Reward))
+				transfers = append(transfers, *NewSlash(event.Slashed, event.Reporter, governanceAddr, lockedGoldAddr, event.Penalty, event.Reward, tobinTax))
 
 			}
 		}
