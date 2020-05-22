@@ -223,7 +223,7 @@ func (tr *Tracer) TxLockedGoldTransfers(tx *types.Transaction, receipt *types.Re
 				transfers = append(transfers, *NewRevokePendingVotes(event.Account, event.Group, event.Value))
 			case "ValidatorGroupActiveVoteRevoked":
 				// revokeActive() [ValidatorGroupActiveVoteRevoked] => lockVotingActive->lockNonVoting
-				event := eventRaw.(contract.ElectionValidatorGroupActiveVoteRevoked)
+				event := eventRaw.(*contract.ElectionValidatorGroupActiveVoteRevoked)
 				transfers = append(transfers, *NewRevokeActiveVotes(event.Account, event.Group, event.Value))
 			}
 
@@ -241,7 +241,11 @@ func (tr *Tracer) TxLockedGoldTransfers(tx *types.Transaction, receipt *types.Re
 				// lock() [GoldLocked + transfer] => main->lockNonVoting
 				event := eventRaw.(*contract.LockedGoldGoldLocked)
 				transfers = append(transfers, *NewLockGold(event.Account, lockedGoldAddr, event.Value, tobinTax))
-				// relock() [GoldLocked] => lockPending->lockNonVoting
+
+			case "GoldRelocked":
+				// relock() [GoldRelocked] => lockPending->lockNonVoting
+				event := eventRaw.(*contract.LockedGoldGoldRelocked)
+				transfers = append(transfers, *NewRelockGold(event.Account, event.Value))
 
 			case "GoldUnlocked":
 				// unlock() [GoldUnlocked] => lockNonVoting->lockPending

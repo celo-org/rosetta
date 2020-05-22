@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package client
+package main
 
 import (
 	"context"
 	"log"
-	"math/big"
 
 	"github.com/celo-org/rosetta/airgap"
+	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/coinbase/rosetta-sdk-go/fetcher"
 )
@@ -82,7 +82,7 @@ func main() {
 		}
 
 		// step 4: submit transaction ONLINE
-		txId, _, err := fetcherInstance.ConstructionSubmit(ctx, networkId, string(signedTxRaw))
+		txId, _, err := fetcherInstance.ConstructionSubmit(ctx, networkId, common.Bytes2Hex(signedTxRaw))
 		if err != nil {
 			return err
 		}
@@ -102,27 +102,27 @@ func main() {
 		log.Fatalf("Error on submit Tx: %s", err)
 	}
 
-	txArgs, err = argBuilder.LockGold(*addr, big.NewInt(100))
-	if err != nil {
-		log.Fatalf("Error build txArgs: %s", err)
-	}
-	if err = submitSigned(txArgs); err != nil {
-		log.Fatalf("Error on submit Tx: %s", err)
-	}
+	// txArgs, err = argBuilder.LockGold(*addr, big.NewInt(100))
+	// if err != nil {
+	// 	log.Fatalf("Error build txArgs: %s", err)
+	// }
+	// if err = submitSigned(txArgs); err != nil {
+	// 	log.Fatalf("Error on submit Tx: %s", err)
+	// }
 
-	txArgs, err = argBuilder.UnlockGold(*addr, big.NewInt(50))
-	if err != nil {
-		log.Fatalf("Error build txArgs: %s", err)
-	}
-	if err = submitSigned(txArgs); err != nil {
-		log.Fatalf("Error on submit Tx: %s", err)
-	}
+	// txArgs, err = argBuilder.UnlockGold(*addr, big.NewInt(50))
+	// if err != nil {
+	// 	log.Fatalf("Error build txArgs: %s", err)
+	// }
+	// if err = submitSigned(txArgs); err != nil {
+	// 	log.Fatalf("Error on submit Tx: %s", err)
+	// }
 
-	txArgs, err = argBuilder.WithdrawGold(*addr, big.NewInt(0))
-	if err != nil {
-		log.Fatalf("Error build txArgs: %s", err)
-	}
-	if err = submitSigned(txArgs); err != nil {
-		log.Fatalf("Error on submit Tx: %s", err)
-	}
+	// txArgs, err = argBuilder.WithdrawGold(*addr, big.NewInt(0))
+	// if err != nil {
+	// 	log.Fatalf("Error build txArgs: %s", err)
+	// }
+	// if err = submitSigned(txArgs); err != nil {
+	// 	log.Fatalf("Error on submit Tx: %s", err)
+	// }
 }
