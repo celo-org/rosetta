@@ -19,12 +19,13 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/celo-org/kliento/client"
+	"github.com/celo-org/kliento/contracts/helpers"
+	"github.com/celo-org/kliento/registry"
+	"github.com/celo-org/kliento/utils/chain"
 	"github.com/celo-org/rosetta/airgap"
 	"github.com/celo-org/rosetta/airgap/server"
 	"github.com/celo-org/rosetta/analyzer"
-	"github.com/celo-org/rosetta/celo"
-	"github.com/celo-org/rosetta/celo/client"
-	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/celo-org/rosetta/db"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -38,12 +39,12 @@ import (
 type Servicer struct {
 	cc          *client.CeloClient
 	db          db.RosettaDBReader
-	chainParams *celo.ChainParameters
+	chainParams *chain.ChainParameters
 	airgap      airgap.Server
 }
 
 // NewServicer creates a default api service
-func NewServicer(celoClient *client.CeloClient, db db.RosettaDBReader, cp *celo.ChainParameters) (*Servicer, error) {
+func NewServicer(celoClient *client.CeloClient, db db.RosettaDBReader, cp *chain.ChainParameters) (*Servicer, error) {
 	srvCtx, err := server.NewServerContext(celoClient)
 	if err != nil {
 		return nil, err
@@ -187,7 +188,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 		return createResponse(NewAmount(goldAmt, CeloGold)), nil
 	}
 
-	registryWrapper, err := wrapper.NewRegistry(s.cc)
+	registry, err := registry.New(s.cc)
 	if err == client.ErrContractNotDeployed {
 		// Nothing is deployed => ignore lockedGold & election balances
 		return emptyResponse, nil
@@ -197,7 +198,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 
 	if subAccount.Address == string(analyzer.AccLockedGoldNonVoting) {
 		// Fetch LockedGold Balances
-		lockedGoldWrapper, err := registryWrapper.GetLockedGoldWrapper(ctx, nil)
+		lockedGold, err := registry.GetLockedGoldContract(ctx, nil)
 		if err == client.ErrContractNotDeployed {
 			// Nothing is deployed => ignore lockedGold & election balances
 			return emptyResponse, nil
@@ -205,7 +206,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 			return nil, LogErrCeloClient("NewLockedGold", err)
 		}
 
-		nonVotingLockedGold, err := lockedGoldWrapper.GetAccountNonvotingLockedGold(requestedBlockOpts, accountAddr)
+		nonVotingLockedGold, err := lockedGold.GetAccountNonvotingLockedGold(requestedBlockOpts, accountAddr)
 		if err != nil {
 			return nil, LogErrCeloClient("GetAccountNonvotingLockedGold", err)
 		}
@@ -215,7 +216,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 
 	if subAccount.Address == string(analyzer.AccLockedGoldPending) {
 		// Fetch LockedGold Balances
-		lockedGoldWrapper, err := registryWrapper.GetLockedGoldWrapper(ctx, nil)
+		lockedGold, err := registry.GetLockedGoldContract(ctx, nil)
 		if err == client.ErrContractNotDeployed {
 			// Nothing is deployed => ignore lockedGold & election balances
 			return emptyResponse, nil
@@ -223,7 +224,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 			return nil, LogErrCeloClient("NewLockedGold", err)
 		}
 
-		totalPending, err := lockedGoldWrapper.GetTotalPendingWithdrawals(requestedBlockOpts, accountAddr)
+		totalPending, err := lockedGold.GetTotalPendingWithdrawals(requestedBlockOpts, accountAddr)
 		if err != nil {
 			return nil, LogErrCeloClient("GetTotalPendingWithdrawals", err)
 		}
@@ -234,15 +235,16 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 	// If we are here need to be election based
 
 	// Fetch Election (Votes) Balances
-	electionWrapper, err := registryWrapper.GetElectionWrapper(ctx, nil)
+	_election, err := registry.GetElectionContract(ctx, nil)
 	if err == client.ErrContractNotDeployed {
 		// Nothing is deployed => ignore lockedGold & election balances
 		return emptyResponse, nil
 	} else if err != nil {
 		return nil, LogErrCeloClient("NewElection", err)
 	}
+	election := helpers.Election{_election}
 
-	sumVotes := func(targetVotes wrapper.VotesByGroup) *big.Int {
+	sumVotes := func(targetVotes helpers.VotesByGroup) *big.Int {
 		sum := big.NewInt(0)
 		for _, amount := range targetVotes {
 			sum.Add(sum, amount)
@@ -260,12 +262,12 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 	var voteBalance *big.Int
 	if subAccount.Address == string(analyzer.AccLockedGoldVotingPending) {
 		if groupAddr != common.ZeroAddress {
-			voteBalance, err = electionWrapper.GetPendingVotesForGroupByAccount(requestedBlockOpts, groupAddr, accountAddr)
+			voteBalance, err = election.GetPendingVotesForGroupByAccount(requestedBlockOpts, groupAddr, accountAddr)
 			if err != nil {
 				return nil, LogErrCeloClient("GetPendingVotesForGroupByAccount", err)
 			}
 		} else {
-			votes, err := electionWrapper.GetAccountPendingVotes(requestedBlockOpts, accountAddr)
+			votes, err := election.GetAccountPendingVotes(requestedBlockOpts, accountAddr)
 			if err != nil {
 				return nil, LogErrCeloClient("GetPendingVotesForGroupByAccount", err)
 			}
@@ -273,12 +275,12 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 		}
 	} else if subAccount.Address == string(analyzer.AccLockedGoldVotingActive) {
 		if groupAddr != common.ZeroAddress {
-			voteBalance, err = electionWrapper.GetActiveVotesForGroupByAccount(requestedBlockOpts, groupAddr, accountAddr)
+			voteBalance, err = election.GetActiveVotesForGroupByAccount(requestedBlockOpts, groupAddr, accountAddr)
 			if err != nil {
 				return nil, LogErrCeloClient("GetActiveVotesForGroupByAccount", err)
 			}
 		} else {
-			votes, err := electionWrapper.GetAccountActiveVotes(requestedBlockOpts, accountAddr)
+			votes, err := election.GetAccountActiveVotes(requestedBlockOpts, accountAddr)
 			if err != nil {
 				return nil, LogErrCeloClient("GetActiveVotesForGroupByAccount", err)
 			}

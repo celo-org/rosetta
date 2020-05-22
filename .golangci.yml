@@ -39,3 +39,6 @@ issues:
     - path: api/model.*\.go
       linters:
         - misspell
+
+  exclude:
+    - composites

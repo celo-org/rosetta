@@ -17,8 +17,8 @@ package rpc
 import (
 	"math/big"
 
+	"github.com/celo-org/kliento/client/txpool"
 	"github.com/celo-org/rosetta/analyzer"
-	"github.com/celo-org/rosetta/celo/client/txpool"
 
 	rosettaTypes "github.com/coinbase/rosetta-sdk-go/types"
 

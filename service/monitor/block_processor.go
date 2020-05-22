@@ -19,9 +19,9 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/celo-org/rosetta/celo/client"
-	"github.com/celo-org/rosetta/celo/contract"
-	"github.com/celo-org/rosetta/celo/wrapper"
+	"github.com/celo-org/kliento/client"
+	"github.com/celo-org/kliento/contracts"
+	"github.com/celo-org/kliento/registry"
 	"github.com/celo-org/rosetta/db"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -35,7 +35,7 @@ type processor struct {
 	headers             <-chan *types.Header
 	changes             chan<- *db.BlockChangeSet
 	cc                  *client.CeloClient
-	registry            *wrapper.RegistryWrapper
+	registry            *contracts.Registry
 	epochRewardsAddress common.Address
 	gpmAddress          common.Address
 	reserveAddress      common.Address
@@ -103,7 +103,7 @@ func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes c
 }
 
 func newProcessor(ctx context.Context, headers <-chan *types.Header, changes chan<- *db.BlockChangeSet, cc *client.CeloClient, db_ db.RosettaDBReader, logger log.Logger) (*processor, error) {
-	registry, err := wrapper.NewRegistry(cc)
+	registry, err := contracts.NewRegistry(registry.RegistryAddress, cc.Eth)
 	if err != nil {
 		return nil, err
 	}
@@ -182,7 +182,7 @@ func (bp *processor) initNextBlockChangeSet() (*db.BlockChangeSet, error) {
 func (bp *processor) registryChanges(bcs *db.BlockChangeSet) error {
 	blockNumber := bcs.BlockNumber.Uint64()
 
-	iter, err := bp.registry.Contract().FilterRegistryUpdated(&bind.FilterOpts{
+	iter, err := bp.registry.FilterRegistryUpdated(&bind.FilterOpts{
 		End:     &blockNumber,
 		Start:   blockNumber,
 		Context: bp.ctx,
@@ -223,7 +223,7 @@ func (bp *processor) gasPriceMinimum(bcs *db.BlockChangeSet) error {
 
 	blockNumber := bcs.BlockNumber.Uint64()
 
-	gpmContract, err := contract.NewGasPriceMinimum(bp.gpmAddress, bp.cc.Eth)
+	gpmContract, err := contracts.NewGasPriceMinimum(bp.gpmAddress, bp.cc.Eth)
 	if err != nil {
 		return err
 	}
@@ -267,7 +267,7 @@ func (bp *processor) carbonOffsetPartner(bcs *db.BlockChangeSet) error {
 
 	blockNumber := bcs.BlockNumber.Uint64()
 
-	epochRewards, err := contract.NewEpochRewards(bp.epochRewardsAddress, bp.cc.Eth)
+	epochRewards, err := contracts.NewEpochRewards(bp.epochRewardsAddress, bp.cc.Eth)
 	if err != nil {
 		return err
 	}
@@ -302,7 +302,7 @@ func (bp *processor) tobinTaxChange(bcs *db.BlockChangeSet) error {
 		return nil
 	}
 
-	reserve, err := contract.NewReserve(bp.reserveAddress, bp.cc.Eth)
+	reserve, err := contracts.NewReserve(bp.reserveAddress, bp.cc.Eth)
 	if err != nil {
 		return err
 	}

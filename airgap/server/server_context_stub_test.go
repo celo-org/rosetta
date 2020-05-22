@@ -18,7 +18,8 @@ import (
 	"context"
 	"math/big"
 
-	"github.com/celo-org/rosetta/celo/wrapper"
+	"github.com/celo-org/kliento/contracts/helpers"
+	"github.com/celo-org/kliento/registry"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -27,29 +28,29 @@ type serverContextStub struct{}
 
 var _ ServerContext = &serverContextStub{}
 
-func (sc *serverContextStub) addressFor(ctx context.Context, identifier wrapper.RegistryKey) (common.Address, error) {
+func (sc *serverContextStub) addressFor(ctx context.Context, identifier registry.ContractID) (common.Address, error) {
 	return common.ZeroAddress, nil
 }
 
-func (sc *serverContextStub) authorizeMetadata(ctx context.Context, popSignature []byte) (*wrapper.EncodedSignature, error) {
-	return &wrapper.EncodedSignature{
+func (sc *serverContextStub) authorizeMetadata(ctx context.Context, popSignature []byte) (*helpers.SignatureValues, error) {
+	return &helpers.SignatureValues{
 		R: [32]byte{},
 		S: [32]byte{},
 		V: 31,
 	}, nil
 }
 
-func (sc *serverContextStub) voteMetadata(ctx context.Context, group common.Address, value *big.Int) (*wrapper.AddressLesserGreater, error) {
-	return &wrapper.AddressLesserGreater{
+func (sc *serverContextStub) voteMetadata(ctx context.Context, group common.Address, value *big.Int) (*helpers.AddressLesserGreater, error) {
+	return &helpers.AddressLesserGreater{
 		Greater: common.HexToAddress("0x01"),
 		Lesser:  common.HexToAddress("0x02"),
 	}, nil
 }
 
-func (sc *serverContextStub) revokeMetadata(ctx context.Context, account common.Address, group common.Address, value *big.Int) (*wrapper.RevokeMetadata, error) {
-	return &wrapper.RevokeMetadata{
+func (sc *serverContextStub) revokeMetadata(ctx context.Context, account common.Address, group common.Address, value *big.Int) (*helpers.RevokeMetadata, error) {
+	return &helpers.RevokeMetadata{
 		Index: big.NewInt(1),
-		AddressLesserGreater: &wrapper.AddressLesserGreater{
+		AddressLesserGreater: &helpers.AddressLesserGreater{
 			Greater: common.HexToAddress("0x01"),
 			Lesser:  common.HexToAddress("0x02"),
 		},

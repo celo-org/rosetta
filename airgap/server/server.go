@@ -19,8 +19,8 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/celo-org/kliento/registry"
 	"github.com/celo-org/rosetta/airgap"
-	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -81,7 +81,7 @@ func (b *airgGapServerImpl) ObtainMetadata(ctx context.Context, options *airgap.
 
 	if options.Method != nil {
 		if options.To == nil { // 'to' is implicit from registry
-			addr, err := b.srvCtx.addressFor(ctx, wrapper.RegistryKey(options.Method.Contract))
+			addr, err := b.srvCtx.addressFor(ctx, registry.ContractID(options.Method.Contract))
 			if err != nil {
 				return nil, fmt.Errorf("'To' not provided and 'Contract' not a valid registry ID")
 			}
