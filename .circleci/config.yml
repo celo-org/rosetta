@@ -33,7 +33,7 @@ jobs:
             - go-modules-v1-{{ checksum "go.sum" }}
             - go-modules-v1
       - run: make deps
-      - run: make rosetta
+      - run: make all
       - save_cache:
           key: go-modules-v1-{{ checksum "go.sum" }}
           paths:
