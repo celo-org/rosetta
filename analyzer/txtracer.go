@@ -188,6 +188,18 @@ func (tr *Tracer) TxTransfers(blockHeader *types.Header, tx *types.Transaction, 
 }
 
 func (tr *Tracer) TxLockedGoldTransfers(blockHeader *types.Header, tx *types.Transaction, receipt *types.Receipt) ([]Operation, error) {
+	accountsAddr, err := tr.db.RegistryAddressStartOf(tr.ctx, receipt.BlockNumber, receipt.TransactionIndex, "Accounts")
+	if err == db.ErrContractNotFound {
+		// Accounts not found (not deployed) => no transfers
+		return nil, nil
+	} else if err != nil {
+		return nil, fmt.Errorf("can't get accountsAddress: %w", err)
+	}
+	accounts, err := contracts.NewAccounts(accountsAddr, tr.cc.Eth)
+	if err != nil {
+		return nil, fmt.Errorf("can't initialize Accounts contract: %w", err)
+	}
+
 	lockedGoldAddr, err := tr.db.RegistryAddressStartOf(tr.ctx, receipt.BlockNumber, receipt.TransactionIndex, "LockedGold")
 	if err == db.ErrContractNotFound {
 		// LockedGold not found (not deployed) => no transfers
@@ -250,6 +262,20 @@ func (tr *Tracer) TxLockedGoldTransfers(blockHeader *types.Header, tx *types.Tra
 				// revokeActive() [ValidatorGroupActiveVoteRevoked] => lockVotingActive->lockNonVoting
 				event := eventRaw.(*contracts.ElectionValidatorGroupActiveVoteRevoked)
 				transfers = append(transfers, *NewRevokeActiveVotes(event.Account, event.Group, event.Value))
+			}
+
+		} else if eventLog.Address == accountsAddr {
+			eventName, eventRaw, ok, err := accounts.TryParseLog(*eventLog)
+			if err != nil {
+				return nil, fmt.Errorf("can't parse Accounts event: %w", err)
+			}
+			if !ok {
+				continue
+			}
+
+			if eventName == "AccountCreated" {
+				event := eventRaw.(*contracts.AccountsAccountCreated)
+				transfers = append(transfers, *NewCreateAccount(event.Account))
 			}
 
 		} else if eventLog.Address == lockedGoldAddr {

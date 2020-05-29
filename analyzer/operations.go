@@ -46,6 +46,7 @@ type OperationType string
 const (
 	OpFee                OperationType = "fee"
 	OpTransfer           OperationType = "transfer"
+	OpCreateAccount      OperationType = "createAccount"
 	OpLockGold           OperationType = "lockGold"
 	OpUnlockGold         OperationType = "unlockGold"
 	OpRelockGold         OperationType = "relockGold"
@@ -63,6 +64,7 @@ func (ot OperationType) String() string { return string(ot) }
 var AllOperationTypes = []OperationType{
 	OpFee,
 	OpTransfer,
+	OpCreateAccount,
 	OpLockGold,
 	OpUnlockGold,
 	OpRelockGold,
@@ -144,6 +146,16 @@ func NewTransfer(from common.Address, to common.Address, value *big.Int, success
 		Changes: []BalanceChange{
 			{Account: NewAccount(from, AccMain), Amount: negate(value)},
 			{Account: NewAccount(to, AccMain), Amount: value},
+		},
+	}
+}
+
+func NewCreateAccount(from common.Address) *Operation {
+	return &Operation{
+		Type:       OpCreateAccount,
+		Successful: true,
+		Changes: []BalanceChange{
+			{Account: NewAccount(from, AccMain), Amount: common.Big0},
 		},
 	}
 }
