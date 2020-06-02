@@ -96,6 +96,33 @@ docker run --name rosetta --rm \
   run --staticNode $STATICNODE
 ```
 
+## Airgap Client Guide
+
+The Celo Rosetta Airgap module is designed to facilitate signing transactions, parameterized by contemporaenous network metadata, in an offline context.
+
+Examples of this metadata include:
+
+* network wide state like "gas price minimum"
+* argument specific state like vote amount "effect on validator priority queue"
+
+```js
+AirGapServer {
+  ObtainMetadata(TxArgs): TxMetadata
+  SubmitTx(Tx): Status
+}
+
+AirGapClient {
+  ConstructTxFromMetadata(TxMetadata): Tx
+  SignTx(Tx, PrivateKey): Tx
+}
+```
+
+### Custody: Staking and Voting
+
+For a documentation resource, please see the [custody docs](https://docs.celo.org/developer-guide/overview/integrations/custody).
+
+For a code resource, please see the [examples](./examples/airgap/main.go).
+
 ## Developer Guide
 
 ### Setup
