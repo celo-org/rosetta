@@ -25,6 +25,7 @@ type SubAccountType string
 
 const (
 	AccMain                    SubAccountType = "Main"
+	AccVoting                  SubAccountType = "Voting"
 	AccLockedGoldNonVoting     SubAccountType = "LockedGoldNonVoting"
 	AccLockedGoldVotingActive  SubAccountType = "LockedGoldVotingActive"
 	AccLockedGoldVotingPending SubAccountType = "LockedGoldVotingPending"
@@ -47,6 +48,7 @@ const (
 	OpFee                OperationType = "fee"
 	OpTransfer           OperationType = "transfer"
 	OpCreateAccount      OperationType = "createAccount"
+	OpAuthorizeVote      OperationType = "authorizeVoteSigner"
 	OpLockGold           OperationType = "lockGold"
 	OpUnlockGold         OperationType = "unlockGold"
 	OpRelockGold         OperationType = "relockGold"
@@ -156,6 +158,17 @@ func NewCreateAccount(from common.Address) *Operation {
 		Successful: true,
 		Changes: []BalanceChange{
 			{Account: NewAccount(from, AccMain), Amount: common.Big0},
+		},
+	}
+}
+
+func NewAuthorizeVote(from common.Address, signer common.Address) *Operation {
+	return &Operation{
+		Type:       OpAuthorizeVote,
+		Successful: true,
+		Changes: []BalanceChange{
+			{Account: NewAccount(from, AccMain), Amount: common.Big0},
+			{Account: NewAccount(signer, AccVoting), Amount: common.Big0},
 		},
 	}
 }

@@ -273,9 +273,13 @@ func (tr *Tracer) TxLockedGoldTransfers(blockHeader *types.Header, tx *types.Tra
 				continue
 			}
 
-			if eventName == "AccountCreated" {
+			switch eventName {
+			case "AccountCreated":
 				event := eventRaw.(*contracts.AccountsAccountCreated)
 				transfers = append(transfers, *NewCreateAccount(event.Account))
+			case "VoteSignerAuthorized":
+				event := eventRaw.(*contracts.AccountsVoteSignerAuthorized)
+				transfers = append(transfers, *NewAuthorizeVote(event.Account, event.Signer))
 			}
 
 		} else if eventLog.Address == lockedGoldAddr {
