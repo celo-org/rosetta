@@ -25,7 +25,7 @@ type SubAccountType string
 
 const (
 	AccMain                    SubAccountType = "Main"
-	AccVoting                  SubAccountType = "Voting"
+	AccSigner                  SubAccountType = "AccountsAuthorizedSigner"
 	AccLockedGoldNonVoting     SubAccountType = "LockedGoldNonVoting"
 	AccLockedGoldVotingActive  SubAccountType = "LockedGoldVotingActive"
 	AccLockedGoldVotingPending SubAccountType = "LockedGoldVotingPending"
@@ -45,20 +45,22 @@ type Account struct {
 type OperationType string
 
 const (
-	OpFee                OperationType = "fee"
-	OpTransfer           OperationType = "transfer"
-	OpCreateAccount      OperationType = "createAccount"
-	OpAuthorizeVote      OperationType = "authorizeVoteSigner"
-	OpLockGold           OperationType = "lockGold"
-	OpUnlockGold         OperationType = "unlockGold"
-	OpRelockGold         OperationType = "relockGold"
-	OpWithdrawGold       OperationType = "withdrawGold"
-	OpVote               OperationType = "vote"
-	OpActiveVotes        OperationType = "activateVotes"
-	OpRevokePendingVotes OperationType = "revokePendingVotes"
-	OpRevokeActiveVotes  OperationType = "revokeActiveVotes"
-	OpSlash              OperationType = "slash"
-	OpEpochRewards       OperationType = "epochRewards"
+	OpFee                        OperationType = "fee"
+	OpTransfer                   OperationType = "transfer"
+	OpCreateAccount              OperationType = "createAccount"
+	OpAuthorizeVoteSigner        OperationType = "authorizeVoteSigner"
+	OpAuthorizeValidatorSigner   OperationType = "authorizeValidatorSigner"
+	OpAuthorizeAttestationSigner OperationType = "authorizeAttestationSigner"
+	OpLockGold                   OperationType = "lockGold"
+	OpUnlockGold                 OperationType = "unlockGold"
+	OpRelockGold                 OperationType = "relockGold"
+	OpWithdrawGold               OperationType = "withdrawGold"
+	OpVote                       OperationType = "vote"
+	OpActiveVotes                OperationType = "activateVotes"
+	OpRevokePendingVotes         OperationType = "revokePendingVotes"
+	OpRevokeActiveVotes          OperationType = "revokeActiveVotes"
+	OpSlash                      OperationType = "slash"
+	OpEpochRewards               OperationType = "epochRewards"
 )
 
 func (ot OperationType) String() string { return string(ot) }
@@ -162,13 +164,13 @@ func NewCreateAccount(from common.Address) *Operation {
 	}
 }
 
-func NewAuthorizeVote(from common.Address, signer common.Address) *Operation {
+func NewAuthorizeSigner(from common.Address, signer common.Address, authorizeOp OperationType) *Operation {
 	return &Operation{
-		Type:       OpAuthorizeVote,
+		Type:       authorizeOp,
 		Successful: true,
 		Changes: []BalanceChange{
 			{Account: NewAccount(from, AccMain), Amount: common.Big0},
-			{Account: NewAccount(signer, AccVoting), Amount: common.Big0},
+			{Account: NewAccount(signer, AccSigner), Amount: common.Big0},
 		},
 	}
 }
