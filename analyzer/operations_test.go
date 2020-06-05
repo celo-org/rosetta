@@ -18,7 +18,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/celo-org/rosetta/celo/client/debug"
+	"github.com/celo-org/kliento/client/debug"
 	"github.com/celo-org/rosetta/internal/utils"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/onsi/gomega"

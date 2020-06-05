@@ -19,7 +19,7 @@ import (
 	"math/big"
 	"reflect"
 
-	"github.com/celo-org/rosetta/celo/client/debug"
+	"github.com/celo-org/kliento/client/debug"
 	"github.com/celo-org/rosetta/internal/utils"
 	"github.com/ethereum/go-ethereum/common"
 )
