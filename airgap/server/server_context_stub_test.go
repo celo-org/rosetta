@@ -64,6 +64,9 @@ func (sc *serverContextStub) SuggestGasPrice(ctx context.Context) (*big.Int, err
 func (sc *serverContextStub) EstimateGas(ctx context.Context, msg ethereum.CallMsg) (uint64, error) {
 	return 666, nil
 }
+func (sc *serverContextStub) CallContract(ctx context.Context, msg ethereum.CallMsg, blockNumber *big.Int) ([]byte, error) {
+	return []byte{100}, nil
+}
 func (sc *serverContextStub) NonceAt(ctx context.Context, account common.Address, blockNumber *big.Int) (uint64, error) {
 	return 7, nil
 }
