@@ -315,21 +315,7 @@ func FilterChangesBySubAccount(op *Operation, subAccountType SubAccountType) map
 func MatchChangesOnSubAccount(op1 *Operation, op2 *Operation, subAccountType SubAccountType) bool {
 	op1Changes := FilterChangesBySubAccount(op1, subAccountType)
 	op2Changes := FilterChangesBySubAccount(op2, subAccountType)
-
-	if reflect.DeepEqual(op1Changes, op2Changes) {
-		fmt.Println("Match!!")
-		fmt.Println(op1Changes)
-		fmt.Println(op2Changes)
-		fmt.Println()
-		return true
-	}
-
-	fmt.Println(op1Changes)
-	fmt.Println(op2Changes)
-	fmt.Println()
-	return false
-
-	//return reflect.DeepEqual(op1Changes, op2Changes)
+	return reflect.DeepEqual(op1Changes, op2Changes)
 }
 
 func GetTransferChangesWithTobinTax(from, to common.Address, value *big.Int, tobinTax *TobinTax) []BalanceChange {
