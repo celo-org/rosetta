@@ -17,7 +17,7 @@ package rpc
 import (
 	"errors"
 
-	"github.com/celo-org/rosetta/celo/client"
+	"github.com/celo-org/kliento/client"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/ethereum/go-ethereum/log"
 )

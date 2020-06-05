@@ -26,7 +26,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/celo-org/rosetta/celo"
+	"github.com/celo-org/kliento/utils/chain"
 	"github.com/celo-org/rosetta/internal/fileutils"
 	"github.com/celo-org/rosetta/service"
 	"github.com/ethereum/go-ethereum/log"
@@ -47,7 +47,7 @@ type GethOpts struct {
 type gethService struct {
 	opts *GethOpts
 
-	chainParams *celo.ChainParameters
+	chainParams *chain.ChainParameters
 
 	cmd     *exec.Cmd
 	running service.RunningLock
@@ -65,7 +65,7 @@ func (gs *gethService) IpcFilePath() string {
 	return gs.opts.IpcFile()
 }
 
-func (gs *gethService) ChainParameters() *celo.ChainParameters {
+func (gs *gethService) ChainParameters() *chain.ChainParameters {
 	return gs.chainParams
 }
 
@@ -253,7 +253,7 @@ func (gopts GethOpts) StaticNodesFile() string {
 	return filepath.Join(gopts.Datadir, "/celo/static-nodes.json")
 }
 
-func chainParamsFromGenesisFile(genesisPath string) *celo.ChainParameters {
+func chainParamsFromGenesisFile(genesisPath string) *chain.ChainParameters {
 	data, err := ioutil.ReadFile(genesisPath)
 	if err != nil {
 		log.Crit("Can't read genesis.json on DataDir", "genesisPath", genesisPath, "err", err)
@@ -273,7 +273,7 @@ func chainParamsFromGenesisFile(genesisPath string) *celo.ChainParameters {
 		log.Crit("Can't parse genesis.json on DataDir", "genesisPath", genesisPath, "err", err)
 	}
 
-	return &celo.ChainParameters{
+	return &chain.ChainParameters{
 		ChainId:   new(big.Int).SetUint64(genesis.Config.ChainId),
 		EpochSize: genesis.Config.Isntabul.Epoch,
 	}

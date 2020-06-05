@@ -19,8 +19,8 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/celo-org/rosetta/celo/client"
-	"github.com/celo-org/rosetta/celo/contract"
+	"github.com/celo-org/kliento/client"
+	"github.com/celo-org/kliento/contracts"
 	"github.com/celo-org/rosetta/db"
 	"github.com/celo-org/rosetta/internal/utils"
 	"github.com/ethereum/go-ethereum/common"
@@ -46,12 +46,12 @@ func NewTracer(ctx context.Context, cc *client.CeloClient, db db.RosettaDBReader
 }
 
 func (tr *Tracer) GetRegistryAddresses(receipt *types.Receipt, contractNames ...string) (map[string]common.Address, error) {
-	contracts, err := tr.db.RegistryAddressesStartOf(tr.ctx, receipt.BlockNumber, receipt.TransactionIndex, contractNames...)
+	contractMap, err := tr.db.RegistryAddressesStartOf(tr.ctx, receipt.BlockNumber, receipt.TransactionIndex, contractNames...)
 	if err != nil {
 		return nil, fmt.Errorf("Error fetching registry addresses: %w", err)
 	}
 
-	return contracts, nil
+	return contractMap, nil
 }
 
 func (tr *Tracer) GetTobinTax(blockNumber *big.Int, reserve common.Address) (*TobinTax, error) {
@@ -72,17 +72,17 @@ func (tr *Tracer) TraceTransaction(blockHeader *types.Header, tx *types.Transact
 	ops := make([]Operation, 0)
 
 	if receipt.Status == types.ReceiptStatusSuccessful {
-		contracts, err := tr.GetRegistryAddresses(receipt, "Reserve", "LockedGold", "Election", "Governance")
+		contractMap, err := tr.GetRegistryAddresses(receipt, "Reserve", "LockedGold", "Election", "Governance", "Accounts")
 		if err != nil {
 			return nil, err
 		}
 
-		tobinTax, err := tr.GetTobinTax(receipt.BlockNumber, contracts["Reserve"])
+		tobinTax, err := tr.GetTobinTax(receipt.BlockNumber, contractMap["Reserve"])
 		if err != nil {
 			return nil, err
 		}
 
-		lockedGoldOps, err := tr.TxLockedGoldTransfers(tx, receipt, tobinTax, contracts)
+		lockedGoldOps, err := tr.TxLockedGoldTransfers(tx, receipt, tobinTax, contractMap)
 		if err != nil {
 			return nil, err
 		}
@@ -92,7 +92,7 @@ func (tr *Tracer) TraceTransaction(blockHeader *types.Header, tx *types.Transact
 			return nil, err
 		}
 
-		ops, err = ReconcileLockedGoldTransfers(lockedGoldOps, transferOps, tobinTax, contracts["LockedGold"])
+		ops, err = ReconcileLockedGoldTransfers(lockedGoldOps, transferOps, tobinTax, contractMap["LockedGold"])
 		if err != nil {
 			return nil, err
 		}
@@ -165,33 +165,43 @@ func (tr *Tracer) TxTransfers(tx *types.Transaction, receipt *types.Receipt, tob
 	return InternalTransfersToOperations(internalTransfers, tobinTax), nil
 }
 
-func (tr *Tracer) TxLockedGoldTransfers(tx *types.Transaction, receipt *types.Receipt, tobinTax *TobinTax, contracts map[string]common.Address) ([]Operation, error) {
+func (tr *Tracer) TxLockedGoldTransfers(tx *types.Transaction, receipt *types.Receipt, tobinTax *TobinTax, contractMap map[string]common.Address) ([]Operation, error) {
 	if receipt.Status == types.ReceiptStatusFailed {
 		return nil, fmt.Errorf("Cannot trace LockedGold transfers on failed tx: %v  blockNumber: %v", receipt.TransactionIndex, receipt.BlockNumber)
 	}
 
-	lockedGoldAddr, ok := contracts["LockedGold"]
+	accountsAddr, ok := contractMap["Accounts"]
+	if !ok {
+		// Accounts not found (not deployed) => no transfers
+		return nil, nil
+	}
+	accounts, err := contracts.NewAccounts(accountsAddr, tr.cc.Eth)
+	if err != nil {
+		return nil, fmt.Errorf("can't initialize Accounts contract: %w", err)
+	}
+
+	lockedGoldAddr, ok := contractMap["LockedGold"]
 	if !ok {
 		// LockedGold not found (not deployed) => no transfers
 		return nil, nil
 	}
-	lockedGold, err := contract.NewLockedGold(lockedGoldAddr, tr.cc.Eth)
+	lockedGold, err := contracts.NewLockedGold(lockedGoldAddr, tr.cc.Eth)
 	if err != nil {
 		return nil, fmt.Errorf("can't initialize LockedGold contract: %w", err)
 	}
 
-	electionAddr, ok := contracts["Election"]
+	electionAddr, ok := contractMap["Election"]
 	if !ok {
 		// Election not found (not deployed) => no transfers
 		return nil, nil
 	}
-	election, err := contract.NewElection(electionAddr, tr.cc.Eth)
+	election, err := contracts.NewElection(electionAddr, tr.cc.Eth)
 	if err != nil {
 		return nil, fmt.Errorf("can't initialize Election contract: %w", err)
 	}
 
 	// We only need governace for slashing and you can't slash if there's no governance contract, so we ignore if not found
-	governanceAddr, _ := contracts["Governance"]
+	governanceAddr, _ := contractMap["Governance"]
 
 	logs := utils.RemoveProxyLogs(receipt.Logs)
 
@@ -211,20 +221,44 @@ func (tr *Tracer) TxLockedGoldTransfers(tx *types.Transaction, receipt *types.Re
 			switch eventName {
 			case "ValidatorGroupVoteCast":
 				// vote() [ValidatorGroupVoteCast] => lockNonVoting->lockVotingPending
-				event := eventRaw.(*contract.ElectionValidatorGroupVoteCast)
+				event := eventRaw.(*contracts.ElectionValidatorGroupVoteCast)
 				transfers = append(transfers, *NewVote(event.Account, event.Group, event.Value))
 			case "ValidatorGroupVoteActivated":
 				// activate() [ValidatorGroupVoteActivated] => lockVotingPending->lockVotingActive
-				event := eventRaw.(*contract.ElectionValidatorGroupVoteActivated)
+				event := eventRaw.(*contracts.ElectionValidatorGroupVoteActivated)
 				transfers = append(transfers, *NewActiveVotes(event.Account, event.Group, event.Value))
 			case "ValidatorGroupPendingVoteRevoked":
 				// revokePending() [ValidatorGroupPendingVoteRevoked] => lockVotingPending->lockNonVoting
-				event := eventRaw.(*contract.ElectionValidatorGroupPendingVoteRevoked)
+				event := eventRaw.(*contracts.ElectionValidatorGroupPendingVoteRevoked)
 				transfers = append(transfers, *NewRevokePendingVotes(event.Account, event.Group, event.Value))
 			case "ValidatorGroupActiveVoteRevoked":
 				// revokeActive() [ValidatorGroupActiveVoteRevoked] => lockVotingActive->lockNonVoting
-				event := eventRaw.(*contract.ElectionValidatorGroupActiveVoteRevoked)
+				event := eventRaw.(*contracts.ElectionValidatorGroupActiveVoteRevoked)
 				transfers = append(transfers, *NewRevokeActiveVotes(event.Account, event.Group, event.Value))
+			}
+
+		} else if eventLog.Address == accountsAddr {
+			eventName, eventRaw, ok, err := accounts.TryParseLog(*eventLog)
+			if err != nil {
+				return nil, fmt.Errorf("can't parse Accounts event: %w", err)
+			}
+			if !ok {
+				continue
+			}
+
+			switch eventName {
+			case "AccountCreated":
+				event := eventRaw.(*contracts.AccountsAccountCreated)
+				transfers = append(transfers, *NewCreateAccount(event.Account))
+			case "VoteSignerAuthorized":
+				event := eventRaw.(*contracts.AccountsVoteSignerAuthorized)
+				transfers = append(transfers, *NewAuthorizeSigner(event.Account, event.Signer, OpAuthorizeVoteSigner))
+			case "ValidatorSignerAuthorized":
+				event := eventRaw.(*contracts.AccountsValidatorSignerAuthorized)
+				transfers = append(transfers, *NewAuthorizeSigner(event.Account, event.Signer, OpAuthorizeValidatorSigner))
+			case "AttestationSignerAuthorized":
+				event := eventRaw.(*contracts.AccountsAttestationSignerAuthorized)
+				transfers = append(transfers, *NewAuthorizeSigner(event.Account, event.Signer, OpAuthorizeAttestationSigner))
 			}
 
 		} else if eventLog.Address == lockedGoldAddr {
@@ -239,27 +273,27 @@ func (tr *Tracer) TxLockedGoldTransfers(tx *types.Transaction, receipt *types.Re
 			switch eventName {
 			case "GoldLocked":
 				// lock() [GoldLocked + transfer] => main->lockNonVoting
-				event := eventRaw.(*contract.LockedGoldGoldLocked)
+				event := eventRaw.(*contracts.LockedGoldGoldLocked)
 				transfers = append(transfers, *NewLockGold(event.Account, lockedGoldAddr, event.Value))
 
 			case "GoldRelocked":
 				// relock() [GoldRelocked] => lockPending->lockNonVoting
-				event := eventRaw.(*contract.LockedGoldGoldRelocked)
+				event := eventRaw.(*contracts.LockedGoldGoldRelocked)
 				transfers = append(transfers, *NewRelockGold(event.Account, event.Value))
 
 			case "GoldUnlocked":
 				// unlock() [GoldUnlocked] => lockNonVoting->lockPending
-				event := eventRaw.(*contract.LockedGoldGoldUnlocked)
+				event := eventRaw.(*contracts.LockedGoldGoldUnlocked)
 				transfers = append(transfers, *NewUnlockGold(event.Account, event.Value))
 
 			case "GoldWithdrawn":
 				// withdraw() [GoldWithdrawn + transfer] => lockPending->main
-				event := eventRaw.(*contract.LockedGoldGoldWithdrawn)
+				event := eventRaw.(*contracts.LockedGoldGoldWithdrawn)
 				transfers = append(transfers, *NewWithdrawGold(event.Account, lockedGoldAddr, event.Value, tobinTax))
 
 			case "AccountSlashed":
 				// slash() [AccountSlashed + transfer] => account:lockNonVoting -> beneficiary:lockNonVoting + governance:main
-				event := eventRaw.(*contract.LockedGoldAccountSlashed)
+				event := eventRaw.(*contracts.LockedGoldAccountSlashed)
 				transfers = append(transfers, *NewSlash(event.Slashed, event.Reporter, governanceAddr, lockedGoldAddr, event.Penalty, event.Reward, tobinTax))
 
 			}

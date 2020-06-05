@@ -17,7 +17,7 @@ package monitor
 import (
 	"context"
 
-	"github.com/celo-org/rosetta/celo/client"
+	"github.com/celo-org/kliento/client"
 	"github.com/celo-org/rosetta/db"
 	"github.com/celo-org/rosetta/internal/utils"
 	"github.com/celo-org/rosetta/service"

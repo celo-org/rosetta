@@ -24,45 +24,16 @@ attach: &attach
   attach_workspace:
     at: /go
 jobs:
-  build-rust:
-    docker:
-      - image: circleci/rust:1.41.0
-        user: root
-    working_directory: /go/src/github.com/celo-org/rosetta
-    steps:
-      - checkout
-      # - run:
-      #     name: Setup Rust language
-      #     command: |
-      #       rustup install 1.41.0
-      #       rustup default 1.41.0
-      - restore_cache:
-          keys:
-            - cargo-cache-v1-{{ arch }}-{{ checksum "external/bls-zexe/Cargo.lock" }}
-            - cargo-cache-v1-{{ arch }}-
-      - run:
-          name: Compile bls-zexe
-          command: |
-            export PATH=$PATH:~/.cargo/bin
-            make bls-zexe
-      - save_cache:
-          key: cargo-cache-v1-{{ arch }}-{{ checksum "external/bls-zexe/Cargo.lock"}}
-          paths:
-            - external/bls-zexe/target
-      - persist_to_workspace:
-          root: /go
-          paths:
-            - src/github.com/celo-org/rosetta
   build-go:
     executor: golang
     steps:
-      - *attach
+      - checkout
       - restore_cache:
           keys:
             - go-modules-v1-{{ checksum "go.sum" }}
             - go-modules-v1
       - run: make deps
-      - run: make rosetta
+      - run: make all
       - save_cache:
           key: go-modules-v1-{{ checksum "go.sum" }}
           paths:
@@ -114,10 +85,7 @@ workflows:
   version: 2
   build:
     jobs:
-      - build-rust
-      - build-go:
-          requires:
-            - build-rust
+      - build-go
       - unit-tests:
           requires:
             - build-go

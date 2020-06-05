@@ -28,6 +28,7 @@ type SubAccountType string
 
 const (
 	AccMain                    SubAccountType = "Main"
+	AccSigner                  SubAccountType = "AccountsAuthorizedSigner"
 	AccLockedGoldNonVoting     SubAccountType = "LockedGoldNonVoting"
 	AccLockedGoldVotingActive  SubAccountType = "LockedGoldVotingActive"
 	AccLockedGoldVotingPending SubAccountType = "LockedGoldVotingPending"
@@ -47,18 +48,22 @@ type Account struct {
 type OperationType string
 
 const (
-	OpFee                OperationType = "fee"
-	OpTransfer           OperationType = "transfer"
-	OpLockGold           OperationType = "lockGold"
-	OpUnlockGold         OperationType = "unlockGold"
-	OpRelockGold         OperationType = "relockGold"
-	OpWithdrawGold       OperationType = "withdrawGold"
-	OpVote               OperationType = "vote"
-	OpActiveVotes        OperationType = "activateVotes"
-	OpRevokePendingVotes OperationType = "revokePendingVotes"
-	OpRevokeActiveVotes  OperationType = "revokeActiveVotes"
-	OpSlash              OperationType = "slash"
-	OpEpochRewards       OperationType = "epochRewards"
+	OpFee                        OperationType = "fee"
+	OpTransfer                   OperationType = "transfer"
+	OpCreateAccount              OperationType = "createAccount"
+	OpAuthorizeVoteSigner        OperationType = "authorizeVoteSigner"
+	OpAuthorizeValidatorSigner   OperationType = "authorizeValidatorSigner"
+	OpAuthorizeAttestationSigner OperationType = "authorizeAttestationSigner"
+	OpLockGold                   OperationType = "lockGold"
+	OpUnlockGold                 OperationType = "unlockGold"
+	OpRelockGold                 OperationType = "relockGold"
+	OpWithdrawGold               OperationType = "withdrawGold"
+	OpVote                       OperationType = "vote"
+	OpActiveVotes                OperationType = "activateVotes"
+	OpRevokePendingVotes         OperationType = "revokePendingVotes"
+	OpRevokeActiveVotes          OperationType = "revokeActiveVotes"
+	OpSlash                      OperationType = "slash"
+	OpEpochRewards               OperationType = "epochRewards"
 )
 
 func (ot OperationType) String() string { return string(ot) }
@@ -70,6 +75,7 @@ func (ot OperationType) requiresTransfer() bool {
 var AllOperationTypes = []OperationType{
 	OpFee,
 	OpTransfer,
+	OpCreateAccount,
 	OpLockGold,
 	OpUnlockGold,
 	OpRelockGold,
@@ -149,6 +155,27 @@ func NewTransfer(from, to common.Address, value *big.Int, tobinTax *TobinTax, su
 		Type:       OpTransfer,
 		Successful: successful,
 		Changes:    GetTransferChangesWithTobinTax(from, to, value, tobinTax),
+	}
+}
+
+func NewCreateAccount(from common.Address) *Operation {
+	return &Operation{
+		Type:       OpCreateAccount,
+		Successful: true,
+		Changes: []BalanceChange{
+			{Account: NewAccount(from, AccMain), Amount: common.Big0},
+		},
+	}
+}
+
+func NewAuthorizeSigner(from common.Address, signer common.Address, authorizeOp OperationType) *Operation {
+	return &Operation{
+		Type:       authorizeOp,
+		Successful: true,
+		Changes: []BalanceChange{
+			{Account: NewAccount(from, AccMain), Amount: common.Big0},
+			{Account: NewAccount(signer, AccSigner), Amount: common.Big0},
+		},
 	}
 }
 

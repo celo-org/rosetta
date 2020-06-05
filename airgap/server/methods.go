@@ -18,17 +18,17 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/celo-org/kliento/contracts"
+	"github.com/celo-org/kliento/registry"
 	"github.com/celo-org/rosetta/airgap"
-	"github.com/celo-org/rosetta/celo/contract"
-	"github.com/celo-org/rosetta/celo/wrapper"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 )
 
 var abiFactoryMap = map[string]func() (*abi.ABI, error){
-	wrapper.AccountsRegistryId.String():   contract.ParseAccountsABI,
-	wrapper.ElectionRegistryId.String():   contract.ParseElectionABI,
-	wrapper.LockedGoldRegistryId.String(): contract.ParseLockedGoldABI,
-	airgap.ReleaseGold:                    contract.ParseReleaseGoldABI,
+	registry.AccountsContractID.String():   contracts.ParseAccountsABI,
+	registry.ElectionContractID.String():   contracts.ParseElectionABI,
+	registry.LockedGoldContractID.String(): contracts.ParseLockedGoldABI,
+	airgap.ReleaseGold:                     contracts.ParseReleaseGoldABI,
 }
 
 type argsPreProcessor func(ctx context.Context, srvCtx ServerContext, args []interface{}) ([]interface{}, error)
