@@ -33,6 +33,10 @@ func main() {
 		log.Fatalf("Error generating private key %s", err)
 	}
 
+	// (or use an existing key)
+	// privKeyBytes, err := hexutil.Decode("0x8e14643e23a3a6aa027e6e01fad86f54e63c5186636ce4be01ea9042907b1ff5")
+	// privKey, err := crypto.ToECDSA(privKeyBytes)
+
 	pubKey, addr, err := client.Derive(privKey)
 	if err != nil {
 		log.Fatalf("Error deriving pubkey & address %s", err)
@@ -102,7 +106,21 @@ func main() {
 		log.Fatalf("Error on submit Tx: %s", err)
 	}
 
-	// txArgs, err = argBuilder.LockGold(*addr, big.NewInt(100))
+	// lockValue := big.NewInt(10000000000)
+	// txArgs, err = argBuilder.LockGold(*addr, lockValue)
+	// if err != nil {
+	// 	log.Fatalf("Error build txArgs: %s", err)
+	// }
+	// if err = submitSigned(txArgs); err != nil {
+	// 	log.Fatalf("Error on submit Tx: %s", err)
+	// }
+
+	// cc, err := celoClient.Dial("http://localhost:8545")
+	// registry, err := wrapper.NewRegistry(cc)
+	// election, err := registry.GetElection(ctx, nil)
+	// groups, err := election.GetEligibleValidatorGroups(nil)
+
+	// txArgs, err = argBuilder.Vote(*addr, groups[0], lockValue)
 	// if err != nil {
 	// 	log.Fatalf("Error build txArgs: %s", err)
 	// }
