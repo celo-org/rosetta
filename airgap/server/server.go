@@ -22,6 +22,7 @@ import (
 	"github.com/celo-org/kliento/registry"
 	"github.com/celo-org/rosetta/airgap"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/prometheus/common/log"
 )
 
 // airGapServerMethod is a function that returns the tx.data for that method + parameters
@@ -80,6 +81,7 @@ func (b *airgGapServerImpl) ObtainMetadata(ctx context.Context, options *airgap.
 	}
 
 	if options.Method != nil {
+		log.Debugf("Building metadata for celo method %s", options.Method.String())
 		if options.To == nil { // 'to' is implicit from registry
 			addr, err := b.srvCtx.addressFor(ctx, registry.ContractID(options.Method.Contract))
 			if err != nil {
@@ -100,13 +102,22 @@ func (b *airgGapServerImpl) ObtainMetadata(ctx context.Context, options *airgap.
 
 		data, err := serverMethod(ctx, hydratedArgs)
 		if err != nil {
+			log.Errorf("Airgap server method failed %s", err)
 			return nil, err
 		}
+
 		txMetadata.Data = data
 	}
 
 	estimatedGas, err := b.srvCtx.EstimateGas(ctx, txMetadata.AsCallMessage())
 	if err != nil {
+		log.Errorf("Gas estimation failed: %s", err)
+		result, callErr := b.srvCtx.CallContract(ctx, txMetadata.AsCallMessage(), nil)
+		if callErr != nil {
+			log.Errorf("Call failed: %s", callErr)
+			return nil, err
+		}
+		log.Errorf("Revert reason: %s", result)
 		return nil, err
 	}
 	txMetadata.Gas = estimatedGas
