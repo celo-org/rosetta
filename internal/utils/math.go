@@ -38,15 +38,15 @@ func Dec(val *big.Int) *big.Int {
 }
 
 func Neg(val *big.Int) *big.Int {
-	return val.Neg(val)
+	return new(big.Int).Neg(val)
 }
 
 func Sub(a *big.Int, b *big.Int) *big.Int {
-	return a.Sub(a, b)
+	return new(big.Int).Sub(a, b)
 }
 
 func Add(a *big.Int, b *big.Int) *big.Int {
-	return a.Add(a, b)
+	return new(big.Int).Add(a, b)
 }
 
 // a < b
