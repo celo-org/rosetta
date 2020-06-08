@@ -189,7 +189,7 @@ Prerequisites:
 go run main.go run \
   --geth.genesis ./envs/rc1/genesis.json \
   --geth.binary ../celo-blockchain/build/bin/geth \
-  --geth.staticnodes "enode://5e0f4e3aaa096e2a2db76622b335cab4d3224d08d16cb11e8855a3a5f30c19d35d81a74b21271562e459495ab203c2f3a5a5747a83eb53ba046aeeb09aa240ff@34.83.110.24:30303"
+  --geth.staticnodes "enode://5e0f4e3aaa096e2a2db76622b335cab4d3224d08d16cb11e8855a3a5f30c19d35d81a74b21271562e459495ab203c2f3a5a5747a83eb53ba046aeeb09aa240ff@34.83.110.24:30303" \
   --datadir "./envs/rc1"
 ```
 
@@ -205,6 +205,6 @@ Prerequisites:
 go run main.go run \
   --geth.genesis ./envs/alfajores/genesis.json \
   --geth.binary ../celo-blockchain/build/bin/geth \
-  --geth.staticnodes "enode://05977f6b7d3e16a99d27b714f8a029a006e41ec7732167d373dd920d31f72b3a1776650798d8763560854369d36867e9564dad13b4b60a90c347feeb491d83a9@34.83.42.50:30303"
+  --geth.staticnodes "enode://05977f6b7d3e16a99d27b714f8a029a006e41ec7732167d373dd920d31f72b3a1776650798d8763560854369d36867e9564dad13b4b60a90c347feeb491d83a9@34.83.42.50:30303" \
   --datadir "./envs/alfajores"
 ```
