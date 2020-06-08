@@ -154,7 +154,7 @@ func NewTransfer(from, to common.Address, value *big.Int, tobinTax *TobinTax, su
 	return &Operation{
 		Type:       OpTransfer,
 		Successful: successful,
-		Changes:    GetTransferChangesWithTobinTax(from, to, value, tobinTax),
+		Changes:    getTransferChangesWithTobinTax(from, to, value, tobinTax),
 	}
 }
 
@@ -200,7 +200,7 @@ func NewSlash(slashed, slasher, communityFund, lockedGoldAddr common.Address, pe
 		Changes: append([]BalanceChange{
 			{Account: NewAccount(slashed, AccLockedGoldNonVoting), Amount: negate(penalty)},
 			{Account: NewAccount(slasher, AccLockedGoldNonVoting), Amount: reward},
-		}, GetTransferChangesWithTobinTax(lockedGoldAddr, communityFund, communityFundReward, tobinTax)...),
+		}, getTransferChangesWithTobinTax(lockedGoldAddr, communityFund, communityFundReward, tobinTax)...),
 	}
 }
 
@@ -226,7 +226,7 @@ func NewLockGold(addr, lockedGoldAddr common.Address, value *big.Int) *Operation
 		Successful: true,
 		Changes: append(
 			// We don't apply tobinTax here, since it's already applied
-			GetTransferChanges(addr, lockedGoldAddr, value),
+			getTransferChanges(addr, lockedGoldAddr, value),
 			BalanceChange{Account: NewAccount(addr, AccLockedGoldNonVoting), Amount: value},
 		),
 	}
@@ -249,7 +249,7 @@ func NewWithdrawGold(addr, lockedGoldAddr common.Address, value *big.Int, tobinT
 		Type:       OpWithdrawGold,
 		Successful: true,
 		Changes: append(
-			GetTransferChangesWithTobinTax(lockedGoldAddr, addr, value, tobinTax),
+			getTransferChangesWithTobinTax(lockedGoldAddr, addr, value, tobinTax),
 			BalanceChange{Account: NewAccount(addr, AccLockedGoldPending), Amount: negate(value)},
 		),
 	}
@@ -345,19 +345,19 @@ func MatchChangesOnSubAccount(op1 *Operation, op2 *Operation, subAccountType Sub
 	return reflect.DeepEqual(op1Changes, op2Changes)
 }
 
-func GetTransferChangesWithTobinTax(from, to common.Address, value *big.Int, tobinTax *TobinTax) []BalanceChange {
+func getTransferChangesWithTobinTax(from, to common.Address, value *big.Int, tobinTax *TobinTax) []BalanceChange {
 	taxAmount, afterTaxAmount := tobinTax.Apply(value)
 
-	changes := GetTransferChanges(from, to, afterTaxAmount)
+	changes := getTransferChanges(from, to, afterTaxAmount)
 
 	if taxAmount.Cmp(utils.Big0) > 0 {
-		changes = append(changes, GetTransferChanges(from, tobinTax.Recipient, taxAmount)...)
+		changes = append(changes, getTransferChanges(from, tobinTax.Recipient, taxAmount)...)
 	}
 
 	return changes
 }
 
-func GetTransferChanges(from, to common.Address, value *big.Int) []BalanceChange {
+func getTransferChanges(from, to common.Address, value *big.Int) []BalanceChange {
 	return []BalanceChange{
 		{Account: NewAccount(from, AccMain), Amount: negate(value)},
 		{Account: NewAccount(to, AccMain), Amount: value},
@@ -371,28 +371,9 @@ func GetTransferChanges(from, to common.Address, value *big.Int) []BalanceChange
 func ReconcileLockedGoldTransfers(lockedGoldOps, transferOps []Operation, tobinTax *TobinTax, lockedGold common.Address) ([]Operation, error) {
 	ops := make([]Operation, 0, len(transferOps)+len(lockedGoldOps))
 
-	reconcile := func(lgOp *Operation, trOp Operation) {
-		// start with the transferOp
-		op := trOp
-		// change type to OpLockGold because we will be adding locked gold specific balance changes
-		op.Type = OpLockGold
-		// add all changes from lgOp with SubAccountTypes specficic to LockedGold
-		for _, bc := range lgOp.Changes {
-			if bc.Account.SubAccount.Identifier != AccMain {
-				op.Changes = append(op.Changes, bc)
-			}
-		}
-		// replace lgOp with reconciled op
-		*lgOp = op
-	}
-
 	findMatchAndReconcile := func(transferOps []Operation, lgOp *Operation, i int) (int, error) {
 		for ; i < len(transferOps); i++ {
-			if MatchChangesOnSubAccount(lgOp, &transferOps[i], AccMain) {
-				return i, nil
-			}
-			if MatchLockedGoldTransferWithTobinTax(lgOp, &transferOps[i], tobinTax, lockedGold) {
-				reconcile(lgOp, transferOps[i])
+			if MatchAndReconcileLockedGoldTransfer(lgOp, &transferOps[i], tobinTax, lockedGold) {
 				return i, nil
 			}
 		}
@@ -428,7 +409,13 @@ func ReconcileLockedGoldTransfers(lockedGoldOps, transferOps []Operation, tobinT
 	return ops, nil
 }
 
-// MatchLockedGoldTransferWithTobinTax returns true iff
+// MatchAndReconcileLockedGoldTransfer returns true if the operations match as is or
+// when we factor in tobin tax
+//
+// If the operations match with tobin tax, then we reconcile the operations into one
+// by combining their balance changes
+//
+// The operations match with tobin tax iff
 // 		lgOp.lockedGoldContractAccMain.diff == trOp.lockedGoldContractAccMain.diff &&
 // 		lgOp.fromAccMain.diff - trOp.fromAccMain.diff == trOp.tobinRecipientAccMain.diff
 //
@@ -448,28 +435,42 @@ func ReconcileLockedGoldTransfers(lockedGoldOps, transferOps []Operation, tobinT
 // 	fromAccMain			    	-10
 // 	tobinRecipientAccMain        10
 //  fromAccLockedNonVoting       90
-func MatchLockedGoldTransferWithTobinTax(lgOp, trOp *Operation, tobinTax *TobinTax, lockedGold common.Address) bool {
+func MatchAndReconcileLockedGoldTransfer(lgOp, trOp *Operation, tobinTax *TobinTax, lockedGold common.Address) bool {
+
+	// If the operations match as is then we can just return true
+	// without checking if they match with tobin tax
+	if MatchChangesOnSubAccount(lgOp, trOp, AccMain) {
+		return true
+	}
+
+	// If the operations don't match as is and tobin tax is not defined, then
+	// the operations don't match
 	if !tobinTax.IsDefined() {
 		return false
 	}
 
+	// Check if the operations match when we factor in the tobin tax
+
 	lgAccMainChanges := FilterChangesBySubAccount(lgOp, AccMain)
 	trAccMainChanges := FilterChangesBySubAccount(trOp, AccMain)
 
+	// If any of these accounts don't have balance changes, the operations
+	// don't match with tobin tax
 	lgLockedGoldChange, ok := lgAccMainChanges[lockedGold]
 	if !ok {
 		return false
 	}
-
 	trLockedGoldChange, ok := trAccMainChanges[lockedGold]
 	if !ok {
 		return false
 	}
-
 	trTobinRecipientChange, ok := trAccMainChanges[tobinTax.Recipient]
 	if !ok {
 		return false
 	}
+
+	// Now that we know all the right accounts have balance changes, check if the amounts
+	// match up
 
 	// if lgOp.lockedGoldContractAccMain.diff == trOp.lockedGoldContractAccMain.diff
 	if lgLockedGoldChange.Cmp(trLockedGoldChange) == 0 {
@@ -480,6 +481,8 @@ func MatchLockedGoldTransferWithTobinTax(lgOp, trOp *Operation, tobinTax *TobinT
 
 					// if lgOp.fromAccMain.diff - trOp.fromAccMain.diff == trOp.tobinRecipientAccMain.diff
 					if new(big.Int).Sub(lgChange, trChange).Cmp(trTobinRecipientChange) == 0 {
+						// The operations match with tobin tax
+						reconcileLockedGoldTransfer(lgOp, trOp)
 						return true
 					}
 
@@ -490,6 +493,21 @@ func MatchLockedGoldTransferWithTobinTax(lgOp, trOp *Operation, tobinTax *TobinT
 	}
 
 	return false
+}
+
+func reconcileLockedGoldTransfer(lgOp, trOp *Operation) {
+	// start with the transferOp
+	op := *trOp
+	// change type to OpLockGold because we will be adding locked gold specific balance changes
+	op.Type = lgOp.Type
+	// add all changes from lgOp with SubAccountTypes specficic to LockedGold
+	for _, bc := range lgOp.Changes {
+		if bc.Account.SubAccount.Identifier != AccMain {
+			op.Changes = append(op.Changes, bc)
+		}
+	}
+	// replace lgOp with reconciled op
+	*lgOp = op
 }
 
 func InternalTransfersToOperations(transfers []debug.Transfer, tobinTax *TobinTax) []Operation {

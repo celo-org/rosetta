@@ -60,5 +60,8 @@ func (tt *TobinTax) Apply(value *big.Int) (taxAmount, afterTaxAmount *big.Int) {
 }
 
 func (tt *TobinTax) IsDefined() bool {
+	if tt.Numerator == nil {
+		return false
+	}
 	return tt.Numerator.Cmp(utils.Big0) > 0
 }

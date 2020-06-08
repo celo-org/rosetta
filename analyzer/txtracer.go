@@ -21,6 +21,7 @@ import (
 
 	"github.com/celo-org/kliento/client"
 	"github.com/celo-org/kliento/contracts"
+	"github.com/celo-org/kliento/registry"
 	"github.com/celo-org/rosetta/db"
 	"github.com/celo-org/rosetta/internal/utils"
 	"github.com/ethereum/go-ethereum/common"
@@ -71,13 +72,21 @@ func (tr *Tracer) GetTobinTax(blockNumber *big.Int, reserve common.Address) (*To
 func (tr *Tracer) TraceTransaction(blockHeader *types.Header, tx *types.Transaction, receipt *types.Receipt) ([]Operation, error) {
 	ops := make([]Operation, 0)
 
+	if tx.FeeCurrency() == nil { // nil implies cGLD
+		gasOp, err := tr.TxGasDetails(blockHeader.Coinbase, tx, receipt)
+		if err != nil {
+			return nil, err
+		}
+		ops = append(ops, *gasOp)
+	}
+
 	if receipt.Status == types.ReceiptStatusSuccessful {
-		contractMap, err := tr.GetRegistryAddresses(receipt, "Reserve", "LockedGold", "Election", "Governance", "Accounts")
+		contractMap, err := tr.GetRegistryAddresses(receipt, registry.ReserveContractID.String(), registry.LockedGoldContractID.String(), registry.ElectionContractID.String(), registry.GovernanceContractID.String(), registry.AccountsContractID.String())
 		if err != nil {
 			return nil, err
 		}
 
-		tobinTax, err := tr.GetTobinTax(receipt.BlockNumber, contractMap["Reserve"])
+		tobinTax, err := tr.GetTobinTax(receipt.BlockNumber, contractMap[registry.ReserveContractID.String()])
 		if err != nil {
 			return nil, err
 		}
@@ -92,18 +101,10 @@ func (tr *Tracer) TraceTransaction(blockHeader *types.Header, tx *types.Transact
 			return nil, err
 		}
 
-		ops, err = ReconcileLockedGoldTransfers(lockedGoldOps, transferOps, tobinTax, contractMap["LockedGold"])
+		ops, err = ReconcileLockedGoldTransfers(lockedGoldOps, transferOps, tobinTax, contractMap[registry.LockedGoldContractID.String()])
 		if err != nil {
 			return nil, err
 		}
-	}
-
-	if tx.FeeCurrency() == nil { // nil implies cGLD
-		gasOp, err := tr.TxGasDetails(blockHeader.Coinbase, tx, receipt)
-		if err != nil {
-			return nil, err
-		}
-		ops = append(ops, *gasOp)
 	}
 
 	return ops, nil
@@ -127,7 +128,7 @@ func (tr *Tracer) TxGasDetails(coinbase common.Address, tx *types.Transaction, r
 	balanceChanges.Add(coinbase, new(big.Int).Sub(totalTxFee, baseTxFee))
 
 	// We want to get state AFTER the tx, since gas fees are processed by the end of the TX
-	governanceAddress, err := tr.db.RegistryAddressStartOf(tr.ctx, receipt.BlockNumber, receipt.TransactionIndex+1, "Governance")
+	governanceAddress, err := tr.db.RegistryAddressStartOf(tr.ctx, receipt.BlockNumber, receipt.TransactionIndex+1, registry.GovernanceContractID.String())
 	if err == db.ErrContractNotFound {
 		// No community fund, we won't charge the user
 		totalTxFee.Sub(totalTxFee, baseTxFee)
@@ -154,7 +155,7 @@ func (tr *Tracer) TxGasDetails(coinbase common.Address, tx *types.Transaction, r
 
 func (tr *Tracer) TxTransfers(tx *types.Transaction, receipt *types.Receipt, tobinTax *TobinTax) ([]Operation, error) {
 	if receipt.Status == types.ReceiptStatusFailed {
-		return nil, fmt.Errorf("Cannot trace transfers on failed tx: %v  blockNumber: %v", receipt.TransactionIndex, receipt.BlockNumber)
+		return nil, nil
 	}
 
 	internalTransfers, err := tr.cc.Debug.TransactionTransfers(tr.ctx, tx.Hash())
@@ -167,10 +168,10 @@ func (tr *Tracer) TxTransfers(tx *types.Transaction, receipt *types.Receipt, tob
 
 func (tr *Tracer) TxLockedGoldTransfers(tx *types.Transaction, receipt *types.Receipt, tobinTax *TobinTax, contractMap map[string]common.Address) ([]Operation, error) {
 	if receipt.Status == types.ReceiptStatusFailed {
-		return nil, fmt.Errorf("Cannot trace LockedGold transfers on failed tx: %v  blockNumber: %v", receipt.TransactionIndex, receipt.BlockNumber)
+		return nil, nil
 	}
 
-	accountsAddr, ok := contractMap["Accounts"]
+	accountsAddr, ok := contractMap[registry.AccountsContractID.String()]
 	if !ok {
 		// Accounts not found (not deployed) => no transfers
 		return nil, nil
@@ -180,7 +181,7 @@ func (tr *Tracer) TxLockedGoldTransfers(tx *types.Transaction, receipt *types.Re
 		return nil, fmt.Errorf("can't initialize Accounts contract: %w", err)
 	}
 
-	lockedGoldAddr, ok := contractMap["LockedGold"]
+	lockedGoldAddr, ok := contractMap[registry.LockedGoldContractID.String()]
 	if !ok {
 		// LockedGold not found (not deployed) => no transfers
 		return nil, nil
@@ -190,7 +191,7 @@ func (tr *Tracer) TxLockedGoldTransfers(tx *types.Transaction, receipt *types.Re
 		return nil, fmt.Errorf("can't initialize LockedGold contract: %w", err)
 	}
 
-	electionAddr, ok := contractMap["Election"]
+	electionAddr, ok := contractMap[registry.ElectionContractID.String()]
 	if !ok {
 		// Election not found (not deployed) => no transfers
 		return nil, nil
@@ -201,7 +202,7 @@ func (tr *Tracer) TxLockedGoldTransfers(tx *types.Transaction, receipt *types.Re
 	}
 
 	// We only need governace for slashing and you can't slash if there's no governance contract, so we ignore if not found
-	governanceAddr, _ := contractMap["Governance"]
+	governanceAddr, _ := contractMap[registry.GovernanceContractID.String()]
 
 	logs := utils.RemoveProxyLogs(receipt.Logs)
 
