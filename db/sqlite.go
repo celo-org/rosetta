@@ -214,8 +214,6 @@ func (cs *rosettaSqlDb) GasPriceMinimumFor(ctx context.Context, block *big.Int) 
 	return new(big.Int).SetBytes(gpmBytes), nil
 }
 
-//TODO(Alec): What about "Error calling getOrComputeTobinTaxFunctionSelector" in Geth?
-
 func (cs *rosettaSqlDb) TobinTaxFor(ctx context.Context, block *big.Int) (*big.Int, error) {
 	if err := cs.CheckBlockNumber(ctx, block); err != nil {
 		return nil, err

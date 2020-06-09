@@ -72,29 +72,9 @@ func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes c
 			return err
 		}
 
-		/* TODO: Fix Tobin Tax
-		For a locked gold operation that got a tobin tax of 10%  you'll have
-			lock(100)
-			tax 10
-		The event will be `GoldLocked(fromAccount, 90)`
-		The Transfer Operation
-			fromAccountMain       -100
-			lockedGolContractMain   90
-			tobinRecipientAccount   10
-		LockedGold operation (created from GoldLocked event) will be:
-			fromAccountMain                 -90
-			fromAccountLockedNonVoting       90
-			lockedGolContractMain            90
-		Now we need to figure out that both are the SAME operation group, and output
-			fromAccountMain                 -100
-			fromAccountLockedNonVoting       90
-			lockedGolContractMain            90
-			tobinRecipientAccount            10
-		*/
-
-		// if err := bp.tobinTaxChange(bcs); err != nil {
-		// 	return err
-		// }
+		if err := bp.tobinTaxChange(bcs); err != nil {
+			return err
+		}
 
 		if err := bp.writeChanges(bcs); err != nil {
 			return err
@@ -296,7 +276,6 @@ func (bp *processor) carbonOffsetPartner(bcs *db.BlockChangeSet) error {
 	return nil
 }
 
-//nolint:unused
 func (bp *processor) tobinTaxChange(bcs *db.BlockChangeSet) error {
 	if bp.reserveAddress == common.ZeroAddress {
 		return nil

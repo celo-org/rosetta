@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"github.com/celo-org/rosetta/analyzer"
+	"github.com/celo-org/rosetta/internal/utils"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	rosettaTypes "github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -63,7 +64,7 @@ func TestMapTxHashesToTransaction(t *testing.T) {
 func TestTransferToOperations(t *testing.T) {
 	RegisterTestingT(t)
 
-	aop := analyzer.NewTransfer(common.HexToAddress("1"), common.HexToAddress("2"), big.NewInt(10000), true)
+	aop := analyzer.NewTransfer(common.HexToAddress("1"), common.HexToAddress("2"), big.NewInt(10000), analyzer.NewTobinTax(utils.Big0, common.ZeroAddress), true)
 
 	Ω(OperationsFromAnalyzer(aop, 50)).Should(And(
 		HaveLen(2),
