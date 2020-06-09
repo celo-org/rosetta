@@ -179,8 +179,8 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 
 	subAccount := request.AccountIdentifier.SubAccount
 
-	if subAccount == nil {
-		// Main Account, just cGLD
+	if subAccount == nil || subAccount.Address == string(analyzer.AccSigner) {
+		// Main Account or Signer => just cGLD
 		goldAmt, err := s.cc.Eth.BalanceAt(ctx, accountAddr, blockHeader.Number)
 		if err != nil {
 			return nil, LogErrCeloClient("BalanceAt", err)
@@ -427,7 +427,7 @@ func (s *Servicer) blockHeader(ctx context.Context, blockIdentifier *types.Parti
 
 		blockHeader, err := s.cc.Eth.HeaderAndTxnHashesByNumber(ctx, number)
 		if err != nil {
-			return nil, LogErrFetchBlockHeader(err)
+			return nil, LogErrCeloClient("HeaderAndTxnHashesByNumber", err)
 		}
 		return blockHeader, nil
 	}
@@ -435,7 +435,7 @@ func (s *Servicer) blockHeader(ctx context.Context, blockIdentifier *types.Parti
 	hash := common.HexToHash(*blockIdentifier.Hash)
 	blockHeader, err := s.cc.Eth.HeaderAndTxnHashesByHash(ctx, hash)
 	if err != nil {
-		return nil, LogErrFetchBlockHeader(err)
+		return nil, LogErrCeloClient("HeaderAndTxnHashesByHash", err)
 	}
 	// If both Index and Hash were specified check the result matches
 	if blockIdentifier.Index != nil && blockHeader.Number.Cmp(big.NewInt(*blockIdentifier.Index)) != 0 {

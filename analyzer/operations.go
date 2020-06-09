@@ -28,6 +28,7 @@ type SubAccountType string
 
 const (
 	AccMain                    SubAccountType = "Main"
+	AccSigner                  SubAccountType = "AccountsAuthorizedSigner"
 	AccLockedGoldNonVoting     SubAccountType = "LockedGoldNonVoting"
 	AccLockedGoldVotingActive  SubAccountType = "LockedGoldVotingActive"
 	AccLockedGoldVotingPending SubAccountType = "LockedGoldVotingPending"
@@ -176,7 +177,7 @@ func NewAuthorizeSigner(from common.Address, signer common.Address, authorizeOp 
 		Successful: true,
 		Changes: []BalanceChange{
 			{Account: NewAccount(from, AccMain), Amount: common.Big0},
-			{Account: NewAccount(signer, AccMain), Amount: common.Big0},
+			{Account: NewAccount(signer, AccSigner), Amount: common.Big0},
 		},
 	}
 }
