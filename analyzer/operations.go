@@ -28,6 +28,7 @@ type SubAccountType string
 
 const (
 	AccMain                    SubAccountType = "Main"
+	AccSigner                  SubAccountType = "AccountsAuthorizedSigner"
 	AccLockedGoldNonVoting     SubAccountType = "LockedGoldNonVoting"
 	AccLockedGoldVotingActive  SubAccountType = "LockedGoldVotingActive"
 	AccLockedGoldVotingPending SubAccountType = "LockedGoldVotingPending"
