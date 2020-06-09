@@ -3,7 +3,7 @@ module github.com/celo-org/rosetta
 go 1.13
 
 require (
-	github.com/celo-org/kliento v0.1.1
+	github.com/celo-org/kliento v0.1.2-0.20200608140637-c5afc8cf0f44
 	github.com/coinbase/rosetta-sdk-go v0.1.8
 	github.com/ethereum/go-ethereum v1.9.8
 	github.com/felixge/httpsnoop v1.0.1
