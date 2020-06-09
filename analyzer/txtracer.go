@@ -91,7 +91,7 @@ func (tr *Tracer) TraceTransaction(blockHeader *types.Header, tx *types.Transact
 			return nil, err
 		}
 
-		lockedGoldOps, err := tr.TxLockedGoldTransfers(tx, receipt, tobinTax, contractMap)
+		logOps, err := tr.TxOpsFromLogs(tx, receipt, tobinTax, contractMap)
 		if err != nil {
 			return nil, err
 		}
@@ -101,10 +101,12 @@ func (tr *Tracer) TraceTransaction(blockHeader *types.Header, tx *types.Transact
 			return nil, err
 		}
 
-		ops, err = ReconcileLockedGoldTransfers(lockedGoldOps, transferOps, tobinTax, contractMap[registry.LockedGoldContractID.String()])
+		reconciledOps, err := ReconcileLogOpsWithTransfers(logOps, transferOps, tobinTax, contractMap[registry.LockedGoldContractID.String()])
 		if err != nil {
 			return nil, err
 		}
+
+		ops = append(ops, reconciledOps...)
 	}
 
 	return ops, nil
@@ -166,7 +168,7 @@ func (tr *Tracer) TxTransfers(tx *types.Transaction, receipt *types.Receipt, tob
 	return InternalTransfersToOperations(internalTransfers, tobinTax), nil
 }
 
-func (tr *Tracer) TxLockedGoldTransfers(tx *types.Transaction, receipt *types.Receipt, tobinTax *TobinTax, contractMap map[string]common.Address) ([]Operation, error) {
+func (tr *Tracer) TxOpsFromLogs(tx *types.Transaction, receipt *types.Receipt, tobinTax *TobinTax, contractMap map[string]common.Address) ([]Operation, error) {
 	if receipt.Status == types.ReceiptStatusFailed {
 		return nil, nil
 	}
@@ -247,6 +249,8 @@ func (tr *Tracer) TxLockedGoldTransfers(tx *types.Transaction, receipt *types.Re
 				continue
 			}
 
+			// Accounts:
+
 			switch eventName {
 			case "AccountCreated":
 				event := eventRaw.(*contracts.AccountsAccountCreated)
@@ -270,6 +274,8 @@ func (tr *Tracer) TxLockedGoldTransfers(tx *types.Transaction, receipt *types.Re
 			if !ok {
 				continue
 			}
+
+			// LockedGold:
 
 			switch eventName {
 			case "GoldLocked":

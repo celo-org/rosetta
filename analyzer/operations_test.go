@@ -129,7 +129,7 @@ func TestInternalTransfersToOperations(t *testing.T) {
 	})
 }
 
-func TestReconcileLockedGoldTransfers(t *testing.T) {
+func TestReconcileLogOpWithTransfers(t *testing.T) {
 	RegisterTestingT(t)
 
 	slashPenalty := amount2
@@ -138,13 +138,14 @@ func TestReconcileLockedGoldTransfers(t *testing.T) {
 	slashRewardTo := address4
 	lockedGoldAdrr := address2
 
-	getTestLockedGoldOps := func(tobinTax *TobinTax) []Operation {
+	getTestLogOps := func(tobinTax *TobinTax) []Operation {
 		_, afterTaxAmount1 := tobinTax.Apply(amount1)
 		return []Operation{
 			*NewLockGold(address1, lockedGoldAdrr, afterTaxAmount1),
 			*NewWithdrawGold(address1, lockedGoldAdrr, amount1, tobinTax),
 			*NewSlash(address1, address2, slashRewardTo, slashRewardFrom, slashPenalty, slashReward, tobinTax),
-			*NewUnlockGold(address1, amount1), // does not require transfer
+			*NewUnlockGold(address1, amount1),                                   // does not require transfer
+			*NewAuthorizeSigner(address1, address2, OpAuthorizeValidatorSigner), // does not require transfer
 		}
 	}
 
@@ -153,14 +154,14 @@ func TestReconcileLockedGoldTransfers(t *testing.T) {
 			*NewTransfer(address1, lockedGoldAdrr, amount1, tobinTax, true),                                           // matches LockGoldOp
 			*NewTransfer(lockedGoldAdrr, address1, amount1, tobinTax, false),                                          // matches WithdrawGoldOp
 			*NewTransfer(slashRewardFrom, slashRewardTo, new(big.Int).Sub(slashPenalty, slashReward), tobinTax, true), // matches SlashOp
-			*NewTransfer(address1, address3, amount1, tobinTax, true),                                                 // does not match a lockedGoldOp
+			*NewTransfer(address1, address3, amount1, tobinTax, true),                                                 // does not match a logOp
 		}
 	}
 
-	getReconciledOps := func(lockedGoldOps []Operation, tobinTax *TobinTax) []Operation {
+	getReconciledOps := func(logOps []Operation, tobinTax *TobinTax) []Operation {
 		if tobinTax.IsDefined() {
 			// This is the operation that should result from calling reconcile() on the LockGoldOp
-			lockedGoldOps[0] = Operation{
+			logOps[0] = Operation{
 				Type: OpLockGold,
 				Changes: []BalanceChange{
 					{
@@ -202,24 +203,24 @@ func TestReconcileLockedGoldTransfers(t *testing.T) {
 				Successful: true,
 			}
 		}
-		return append(lockedGoldOps,
-			*NewTransfer(address1, address3, amount1, tobinTax, true), // does not match a lockedGoldOp
+		return append(logOps,
+			*NewTransfer(address1, address3, amount1, tobinTax, true), // does not match a logOp
 		)
 	}
 
 	tobinTax := NewTestTobinTax(10, address3)
 
-	lockedGoldOps := getTestLockedGoldOps(emptyTobinTax)
-	lockedGoldOpsWithTobinTax := getTestLockedGoldOps(tobinTax)
+	logOps := getTestLogOps(emptyTobinTax)
+	logOpsWithTobinTax := getTestLogOps(tobinTax)
 
 	transferOps := getTestTransferOps(emptyTobinTax)
 	transferOpsWithTobinTax := getTestTransferOps(tobinTax)
 
 	t.Run("Without tobinTax", func(t *testing.T) {
-		Ω(ReconcileLockedGoldTransfers(lockedGoldOps, transferOps, emptyTobinTax, lockedGoldAdrr)).Should(ConsistOf(getReconciledOps(lockedGoldOps, emptyTobinTax)))
+		Ω(ReconcileLogOpsWithTransfers(logOps, transferOps, emptyTobinTax, lockedGoldAdrr)).Should(ConsistOf(getReconciledOps(logOps, emptyTobinTax)))
 	})
 
 	t.Run("With tobinTax", func(t *testing.T) {
-		Ω(ReconcileLockedGoldTransfers(lockedGoldOpsWithTobinTax, transferOpsWithTobinTax, tobinTax, lockedGoldAdrr)).Should(ConsistOf(getReconciledOps(lockedGoldOpsWithTobinTax, tobinTax)))
+		Ω(ReconcileLogOpsWithTransfers(logOpsWithTobinTax, transferOpsWithTobinTax, tobinTax, lockedGoldAdrr)).Should(ConsistOf(getReconciledOps(logOpsWithTobinTax, tobinTax)))
 	})
 }
