@@ -133,6 +133,18 @@ func NewVotingAccount(addr common.Address, subAccount SubAccountType, group comm
 	}
 }
 
+func NewSignerAccount(addr common.Address, main common.Address) Account {
+	return Account{
+		Address: addr,
+		SubAccount: SubAccount{
+			Identifier: AccSigner,
+			Metadata: map[string]interface{}{
+				"account": main,
+			},
+		},
+	}
+}
+
 // ---------------------------------------------------------------------------------------------------
 // Operation Factories
 // ---------------------------------------------------------------------------------------------------
@@ -176,8 +188,7 @@ func NewAuthorizeSigner(from common.Address, signer common.Address, authorizeOp 
 		Type:       authorizeOp,
 		Successful: true,
 		Changes: []BalanceChange{
-			{Account: NewAccount(from, AccMain), Amount: nil},
-			{Account: NewAccount(signer, AccSigner), Amount: nil},
+			{Account: NewSignerAccount(signer, from)},
 		},
 	}
 }
