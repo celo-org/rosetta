@@ -32,12 +32,12 @@ func TestMethodArgumentParsing(t *testing.T) {
 	}
 	tests := []testCase{
 		{airgap.CreateAccount, nil},
-		{airgap.AuthorizeVoteSigner, []interface{}{common.HexToAddress("0x01234"), []byte{1, 2, 3, 4, 5}}},
+		{airgap.AuthorizeVoteSigner, []interface{}{common.HexToAddress("0x1234"), []byte{1, 2, 3, 4, 5}}},
 
-		{airgap.Vote, []interface{}{common.HexToAddress("0x01234"), big.NewInt(1000)}},
-		{airgap.RevokeActiveVotes, []interface{}{common.HexToAddress("0x01234"), common.HexToAddress("0x45"), big.NewInt(1000)}},
-		{airgap.RevokePendingVotes, []interface{}{common.HexToAddress("0x01234"), common.HexToAddress("0x45"), big.NewInt(1000)}},
-		{airgap.ActivateVotes, []interface{}{common.HexToAddress("0x01234")}},
+		{airgap.Vote, []interface{}{common.HexToAddress("0x1234"), big.NewInt(1000)}},
+		{airgap.ActivateVotes, []interface{}{common.HexToAddress("0x1234")}},
+		{airgap.RevokeActiveVotes, []interface{}{common.HexToAddress("0x1234"), common.HexToAddress("0x45"), big.NewInt(1000)}},
+		{airgap.RevokePendingVotes, []interface{}{common.HexToAddress("0x1234"), common.HexToAddress("0x45"), big.NewInt(1000)}},
 
 		{airgap.LockGold, nil},
 		{airgap.UnlockGold, []interface{}{big.NewInt(100)}},

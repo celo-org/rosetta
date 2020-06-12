@@ -82,7 +82,6 @@ func TestMethodArgsSerializing(t *testing.T) {
 			method: ActivateVotes,
 			args: []interface{}{
 				common.HexToAddress("0x1111"),
-				common.HexToAddress("0x2222"),
 			},
 		},
 		{

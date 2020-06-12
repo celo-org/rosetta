@@ -40,7 +40,7 @@ var (
 
 	// Election
 	Vote               = registerMethod(registry.ElectionContractID.String(), "vote", []argParser{addressParser, bigIntParser})
-	ActivateVotes      = registerMethod(registry.ElectionContractID.String(), "activate", []argParser{addressParser, addressParser})
+	ActivateVotes      = registerMethod(registry.ElectionContractID.String(), "activate", []argParser{addressParser})
 	RevokePendingVotes = registerMethod(registry.ElectionContractID.String(), "revokePending", []argParser{addressParser, addressParser, bigIntParser})
 	RevokeActiveVotes  = registerMethod(registry.ElectionContractID.String(), "revokeActive", []argParser{addressParser, addressParser, bigIntParser})
 
@@ -74,6 +74,7 @@ type CeloMethod struct {
 func (cm *CeloMethod) String() string { return fmt.Sprintf("%s.%s", cm.Contract, cm.Name) }
 
 func (cm *CeloMethod) CreateTxArgs(to *common.Address, from common.Address, value *big.Int, args ...interface{}) (*TxArgs, error) {
+	// log.Fatal(args)
 	parsedArgs, err := cm.SerializeArguments(args...)
 	if err != nil {
 		return nil, err
@@ -88,10 +89,10 @@ func (cm *CeloMethod) CreateTxArgs(to *common.Address, from common.Address, valu
 }
 
 func (cm *CeloMethod) SerializeArguments(args ...interface{}) ([]interface{}, error) {
-	out := make([]interface{}, len(args))
 	if len(args) != len(cm.argParsers) {
 		return nil, fmt.Errorf("Received %d args; expected %d", len(args), len(cm.argParsers))
 	}
+	out := make([]interface{}, len(args))
 
 	for i, arg := range args {
 		switch v := arg.(type) {
@@ -109,10 +110,10 @@ func (cm *CeloMethod) SerializeArguments(args ...interface{}) ([]interface{}, er
 }
 
 func (cm *CeloMethod) DeserializeArguments(values ...interface{}) ([]interface{}, error) {
-	parsedArgs := make([]interface{}, len(cm.argParsers))
 	if len(values) != len(cm.argParsers) {
 		return nil, fmt.Errorf("Received %d args; expected %d", len(values), len(cm.argParsers))
 	}
+	parsedArgs := make([]interface{}, len(cm.argParsers))
 
 	var err error
 	for i, value := range values {
