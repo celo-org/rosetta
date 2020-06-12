@@ -74,7 +74,6 @@ type CeloMethod struct {
 func (cm *CeloMethod) String() string { return fmt.Sprintf("%s.%s", cm.Contract, cm.Name) }
 
 func (cm *CeloMethod) CreateTxArgs(to *common.Address, from common.Address, value *big.Int, args ...interface{}) (*TxArgs, error) {
-	// log.Fatal(args)
 	parsedArgs, err := cm.SerializeArguments(args...)
 	if err != nil {
 		return nil, err
