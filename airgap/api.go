@@ -33,28 +33,29 @@ type Server interface {
 }
 
 type ArgBuilder interface {
+	TransferGold(from common.Address, to common.Address, value *big.Int) (*TxArgs, error)
+
 	CreateAccount(signer common.Address) (*TxArgs, error)
-	AuthorizeVoteSigner(account common.Address, popSignature []byte) (*TxArgs, error)
+	AuthorizeVoteSigner(account common.Address, signer common.Address, popSignature []byte) (*TxArgs, error)
 	LockGold(signer common.Address, amount *big.Int) (*TxArgs, error)
 	UnlockGold(signer common.Address, value *big.Int) (*TxArgs, error)
 	RelockGold(signer common.Address, index *big.Int, value *big.Int) (*TxArgs, error)
 	WithdrawGold(signer common.Address, index *big.Int) (*TxArgs, error)
 	Vote(signer common.Address, group common.Address, value *big.Int) (*TxArgs, error)
-	ActivateVotes(signer common.Address, account common.Address, group common.Address) (*TxArgs, error)
-	RevokePendingVotes(signer common.Address, account common.Address, group common.Address, value *big.Int) (*TxArgs, error)
-	RevokeActiveVotes(signer common.Address, account common.Address, group common.Address, value *big.Int) (*TxArgs, error)
-	TransferGold(from common.Address, to common.Address, value *big.Int) (*TxArgs, error)
+	ActivateVotes(signer common.Address, group common.Address) (*TxArgs, error)
+	RevokePendingVotes(signer common.Address, group common.Address, value *big.Int) (*TxArgs, error)
+	RevokeActiveVotes(signer common.Address, group common.Address, value *big.Int) (*TxArgs, error)
 
 	ReleaseGoldCreateAccount(releaseGold common.Address, signer common.Address) (*TxArgs, error)
-	ReleaseGoldAuthorizeVoteSigner(releaseGold common.Address, account common.Address, popSignature []byte) (*TxArgs, error)
-	ReleaseGoldAuthorizeAttestationSigner(releaseGold common.Address, account common.Address, popSignature []byte) (*TxArgs, error)
-	ReleaseGoldAuthorizeValidatorSigner(releaseGold common.Address, account common.Address, popSignature []byte) (*TxArgs, error)
+	ReleaseGoldAuthorizeVoteSigner(releaseGold common.Address, account common.Address, voteSigner common.Address, popSignature []byte) (*TxArgs, error)
+	ReleaseGoldAuthorizeAttestationSigner(releaseGold common.Address, account common.Address, attestationSigner common.Address, popSignature []byte) (*TxArgs, error)
+	ReleaseGoldAuthorizeValidatorSigner(releaseGold common.Address, account common.Address, validatorSigner common.Address, popSignature []byte) (*TxArgs, error)
 	ReleaseGoldLockGold(releaseGold common.Address, signer common.Address, amount *big.Int) (*TxArgs, error)
 	ReleaseGoldUnlockGold(releaseGold common.Address, signer common.Address, value *big.Int) (*TxArgs, error)
 	ReleaseGoldRelockGold(releaseGold common.Address, signer common.Address, index *big.Int, value *big.Int) (*TxArgs, error)
 	ReleaseGoldWithdrawGold(releaseGold common.Address, signer common.Address, index *big.Int) (*TxArgs, error)
-	ReleaseGoldRevokePendingVotes(releaseGold common.Address, signer common.Address, account common.Address, group common.Address, value *big.Int) (*TxArgs, error)
-	ReleaseGoldRevokeActiveVotes(releaseGold common.Address, signer common.Address, account common.Address, group common.Address, value *big.Int) (*TxArgs, error)
+	ReleaseGoldRevokePendingVotes(releaseGold common.Address, signer common.Address, group common.Address, value *big.Int) (*TxArgs, error)
+	ReleaseGoldRevokeActiveVotes(releaseGold common.Address, signer common.Address, group common.Address, value *big.Int) (*TxArgs, error)
 }
 
 type Client interface {

@@ -32,7 +32,7 @@ type ServerContext interface {
 
 	authorizeMetadata(ctx context.Context, popSignature []byte) (*helpers.SignatureValues, error)
 	voteMetadata(ctx context.Context, group common.Address, value *big.Int) (*helpers.AddressLesserGreater, error)
-	revokeMetadata(ctx context.Context, account common.Address, group common.Address, value *big.Int) (*helpers.RevokeMetadata, error)
+	revokeMetadata(ctx context.Context, signerOrAccount common.Address, group common.Address, value *big.Int) (*helpers.RevokeMetadata, error)
 
 	// From EthClient
 
@@ -78,11 +78,20 @@ func (sc *serverContextImpl) voteMetadata(ctx context.Context, group common.Addr
 	return he.VoteMetadata(&bind.CallOpts{Context: ctx}, group, value)
 }
 
-func (sc *serverContextImpl) revokeMetadata(ctx context.Context, account common.Address, group common.Address, value *big.Int) (*helpers.RevokeMetadata, error) {
+func (sc *serverContextImpl) revokeMetadata(ctx context.Context, signerOrAccount common.Address, group common.Address, value *big.Int) (*helpers.RevokeMetadata, error) {
+	callOpts := &bind.CallOpts{Context: ctx}
+	accounts, err := sc.registry.GetAccountsContract(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	account, err := accounts.SignerToAccount(callOpts, signerOrAccount)
+	if err != nil {
+		return nil, err
+	}
 	election, err := sc.registry.GetElectionContract(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 	he := helpers.Election{election}
-	return he.RevokeMetadata(&bind.CallOpts{Context: ctx}, account, group, value)
+	return he.RevokeMetadata(callOpts, account, group, value)
 }
