@@ -32,7 +32,7 @@ sed -i -e "s/$LAST_VERSION/$NEW_VERSION/" $VERSION_FILE
 
 git checkout -b "release/${NEW_VERSION}"
 git add $VERSION_FILE
-git ci -m "Release ${NEW_VERSION}"
+git commit -m "Release ${NEW_VERSION}"
 git tag "v${NEW_VERSION}"
 
 COMMIT_SHA=$(git rev-parse HEAD)
