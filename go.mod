@@ -25,4 +25,4 @@ require (
 // replace github.com/ethereum/go-ethereum => ../celo-blockchain
 
 // Use this to use external build
-replace github.com/ethereum/go-ethereum => github.com/celo-org/celo-blockchain v0.0.0-20200519153823-adbdc7f8c27e
+replace github.com/ethereum/go-ethereum => github.com/celo-org/celo-blockchain v0.0.0-20200612100840-bf2ba25426f9

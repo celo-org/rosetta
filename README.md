@@ -208,3 +208,13 @@ go run main.go run \
   --geth.staticnodes "enode://05977f6b7d3e16a99d27b714f8a029a006e41ec7732167d373dd920d31f72b3a1776650798d8763560854369d36867e9564dad13b4b60a90c347feeb491d83a9@34.83.42.50:30303" \
   --datadir "./envs/alfajores"
 ```
+
+#### Running on Alfajores-Staging:
+
+```bash
+go run main.go run \
+  --geth.genesis ./envs/alfajoresstaging/genesis.json \
+  --geth.binary ../celo-blockchain/build/bin/geth \
+  --geth.staticnodes "enode://ec86feaa5738d806cbe5431cfef97ce147c6ca4efa815f5684008c2f9455d8d39a8540e3fa19c151b3c9f5db89e86cb2565a05a4dbfb2d13f30834a01297e964@34.82.69.157:30303" \
+  --datadir "./envs/alfajoresstaging"
+```
