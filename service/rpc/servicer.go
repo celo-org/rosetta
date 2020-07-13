@@ -190,7 +190,8 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 		return createResponse(NewAmount(goldAmt, CeloGold)), nil
 	}
 
-	if subAccount.Address[:len("ReleaseGold")] == "ReleaseGold" {
+	lenRg := len("ReleaseGold")
+	if lenRg <= len(subAccount.Address) && subAccount.Address[:lenRg] == "ReleaseGold" {
 		releaseGold, err := contracts.NewReleaseGold(accountAddr, s.cc.Eth)
 		if err != nil {
 			return nil, LogErrValidation(errors.New("Account address must be a ReleaseGold instance"))
