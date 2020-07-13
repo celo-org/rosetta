@@ -27,12 +27,15 @@ import (
 type SubAccountType string
 
 const (
-	AccMain                    SubAccountType = "Main"
-	AccSigner                  SubAccountType = "AccountsAuthorizedSigner"
-	AccLockedGoldNonVoting     SubAccountType = "LockedGoldNonVoting"
-	AccLockedGoldVotingActive  SubAccountType = "LockedGoldVotingActive"
-	AccLockedGoldVotingPending SubAccountType = "LockedGoldVotingPending"
-	AccLockedGoldPending       SubAccountType = "LockedGoldPending"
+	AccMain                        SubAccountType = "Main"
+	AccSigner                      SubAccountType = "AccountsAuthorizedSigner"
+	AccLockedGoldNonVoting         SubAccountType = "LockedGoldNonVoting"
+	AccLockedGoldVotingActive      SubAccountType = "LockedGoldVotingActive"
+	AccLockedGoldVotingPending     SubAccountType = "LockedGoldVotingPending"
+	AccLockedGoldPending           SubAccountType = "LockedGoldPending"
+	AccReleaseGoldVested           SubAccountType = "ReleaseGoldVested"
+	AccReleaseGoldUnvestedLocked   SubAccountType = "ReleaseGoldUnvestedLocked"
+	AccReleaseGoldUnvestedUnLocked SubAccountType = "ReleaseGoldUnvestedUnlocked"
 )
 
 type SubAccount struct {

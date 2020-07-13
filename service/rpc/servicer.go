@@ -16,10 +16,12 @@ package rpc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
 
 	"github.com/celo-org/kliento/client"
+	"github.com/celo-org/kliento/contracts"
 	"github.com/celo-org/kliento/contracts/helpers"
 	"github.com/celo-org/kliento/registry"
 	"github.com/celo-org/kliento/utils/chain"
@@ -186,6 +188,48 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 			return nil, LogErrCeloClient("BalanceAt", err)
 		}
 		return createResponse(NewAmount(goldAmt, CeloGold)), nil
+	}
+
+	lenRg := len("ReleaseGold")
+	if lenRg <= len(subAccount.Address) && subAccount.Address[:lenRg] == "ReleaseGold" {
+		releaseGold, err := contracts.NewReleaseGold(accountAddr, s.cc.Eth)
+		if err != nil {
+			return nil, LogErrValidation(errors.New("Account address must be a ReleaseGold instance"))
+		}
+
+		beneficiary, err := releaseGold.Beneficiary(requestedBlockOpts)
+		if err != nil {
+			return nil, LogErrCeloClient("ReleaseGold.beneficiary", err)
+		}
+
+		if subAccount.Metadata != nil {
+			if addrStr, ok := subAccount.Metadata["beneficiary"]; ok {
+				providedBeneficiary := common.HexToAddress(addrStr.(string))
+				if beneficiary != providedBeneficiary {
+					return nil, LogErrValidation(errors.New("Provided beneficiary address does not match ReleaseGold contract"))
+				}
+			}
+		}
+
+		var celoGoldAmount *big.Int
+		switch subAccount.Address {
+		case string(analyzer.AccReleaseGoldVested):
+			celoGoldAmount, err = releaseGold.GetCurrentReleasedTotalAmount(requestedBlockOpts)
+		case string(analyzer.AccReleaseGoldUnvestedUnLocked):
+			celoGoldAmount, err = releaseGold.GetRemainingUnlockedBalance(requestedBlockOpts)
+		case string(analyzer.AccReleaseGoldUnvestedLocked):
+			celoGoldAmount, err = releaseGold.GetRemainingLockedBalance(requestedBlockOpts)
+		default:
+			return nil, LogErrValidation(errors.New(fmt.Sprintf("Subaccount must be %s, %s, or %s",
+				string(analyzer.AccReleaseGoldVested),
+				string(analyzer.AccReleaseGoldUnvestedLocked),
+				string(analyzer.AccReleaseGoldUnvestedUnLocked),
+			)))
+		}
+		if err != nil {
+			return nil, LogErrCeloClient(subAccount.Address, err)
+		}
+		return createResponse(NewAmount(celoGoldAmount, CeloGold)), nil
 	}
 
 	registry, err := registry.New(s.cc)
