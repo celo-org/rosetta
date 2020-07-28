@@ -220,11 +220,11 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 		case string(analyzer.AccReleaseGoldUnvestedLocked):
 			celoGoldAmount, err = releaseGold.GetRemainingLockedBalance(requestedBlockOpts)
 		default:
-			return nil, LogErrValidation(errors.New(fmt.Sprintf("Subaccount must be %s, %s, or %s",
+			return nil, LogErrValidation(fmt.Errorf("Subaccount must be %s, %s, or %s",
 				string(analyzer.AccReleaseGoldVested),
 				string(analyzer.AccReleaseGoldUnvestedLocked),
 				string(analyzer.AccReleaseGoldUnvestedUnLocked),
-			)))
+			))
 		}
 		if err != nil {
 			return nil, LogErrCeloClient(subAccount.Address, err)
