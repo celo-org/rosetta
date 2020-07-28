@@ -47,6 +47,7 @@ type ArgBuilder interface {
 	RevokeActiveVotes(signer common.Address, group common.Address, value *big.Int) (*TxArgs, error)
 
 	ReleaseGoldCreateAccount(releaseGold common.Address, signer common.Address) (*TxArgs, error)
+	ReleaseGoldWithdraw(releaseGold common.Address, signer common.Address, amount *big.Int) (*TxArgs, error)
 	ReleaseGoldAuthorizeVoteSigner(releaseGold common.Address, account common.Address, voteSigner common.Address, popSignature []byte) (*TxArgs, error)
 	ReleaseGoldAuthorizeAttestationSigner(releaseGold common.Address, account common.Address, attestationSigner common.Address, popSignature []byte) (*TxArgs, error)
 	ReleaseGoldAuthorizeValidatorSigner(releaseGold common.Address, account common.Address, validatorSigner common.Address, popSignature []byte) (*TxArgs, error)

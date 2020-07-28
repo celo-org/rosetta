@@ -79,6 +79,9 @@ func (c *airgapArgBuilderImpl) RevokeActiveVotes(signer common.Address, group co
 func (c *airgapArgBuilderImpl) ReleaseGoldCreateAccount(releaseGold common.Address, signer common.Address) (*TxArgs, error) {
 	return ReleaseGoldCreateAccount.CreateTxArgs(&releaseGold, signer, nil)
 }
+func (c *airgapArgBuilderImpl) ReleaseGoldWithdraw(releaseGold common.Address, signer common.Address, amount *big.Int) (*TxArgs, error) {
+	return ReleaseGoldWithdraw.CreateTxArgs(&releaseGold, signer, amount)
+}
 func (c *airgapArgBuilderImpl) ReleaseGoldAuthorizeVoteSigner(releaseGold common.Address, account common.Address, voteSigner common.Address, popSignature []byte) (*TxArgs, error) {
 	return ReleaseGoldAuthorizeVoteSigner.CreateTxArgs(&releaseGold, account, nil, voteSigner, popSignature)
 }
