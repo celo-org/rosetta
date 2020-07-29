@@ -80,7 +80,7 @@ func (c *airgapArgBuilderImpl) ReleaseGoldCreateAccount(releaseGold common.Addre
 	return ReleaseGoldCreateAccount.CreateTxArgs(&releaseGold, signer, nil)
 }
 func (c *airgapArgBuilderImpl) ReleaseGoldWithdraw(releaseGold common.Address, signer common.Address, amount *big.Int) (*TxArgs, error) {
-	return ReleaseGoldWithdraw.CreateTxArgs(&releaseGold, signer, amount)
+	return ReleaseGoldWithdraw.CreateTxArgs(&releaseGold, signer, nil, amount)
 }
 func (c *airgapArgBuilderImpl) ReleaseGoldAuthorizeVoteSigner(releaseGold common.Address, account common.Address, voteSigner common.Address, popSignature []byte) (*TxArgs, error) {
 	return ReleaseGoldAuthorizeVoteSigner.CreateTxArgs(&releaseGold, account, nil, voteSigner, popSignature)
@@ -102,7 +102,6 @@ func (c *airgapArgBuilderImpl) ReleaseGoldRelockGold(releaseGold common.Address,
 }
 func (c *airgapArgBuilderImpl) ReleaseGoldWithdrawGold(releaseGold common.Address, signer common.Address, index *big.Int) (*TxArgs, error) {
 	return ReleaseGoldWithdrawGold.CreateTxArgs(&releaseGold, signer, nil, index)
-
 }
 func (c *airgapArgBuilderImpl) ReleaseGoldRevokePendingVotes(releaseGold common.Address, signer common.Address, group common.Address, value *big.Int) (*TxArgs, error) {
 	return ReleaseGoldRevokePendingVotes.CreateTxArgs(&releaseGold, signer, nil, signer, group, value)
