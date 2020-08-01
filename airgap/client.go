@@ -18,7 +18,10 @@ import (
 	"crypto/ecdsa"
 	"fmt"
 
+	"github.com/celo-org/kliento/contracts"
+	"github.com/celo-org/kliento/registry"
 	"github.com/ethereum/go-ethereum/accounts"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -90,4 +93,43 @@ func (c *clientImpl) GenerateProofOfPossessionSignature(privateKey *ecdsa.Privat
 	msg := accounts.TextHash(address.Bytes())
 	signature, err := c.Sign(msg, privateKey)
 	return signature, err
+}
+
+func (c *clientImpl) ParseTxArgs(method *CeloMethod, metadata *TxMetadata) (*TxArgs, error) {
+	var abi *abi.ABI
+	var err error
+
+	switch method.Contract {
+	case ReleaseGold:
+		abi, err = contracts.ParseReleaseGoldABI()
+	case registry.AccountsContractID.String():
+		abi, err = contracts.ParseAccountsABI()
+	case registry.LockedGoldContractID.String():
+		abi, err = contracts.ParseLockedGoldABI()
+	case registry.ElectionContractID.String():
+		abi, err = contracts.ParseElectionABI()
+	default:
+		err = fmt.Errorf("Unknown contract %s", method.Contract)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	abiMethod, ok := abi.Methods[method.Name]
+	if !ok {
+		return nil, fmt.Errorf("Method %s not found on ABI for contract %s", method.Name, method.Contract)
+	}
+
+	args, err := abiMethod.Inputs.UnpackValues(metadata.Data)
+	if err != nil {
+		return nil, err
+	}
+
+	return &TxArgs{
+		From:   metadata.From,
+		To:     &metadata.To,
+		Value:  metadata.Value,
+		Method: method,
+		Args:   args,
+	}, nil
 }
