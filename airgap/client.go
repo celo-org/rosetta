@@ -106,7 +106,6 @@ func parseMethodAndArgs(data []byte) (*CeloMethod, []interface{}, error) {
 
 	var args []interface{}
 	var method *CeloMethod
-	var err error
 	for _, abiGen := range abiGenerators {
 		abi, err := abiGen()
 		if err != nil {
@@ -122,17 +121,20 @@ func parseMethodAndArgs(data []byte) (*CeloMethod, []interface{}, error) {
 		if err == nil {
 			methodString := fmt.Sprintf("%s.%s", abi.Constructor.Name, abiMethod.Name)
 			method, err = MethodFromString(methodString)
+			if err != nil {
+				return nil, nil, err
+			}
 			break
 		}
 	}
 
-	return method, args, err
+	return method, args, nil
 }
 
 func (c *clientImpl) ParseTxArgs(metadata *TxMetadata) (*TxArgs, error) {
 	method, args, err := parseMethodAndArgs(metadata.Data)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to parse method and args from %s with %s", metadata.Data, err.Error)
+		return nil, fmt.Errorf("Failed to parse method and args from %s with %s", metadata.Data, err.Error())
 	}
 
 	return &TxArgs{
