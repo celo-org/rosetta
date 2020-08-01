@@ -94,7 +94,7 @@ func (c *clientImpl) GenerateProofOfPossessionSignature(privateKey *ecdsa.Privat
 	return signature, err
 }
 
-var abiGenerators = []func() (*abi.ABI, error){
+var abiParsers = []func() (*abi.ABI, error){
 	contracts.ParseReleaseGoldABI,
 	contracts.ParseAccountsABI,
 	contracts.ParseLockedGoldABI,
@@ -104,10 +104,8 @@ var abiGenerators = []func() (*abi.ABI, error){
 func parseMethodAndArgs(data []byte) (*CeloMethod, []interface{}, error) {
 	methodId, methodData := data[:4], data[4:]
 
-	var args []interface{}
-	var method *CeloMethod
-	for _, abiGen := range abiGenerators {
-		abi, err := abiGen()
+	for _, abiParser := range abiParsers {
+		abi, err := abiParser()
 		if err != nil {
 			continue
 		}
@@ -117,18 +115,16 @@ func parseMethodAndArgs(data []byte) (*CeloMethod, []interface{}, error) {
 			continue
 		}
 
-		args, err = abiMethod.Inputs.UnpackValues(methodData)
-		if err == nil {
-			methodString := fmt.Sprintf("%s.%s", abi.Constructor.Name, abiMethod.Name)
-			method, err = MethodFromString(methodString)
-			if err != nil {
-				return nil, nil, err
-			}
-			break
+		args, err := abiMethod.Inputs.UnpackValues(methodData)
+		if err != nil {
+			return nil, nil, err
 		}
+
+		method, err := MethodFromString(fmt.Sprintf("%s.%s", abi.Constructor.Name, abiMethod.Name))
+		return method, args, err
 	}
 
-	return method, args, nil
+	return nil, nil, fmt.Errorf("data does not match any abi parsers")
 }
 
 func (c *clientImpl) ParseTxArgs(metadata *TxMetadata) (*TxArgs, error) {
