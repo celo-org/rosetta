@@ -19,7 +19,6 @@ import (
 	"fmt"
 
 	"github.com/celo-org/kliento/contracts"
-	"github.com/celo-org/kliento/registry"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -95,34 +94,45 @@ func (c *clientImpl) GenerateProofOfPossessionSignature(privateKey *ecdsa.Privat
 	return signature, err
 }
 
-func (c *clientImpl) ParseTxArgs(method *CeloMethod, metadata *TxMetadata) (*TxArgs, error) {
-	var abi *abi.ABI
+var abiGenerators = []func() (*abi.ABI, error){
+	contracts.ParseReleaseGoldABI,
+	contracts.ParseAccountsABI,
+	contracts.ParseLockedGoldABI,
+	contracts.ParseElectionABI,
+}
+
+func parseMethodAndArgs(data []byte) (*CeloMethod, []interface{}, error) {
+	methodId, methodData := data[:4], data[4:]
+
+	var args []interface{}
+	var method *CeloMethod
 	var err error
+	for _, abiGen := range abiGenerators {
+		abi, err := abiGen()
+		if err != nil {
+			continue
+		}
 
-	switch method.Contract {
-	case ReleaseGold:
-		abi, err = contracts.ParseReleaseGoldABI()
-	case registry.AccountsContractID.String():
-		abi, err = contracts.ParseAccountsABI()
-	case registry.LockedGoldContractID.String():
-		abi, err = contracts.ParseLockedGoldABI()
-	case registry.ElectionContractID.String():
-		abi, err = contracts.ParseElectionABI()
-	default:
-		err = fmt.Errorf("Unknown contract %s", method.Contract)
+		abiMethod, err := abi.MethodById(methodId)
+		if err != nil {
+			continue
+		}
+
+		args, err = abiMethod.Inputs.UnpackValues(methodData)
+		if err == nil {
+			methodString := fmt.Sprintf("%s.%s", abi.Constructor.Name, abiMethod.Name)
+			method, err = MethodFromString(methodString)
+			break
+		}
 	}
+
+	return method, args, err
+}
+
+func (c *clientImpl) ParseTxArgs(metadata *TxMetadata) (*TxArgs, error) {
+	method, args, err := parseMethodAndArgs(metadata.Data)
 	if err != nil {
-		return nil, err
-	}
-
-	abiMethod, ok := abi.Methods[method.Name]
-	if !ok {
-		return nil, fmt.Errorf("Method %s not found on ABI for contract %s", method.Name, method.Contract)
-	}
-
-	args, err := abiMethod.Inputs.UnpackValues(metadata.Data)
-	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to parse method and args from %s with %s", metadata.Data, err.Error)
 	}
 
 	return &TxArgs{
