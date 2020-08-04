@@ -74,6 +74,9 @@ type Client interface {
 	// SignTx signs an unsignedTx using the private seed and return a signedTx that can be submitted to the node
 	SignTx(transaction *Transaction, privateKey *ecdsa.PrivateKey) (*Transaction, error)
 
+	// Parse transaction arguments from transaction metadata
+	ParseTxArgs(txMetadata *TxMetadata) (*TxArgs, error)
+
 	// GenerateProofOfPossessionSignature generates a PoP needed for Authorize calls
 	GenerateProofOfPossessionSignature(privateKey *ecdsa.PrivateKey, address *common.Address) ([]byte, error)
 }

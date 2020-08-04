@@ -18,7 +18,9 @@ import (
 	"crypto/ecdsa"
 	"fmt"
 
+	"github.com/celo-org/kliento/contracts"
 	"github.com/ethereum/go-ethereum/accounts"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -90,4 +92,52 @@ func (c *clientImpl) GenerateProofOfPossessionSignature(privateKey *ecdsa.Privat
 	msg := accounts.TextHash(address.Bytes())
 	signature, err := c.Sign(msg, privateKey)
 	return signature, err
+}
+
+var abiParsers = []func() (*abi.ABI, error){
+	contracts.ParseReleaseGoldABI,
+	contracts.ParseAccountsABI,
+	contracts.ParseLockedGoldABI,
+	contracts.ParseElectionABI,
+}
+
+func parseMethodAndArgs(data []byte) (*CeloMethod, []interface{}, error) {
+	methodId, methodData := data[:4], data[4:]
+
+	for _, abiParser := range abiParsers {
+		abi, err := abiParser()
+		if err != nil {
+			continue
+		}
+
+		abiMethod, err := abi.MethodById(methodId)
+		if err != nil {
+			continue
+		}
+
+		args, err := abiMethod.Inputs.UnpackValues(methodData)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		method, err := MethodFromString(fmt.Sprintf("%s.%s", abi.Constructor.Name, abiMethod.Name))
+		return method, args, err
+	}
+
+	return nil, nil, fmt.Errorf("data does not match any abi parsers")
+}
+
+func (c *clientImpl) ParseTxArgs(metadata *TxMetadata) (*TxArgs, error) {
+	method, args, err := parseMethodAndArgs(metadata.Data)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to parse method and args from %s with %s", metadata.Data, err.Error())
+	}
+
+	return &TxArgs{
+		From:   metadata.From,
+		To:     &metadata.To,
+		Value:  metadata.Value,
+		Method: method,
+		Args:   args,
+	}, nil
 }
