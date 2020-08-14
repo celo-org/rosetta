@@ -102,6 +102,10 @@ var abiParsers = []func() (*abi.ABI, error){
 }
 
 func parseMethodAndArgs(data []byte) (*CeloMethod, []interface{}, error) {
+	if len(data) == 0 {
+		return nil, nil, nil
+	}
+
 	methodId, methodData := data[:4], data[4:]
 
 	for _, abiParser := range abiParsers {
