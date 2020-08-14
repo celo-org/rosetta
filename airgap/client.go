@@ -19,6 +19,7 @@ import (
 	"fmt"
 
 	"github.com/celo-org/kliento/contracts"
+	"github.com/celo-org/kliento/registry"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -95,10 +96,10 @@ func (c *clientImpl) GenerateProofOfPossessionSignature(privateKey *ecdsa.Privat
 }
 
 var abiParsers = map[string]func() (*abi.ABI, error){
-	"ReleaseGold": contracts.ParseReleaseGoldABI,
-	"Accounts":    contracts.ParseAccountsABI,
-	"LockedGold":  contracts.ParseLockedGoldABI,
-	"Election":    contracts.ParseElectionABI,
+	ReleaseGold:                            contracts.ParseReleaseGoldABI,
+	registry.AccountsContractID.String():   contracts.ParseAccountsABI,
+	registry.LockedGoldContractID.String(): contracts.ParseLockedGoldABI,
+	registry.ElectionContractID.String():   contracts.ParseElectionABI,
 }
 
 func parseMethodAndArgs(data []byte) (*CeloMethod, []interface{}, error) {
