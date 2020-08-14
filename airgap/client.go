@@ -94,11 +94,11 @@ func (c *clientImpl) GenerateProofOfPossessionSignature(privateKey *ecdsa.Privat
 	return signature, err
 }
 
-var abiParsers = []func() (*abi.ABI, error){
-	contracts.ParseReleaseGoldABI,
-	contracts.ParseAccountsABI,
-	contracts.ParseLockedGoldABI,
-	contracts.ParseElectionABI,
+var abiParsers = map[string]func() (*abi.ABI, error){
+	"ReleaseGold": contracts.ParseReleaseGoldABI,
+	"Accounts":    contracts.ParseAccountsABI,
+	"LockedGold":  contracts.ParseLockedGoldABI,
+	"Election":    contracts.ParseElectionABI,
 }
 
 func parseMethodAndArgs(data []byte) (*CeloMethod, []interface{}, error) {
@@ -108,7 +108,7 @@ func parseMethodAndArgs(data []byte) (*CeloMethod, []interface{}, error) {
 
 	methodId, methodData := data[:4], data[4:]
 
-	for _, abiParser := range abiParsers {
+	for contractName, abiParser := range abiParsers {
 		abi, err := abiParser()
 		if err != nil {
 			continue
@@ -124,7 +124,7 @@ func parseMethodAndArgs(data []byte) (*CeloMethod, []interface{}, error) {
 			return nil, nil, err
 		}
 
-		method, err := MethodFromString(fmt.Sprintf("%s.%s", abi.Constructor.Name, abiMethod.Name))
+		method, err := MethodFromString(fmt.Sprintf("%s.%s", contractName, abiMethod.Name))
 		return method, args, err
 	}
 
