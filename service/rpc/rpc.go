@@ -68,7 +68,7 @@ func NewRosettaServer(cc *client.CeloClient, db db.RosettaDBReader, cfg *Rosetta
 		Addr:         cfg.ListenAddress(),
 		Handler:      mainHandler,
 		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		WriteTimeout: cfg.RequestTimeout,
 		// TODO set ErrorLog: ,
 	}
 
