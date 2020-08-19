@@ -63,24 +63,24 @@ func (c *airgapArgBuilderImpl) RelockGold(signer common.Address, index *big.Int,
 func (c *airgapArgBuilderImpl) WithdrawGold(signer common.Address, index *big.Int) (*TxArgs, error) {
 	return WithdrawGold.CreateTxArgs(&TxArgs{From: signer}, index)
 }
-func (c *airgapArgBuilderImpl) Vote(signer common.Address, group common.Address, value *big.Int) (*TxArgs, error) {
-	return Vote.CreateTxArgs(&TxArgs{From: signer}, group, value)
+func (c *airgapArgBuilderImpl) Vote(signer common.Address, group common.Address, amount *big.Int) (*TxArgs, error) {
+	return Vote.CreateTxArgs(&TxArgs{From: signer}, group, amount)
 }
 func (c *airgapArgBuilderImpl) ActivateVotes(signer common.Address, group common.Address) (*TxArgs, error) {
 	return ActivateVotes.CreateTxArgs(&TxArgs{From: signer}, group)
 }
-func (c *airgapArgBuilderImpl) RevokePendingVotes(signer common.Address, group common.Address, value *big.Int) (*TxArgs, error) {
-	return RevokePendingVotes.CreateTxArgs(&TxArgs{From: signer}, signer, group, value)
+func (c *airgapArgBuilderImpl) RevokePendingVotes(signer common.Address, group common.Address, amount *big.Int) (*TxArgs, error) {
+	return RevokePendingVotes.CreateTxArgs(&TxArgs{From: signer}, signer, group, amount)
 }
-func (c *airgapArgBuilderImpl) RevokeActiveVotes(signer common.Address, group common.Address, value *big.Int) (*TxArgs, error) {
-	return RevokeActiveVotes.CreateTxArgs(&TxArgs{From: signer}, signer, group, value)
+func (c *airgapArgBuilderImpl) RevokeActiveVotes(signer common.Address, group common.Address, amount *big.Int) (*TxArgs, error) {
+	return RevokeActiveVotes.CreateTxArgs(&TxArgs{From: signer}, signer, group, amount)
 }
 
 func (c *airgapArgBuilderImpl) ReleaseGoldCreateAccount(releaseGold common.Address, signer common.Address) (*TxArgs, error) {
 	return ReleaseGoldCreateAccount.CreateTxArgs(&TxArgs{To: &releaseGold, From: signer})
 }
-func (c *airgapArgBuilderImpl) ReleaseGoldWithdraw(releaseGold common.Address, signer common.Address, value *big.Int) (*TxArgs, error) {
-	return ReleaseGoldWithdraw.CreateTxArgs(&TxArgs{To: &releaseGold, From: signer}, value)
+func (c *airgapArgBuilderImpl) ReleaseGoldWithdraw(releaseGold common.Address, signer common.Address, amount *big.Int) (*TxArgs, error) {
+	return ReleaseGoldWithdraw.CreateTxArgs(&TxArgs{To: &releaseGold, From: signer}, amount)
 }
 func (c *airgapArgBuilderImpl) ReleaseGoldAuthorizeVoteSigner(releaseGold common.Address, account common.Address, voteSigner common.Address, popSignature []byte) (*TxArgs, error) {
 	return ReleaseGoldAuthorizeVoteSigner.CreateTxArgs(&TxArgs{To: &releaseGold, From: account}, voteSigner, popSignature)
@@ -91,21 +91,21 @@ func (c *airgapArgBuilderImpl) ReleaseGoldAuthorizeAttestationSigner(releaseGold
 func (c *airgapArgBuilderImpl) ReleaseGoldAuthorizeValidatorSigner(releaseGold common.Address, account common.Address, validatorSigner common.Address, popSignature []byte) (*TxArgs, error) {
 	return ReleaseGoldAuthorizeValidatorSigner.CreateTxArgs(&TxArgs{To: &releaseGold, From: account}, validatorSigner, popSignature)
 }
-func (c *airgapArgBuilderImpl) ReleaseGoldLockGold(releaseGold common.Address, signer common.Address, value *big.Int) (*TxArgs, error) {
-	return ReleaseGoldLockGold.CreateTxArgs(&TxArgs{To: &releaseGold, From: signer}, value)
+func (c *airgapArgBuilderImpl) ReleaseGoldLockGold(releaseGold common.Address, signer common.Address, amount *big.Int) (*TxArgs, error) {
+	return ReleaseGoldLockGold.CreateTxArgs(&TxArgs{To: &releaseGold, From: signer}, amount)
 }
-func (c *airgapArgBuilderImpl) ReleaseGoldUnlockGold(releaseGold common.Address, signer common.Address, value *big.Int) (*TxArgs, error) {
-	return ReleaseGoldUnlockGold.CreateTxArgs(&TxArgs{To: &releaseGold, From: signer}, value)
+func (c *airgapArgBuilderImpl) ReleaseGoldUnlockGold(releaseGold common.Address, signer common.Address, amount *big.Int) (*TxArgs, error) {
+	return ReleaseGoldUnlockGold.CreateTxArgs(&TxArgs{To: &releaseGold, From: signer}, amount)
 }
-func (c *airgapArgBuilderImpl) ReleaseGoldRelockGold(releaseGold common.Address, signer common.Address, index *big.Int, value *big.Int) (*TxArgs, error) {
-	return ReleaseGoldRelockGold.CreateTxArgs(&TxArgs{To: &releaseGold, From: signer}, index, value)
+func (c *airgapArgBuilderImpl) ReleaseGoldRelockGold(releaseGold common.Address, signer common.Address, index *big.Int, amount *big.Int) (*TxArgs, error) {
+	return ReleaseGoldRelockGold.CreateTxArgs(&TxArgs{To: &releaseGold, From: signer}, index, amount)
 }
 func (c *airgapArgBuilderImpl) ReleaseGoldWithdrawGold(releaseGold common.Address, signer common.Address, index *big.Int) (*TxArgs, error) {
 	return ReleaseGoldWithdrawGold.CreateTxArgs(&TxArgs{To: &releaseGold, From: signer}, index)
 }
-func (c *airgapArgBuilderImpl) ReleaseGoldRevokePendingVotes(releaseGold common.Address, signer common.Address, group common.Address, value *big.Int) (*TxArgs, error) {
-	return ReleaseGoldRevokePendingVotes.CreateTxArgs(&TxArgs{To: &releaseGold, From: signer}, signer, group, value)
+func (c *airgapArgBuilderImpl) ReleaseGoldRevokePendingVotes(releaseGold common.Address, signer common.Address, group common.Address, amount *big.Int) (*TxArgs, error) {
+	return ReleaseGoldRevokePendingVotes.CreateTxArgs(&TxArgs{To: &releaseGold, From: signer}, signer, group, amount)
 }
-func (c *airgapArgBuilderImpl) ReleaseGoldRevokeActiveVotes(releaseGold common.Address, signer common.Address, group common.Address, value *big.Int) (*TxArgs, error) {
-	return ReleaseGoldRevokeActiveVotes.CreateTxArgs(&TxArgs{To: &releaseGold, From: signer}, signer, group, value)
+func (c *airgapArgBuilderImpl) ReleaseGoldRevokeActiveVotes(releaseGold common.Address, signer common.Address, group common.Address, amount *big.Int) (*TxArgs, error) {
+	return ReleaseGoldRevokeActiveVotes.CreateTxArgs(&TxArgs{To: &releaseGold, From: signer}, signer, group, amount)
 }
