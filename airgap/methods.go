@@ -73,13 +73,6 @@ type CeloMethod struct {
 
 func (cm *CeloMethod) String() string { return fmt.Sprintf("%s.%s", cm.Contract, cm.Name) }
 
-func (cm *CeloMethod) CreateTxArgs(options *TxArgs, methodArgs ...interface{}) (*TxArgs, error) {
-	options.Method = cm
-	parsedArgs, err := cm.SerializeArguments(methodArgs...)
-	options.Args = parsedArgs
-	return options, err
-}
-
 func (cm *CeloMethod) SerializeArguments(args ...interface{}) ([]interface{}, error) {
 	if len(args) != len(cm.argParsers) {
 		return nil, fmt.Errorf("Received %d args; expected %d", len(args), len(cm.argParsers))
