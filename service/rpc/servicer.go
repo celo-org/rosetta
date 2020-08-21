@@ -428,7 +428,7 @@ func (s *Servicer) ConstructionMetadata(ctx context.Context, request *types.Cons
 
 	txMetadata, err := s.airgap.ObtainMetadata(ctx, &txArgs)
 	if err != nil {
-		return nil, LogErrInternal(fmt.Errorf("Failed to fetch tx metadata"))
+		return nil, LogErrInternal(err)
 	}
 
 	metadata, err := airgap.MarshallToMap(txMetadata)
