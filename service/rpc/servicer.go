@@ -436,7 +436,7 @@ func (s *Servicer) ConstructionDerive(
 func (s *Servicer) ConstructionHash(
 	context.Context,
 	*types.ConstructionHashRequest,
-) (*types.ConstructionHashResponse, *types.Error) {
+) (*types.TransactionIdentifierResponse, *types.Error) {
 	return nil, LogErrUnimplemented("ConstructionHash")
 }
 
@@ -484,7 +484,7 @@ func (s *Servicer) ConstructionMetadata(ctx context.Context, request *types.Cons
 	return &response, nil
 }
 
-func (s *Servicer) ConstructionSubmit(ctx context.Context, request *types.ConstructionSubmitRequest) (*types.ConstructionSubmitResponse, *types.Error) {
+func (s *Servicer) ConstructionSubmit(ctx context.Context, request *types.ConstructionSubmitRequest) (*types.TransactionIdentifierResponse, *types.Error) {
 	rawTx := common.Hex2Bytes(request.SignedTransaction)
 
 	txhash, err := s.airgap.SubmitTx(ctx, rawTx)
@@ -492,7 +492,7 @@ func (s *Servicer) ConstructionSubmit(ctx context.Context, request *types.Constr
 		return nil, LogErrCeloClient("SendRawTx", err)
 	}
 
-	response := types.ConstructionSubmitResponse{
+	response := types.TransactionIdentifierResponse{
 		TransactionIdentifier: &types.TransactionIdentifier{
 			Hash: txhash.String(),
 		},
