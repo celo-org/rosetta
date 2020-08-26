@@ -16,6 +16,7 @@ package rpc
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/celo-org/kliento/client"
 	"github.com/coinbase/rosetta-sdk-go/types"
@@ -51,7 +52,7 @@ var (
 
 func LogErrValidation(err error) *types.Error {
 	logger.Error("ValidatorError", "err", err)
-	return ErrValidation
+	return LogErrDetails(ErrValidation, err)
 }
 
 func LogErrUnimplemented(rosettaEndpoint string) *types.Error {
@@ -59,16 +60,23 @@ func LogErrUnimplemented(rosettaEndpoint string) *types.Error {
 	return ErrUnimplemented
 }
 
+func LogErrDetails(rosettaErr *types.Error, err error) *types.Error {
+	rosettaErr.Details = map[string]interface{}{
+		"context": err.Error(),
+	}
+	return rosettaErr
+}
+
 func LogErrInternal(err error, params ...interface{}) *types.Error {
 	params = append([]interface{}{"err", err}, params...)
 	logger.Error("InternalError", params...)
-	return ErrInternal
+	return LogErrDetails(ErrInternal, fmt.Errorf("%w:%+v", err, params))
 }
 
 func LogErrCeloClient(rpcEndpoint string, err error) *types.Error {
 	cause := client.WrapRpcError(err)
 	logger.Error("CeloClientError", "endpoint", rpcEndpoint, "err", cause)
-	return ErrCeloClient
+	return LogErrDetails(ErrCeloClient, fmt.Errorf("%w:%s@%+v", err, rpcEndpoint, cause))
 }
 
 func LogErrFetchBlockHeader(err error) *types.Error {

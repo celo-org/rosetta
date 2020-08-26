@@ -4,10 +4,9 @@ go 1.13
 
 require (
 	github.com/celo-org/kliento v0.1.2-0.20200608140637-c5afc8cf0f44
-	github.com/coinbase/rosetta-sdk-go v0.1.8
-	github.com/ethereum/go-ethereum v1.9.8
+	github.com/coinbase/rosetta-sdk-go v0.3.0
+	github.com/ethereum/go-ethereum v1.9.15
 	github.com/felixge/httpsnoop v1.0.1
-	github.com/google/addlicense v0.0.0-20200422172452-68a83edd47bc // indirect
 	github.com/gorilla/handlers v1.4.2
 	github.com/jstemmer/go-junit-report v0.9.1 // indirect
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
