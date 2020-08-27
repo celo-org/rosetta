@@ -77,6 +77,9 @@ type Client interface {
 	// Parse transaction arguments from transaction metadata
 	ParseTxArgs(txMetadata *TxMetadata) (*TxArgs, error)
 
+	// Parse transaction data to celo method and args
+	ParseMethodAndArgs(data []byte) (*CeloMethod, []interface{}, error)
+
 	// GenerateProofOfPossessionSignature generates a PoP needed for Authorize calls
 	GenerateProofOfPossessionSignature(privateKey *ecdsa.PrivateKey, address *common.Address) ([]byte, error)
 }
