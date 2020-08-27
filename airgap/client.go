@@ -102,7 +102,7 @@ var abiParsers = map[string]func() (*abi.ABI, error){
 	registry.ElectionContractID.String():   contracts.ParseElectionABI,
 }
 
-func parseMethodAndArgs(data []byte) (*CeloMethod, []interface{}, error) {
+func (c *clientImpl) ParseMethodAndArgs(data []byte) (*CeloMethod, []interface{}, error) {
 	if len(data) == 0 {
 		return nil, nil, nil
 	}
@@ -133,7 +133,7 @@ func parseMethodAndArgs(data []byte) (*CeloMethod, []interface{}, error) {
 }
 
 func (c *clientImpl) ParseTxArgs(metadata *TxMetadata) (*TxArgs, error) {
-	method, args, err := parseMethodAndArgs(metadata.Data)
+	method, args, err := c.ParseMethodAndArgs(metadata.Data)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to parse method and args from %s with %s", metadata.Data, err.Error())
 	}
