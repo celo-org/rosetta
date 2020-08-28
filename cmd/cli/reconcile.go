@@ -112,7 +112,7 @@ func runReconciler(cmd *cobra.Command, args []string) {
 		logger.Info("Fetching block range (might take a while)", "from", curr, "to", to)
 
 		blocks := []*types.Block{}
-		for i := curr; i < to; i++ {
+		for i := curr; i <= to; i++ {
 			block, err := fetcher.BlockRetry(ctx, network, &types.PartialBlockIdentifier{
 				Index: &i,
 			})
