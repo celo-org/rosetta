@@ -66,7 +66,7 @@ func NewServicer(celoClient *client.CeloClient, db db.RosettaDBReader, cp *chain
 }
 
 // Mempool - Get All Mempool Transactions
-func (s *Servicer) Mempool(ctx context.Context, request *types.MempoolRequest) (*types.MempoolResponse, *types.Error) {
+func (s *Servicer) Mempool(ctx context.Context, request *types.NetworkRequest) (*types.MempoolResponse, *types.Error) {
 
 	content, err := s.cc.TxPool.Content(ctx)
 	if err != nil {
@@ -419,6 +419,48 @@ func (s *Servicer) BlockTransaction(ctx context.Context, request *types.BlockTra
 	}, nil
 }
 
+func (s *Servicer) ConstructionCombine(
+	context.Context,
+	*types.ConstructionCombineRequest,
+) (*types.ConstructionCombineResponse, *types.Error) {
+	return nil, LogErrUnimplemented("ConstructionCombine")
+}
+
+func (s *Servicer) ConstructionDerive(
+	context.Context,
+	*types.ConstructionDeriveRequest,
+) (*types.ConstructionDeriveResponse, *types.Error) {
+	return nil, LogErrUnimplemented("ConstructionDerive")
+}
+
+func (s *Servicer) ConstructionHash(
+	context.Context,
+	*types.ConstructionHashRequest,
+) (*types.TransactionIdentifierResponse, *types.Error) {
+	return nil, LogErrUnimplemented("ConstructionHash")
+}
+
+func (s *Servicer) ConstructionParse(
+	context.Context,
+	*types.ConstructionParseRequest,
+) (*types.ConstructionParseResponse, *types.Error) {
+	return nil, LogErrUnimplemented("ConstructionParse")
+}
+
+func (s *Servicer) ConstructionPayloads(
+	context.Context,
+	*types.ConstructionPayloadsRequest,
+) (*types.ConstructionPayloadsResponse, *types.Error) {
+	return nil, LogErrUnimplemented("ConstructionPayloads")
+}
+
+func (s *Servicer) ConstructionPreprocess(
+	context.Context,
+	*types.ConstructionPreprocessRequest,
+) (*types.ConstructionPreprocessResponse, *types.Error) {
+	return nil, LogErrUnimplemented("ConstructionPreprocess")
+}
+
 func (s *Servicer) ConstructionMetadata(ctx context.Context, request *types.ConstructionMetadataRequest) (*types.ConstructionMetadataResponse, *types.Error) {
 
 	var txArgs airgap.TxArgs
@@ -442,7 +484,7 @@ func (s *Servicer) ConstructionMetadata(ctx context.Context, request *types.Cons
 	return &response, nil
 }
 
-func (s *Servicer) ConstructionSubmit(ctx context.Context, request *types.ConstructionSubmitRequest) (*types.ConstructionSubmitResponse, *types.Error) {
+func (s *Servicer) ConstructionSubmit(ctx context.Context, request *types.ConstructionSubmitRequest) (*types.TransactionIdentifierResponse, *types.Error) {
 	rawTx := common.Hex2Bytes(request.SignedTransaction)
 
 	txhash, err := s.airgap.SubmitTx(ctx, rawTx)
@@ -450,7 +492,7 @@ func (s *Servicer) ConstructionSubmit(ctx context.Context, request *types.Constr
 		return nil, LogErrCeloClient("SendRawTx", err)
 	}
 
-	response := types.ConstructionSubmitResponse{
+	response := types.TransactionIdentifierResponse{
 		TransactionIdentifier: &types.TransactionIdentifier{
 			Hash: txhash.String(),
 		},

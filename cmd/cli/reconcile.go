@@ -57,7 +57,7 @@ func runReconciler(cmd *cobra.Command, args []string) {
 	fetcher, network, _ := getFetcher()
 
 	getBalance := func(acc *types.AccountIdentifier, block *types.BlockIdentifier) (*big.Int, error) {
-		_, amounts, _, err := fetcher.AccountBalance(ctx, network, acc, types.ConstructPartialBlockIdentifier(block))
+		_, amounts, _, _, err := fetcher.AccountBalance(ctx, network, acc, types.ConstructPartialBlockIdentifier(block))
 		if err != nil {
 			return nil, err
 		}
@@ -104,20 +104,20 @@ func runReconciler(cmd *cobra.Command, args []string) {
 	}
 
 	for curr := fromBlockNum; curr <= toBlockNum; {
-		var blocks []*types.Block
-
 		to := curr + batchSize - 1
 		if to > toBlockNum {
 			to = toBlockNum
 		}
 
 		logger.Info("Fetching block range (might take a while)", "from", curr, "to", to)
-		blockMap, err := fetcher.BlockRange(ctx, network, curr, to)
-		utils.ExitOnError(err)
 
-		blocks = make([]*types.Block, to-curr+1)
-		for num, block := range blockMap {
-			blocks[num-curr] = block
+		blocks := []*types.Block{}
+		for i := curr; i <= to; i++ {
+			block, err := fetcher.BlockRetry(ctx, network, &types.PartialBlockIdentifier{
+				Index: &i,
+			})
+			utils.ExitOnError(err)
+			blocks = append(blocks, block)
 		}
 
 		reconcileRange(blocks, checkDifferences)

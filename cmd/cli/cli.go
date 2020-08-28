@@ -49,7 +49,7 @@ func init() {
 
 func getFetcher() (*fetcher.Fetcher, *types.NetworkIdentifier, *types.NetworkStatusResponse) {
 	ctx := context.Background()
-	fetcher := fetcher.New(serverUrl, fetcher.WithBlockConcurrency(50))
+	fetcher := fetcher.New(serverUrl)
 
 	// Step 2: Initialize the fetcher's asserter
 	//

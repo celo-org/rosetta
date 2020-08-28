@@ -22,6 +22,7 @@ import (
 
 	"github.com/celo-org/kliento/client"
 	"github.com/celo-org/kliento/utils/chain"
+	"github.com/celo-org/rosetta/analyzer"
 	"github.com/celo-org/rosetta/db"
 	"github.com/celo-org/rosetta/service"
 	"github.com/coinbase/rosetta-sdk-go/asserter"
@@ -127,7 +128,7 @@ func createRouter(celoClient *client.CeloClient, db db.RosettaDBReader, chainPar
 		Network:    chainParams.ChainId.String(),
 	}
 
-	asserter, err := asserter.NewServer([]*types.NetworkIdentifier{network})
+	asserter, err := asserter.NewServer(analyzer.AllOperationTypesString(), true, []*types.NetworkIdentifier{network})
 	if err != nil {
 		return nil, err
 	}
