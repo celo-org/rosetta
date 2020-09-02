@@ -42,6 +42,8 @@ type GethOpts struct {
 	Bootnodes   string
 	Verbosity   string
 	PublicIp    string
+	RpcAddr     string
+	RpcPort     string
 }
 
 type gethService struct {
@@ -194,7 +196,8 @@ func (gs *gethService) startGeth(stdErr *os.File) error {
 		"--gcmode", "archive",
 		"--nousb",
 		"--rpc",
-		"--rpcaddr", "127.0.0.1",
+		"--rpcaddr", gs.opts.RpcAddr,
+		"--rpcport", gs.opts.RpcPort,
 		"--rpcapi", "eth,net,web3,debug,admin,personal",
 		"--ipcpath", gs.IpcFilePath(),
 		"--light.serve", "0",

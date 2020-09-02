@@ -84,6 +84,9 @@ func init() {
 	flagSet.String("geth.verbosity", "", "Geth log verbosity (number between [1-5])")
 	flagSet.String("geth.publicip", "", "Public Ip to configure geth (sometimes required for discovery)")
 
+	flagSet.String("geth.rpcaddr", "127.0.0.1", "Path to the celo-blockchain binary")
+	flagSet.String("geth.rpcport", "8545", "Path to the celo-blockchain binary")
+
 }
 
 func getDatadir(cmd *cobra.Command) string {
@@ -115,6 +118,8 @@ func readGethOption(cmd *cobra.Command, datadir string) *geth.GethOpts {
 		Verbosity:   viper.GetString("geth.verbosity"),
 		StaticNodes: viper.GetString("geth.staticnodes"),
 		PublicIp:    viper.GetString("geth.publicip"),
+		RpcAddr:     viper.GetString("geth.rpcaddr"),
+		RpcPort:     viper.GetString("geth.rpcport"),
 	}
 
 	if opts.GethBinary == "" {
