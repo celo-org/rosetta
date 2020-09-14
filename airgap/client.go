@@ -52,13 +52,20 @@ func (c *clientImpl) Derive(privateKey *ecdsa.PrivateKey) (*ecdsa.PublicKey, *co
 
 // Sign an arbitrary message with the private key
 func (c *clientImpl) Sign(message []byte, privateKey *ecdsa.PrivateKey) ([]byte, error) {
-	digest := crypto.Keccak256(message)
+	return c.SignHash(crypto.Keccak256(message), privateKey)
+}
+
+func (c *clientImpl) SignHash(digest []byte, privateKey *ecdsa.PrivateKey) ([]byte, error) {
 	sig, err := crypto.Sign(digest, privateKey)
 	if err != nil {
 		// see https://github.com/celo-org/celo-blockchain/blob/0792a7189b531e22b97b81b6d6aa29301c3ebb8e/internal/ethapi/api.go#L1613
 		sig[crypto.RecoveryIDOffset] += 27
 	}
 	return sig, err
+}
+
+func (c *clientImpl) SignWithPrefix(message []byte, privateKey *ecdsa.PrivateKey) ([]byte, error) {
+	return c.SignHash(accounts.TextHash(message), privateKey)
 }
 
 // Verify the signature of an arbitrary message
@@ -94,9 +101,7 @@ func (c *clientImpl) SignTx(tx *Transaction, privateKey *ecdsa.PrivateKey) (*Tra
 }
 
 func (c *clientImpl) GenerateProofOfPossessionSignature(privateKey *ecdsa.PrivateKey, address *common.Address) ([]byte, error) {
-	msg := accounts.TextHash(address.Bytes())
-	signature, err := c.Sign(msg, privateKey)
-	return signature, err
+	return c.SignWithPrefix(address.Bytes(), privateKey)
 }
 
 var abiParsers = map[string]func() (*abi.ABI, error){
