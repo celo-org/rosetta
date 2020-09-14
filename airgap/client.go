@@ -70,9 +70,21 @@ func (c *clientImpl) SignWithPrefix(message []byte, privateKey *ecdsa.PrivateKey
 
 // Verify the signature of an arbitrary message
 func (c *clientImpl) Verify(message []byte, publicKey *ecdsa.PublicKey, signature []byte) bool {
-	digest := crypto.Keccak256(message)
+	return c.VerifyHash(crypto.Keccak256(message), publicKey, signature)
+}
+
+func (c *clientImpl) VerifyHash(digest []byte, publicKey *ecdsa.PublicKey, signature []byte) bool {
+	if signature[crypto.RecoveryIDOffset] != 27 && signature[crypto.RecoveryIDOffset] != 28 {
+		return false
+	}
+	signature[crypto.RecoveryIDOffset] -= 27
+
 	publicKeyBytes := crypto.FromECDSAPub(publicKey)
 	return crypto.VerifySignature(publicKeyBytes, digest, signature)
+}
+
+func (c *clientImpl) VerifyWithPrefix(message []byte, publicKey *ecdsa.PublicKey, signature []byte) bool {
+	return c.VerifyHash(accounts.TextHash(message), publicKey, signature)
 }
 
 // ConstructTxFromMetadata creates a new transaction using given Metadata
