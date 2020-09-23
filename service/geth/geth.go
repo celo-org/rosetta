@@ -44,6 +44,7 @@ type GethOpts struct {
 	PublicIp    string
 	RpcAddr     string
 	RpcPort     string
+	RpcVHosts   string
 }
 
 type gethService struct {
@@ -198,6 +199,7 @@ func (gs *gethService) startGeth(stdErr *os.File) error {
 		"--rpc",
 		"--rpcaddr", gs.opts.RpcAddr,
 		"--rpcport", gs.opts.RpcPort,
+		"--rpcvhosts", gs.opts.RpcVHosts,
 		"--rpcapi", "eth,net,web3,debug,admin,personal",
 		"--ipcpath", gs.IpcFilePath(),
 		"--light.serve", "0",
