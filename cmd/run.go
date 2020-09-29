@@ -88,6 +88,9 @@ func init() {
 	flagSet.String("geth.rpcport", "8545", "Geth HTTP-RPC server listening port")
 	flagSet.String("geth.rpcvhosts", "localhost", "Geth comma separated list of virtual hostnames from which to accept requests")
 
+	flagSet.String("geth.syncmode", "fast", "Geth blockchain sync mode (fast, full, light)")
+	flagSet.String("geth.gcmode", "full", "Geth garbage collection mode (full, archive)")
+
 }
 
 func getDatadir(cmd *cobra.Command) string {
@@ -122,6 +125,8 @@ func readGethOption(cmd *cobra.Command, datadir string) *geth.GethOpts {
 		RpcAddr:     viper.GetString("geth.rpcaddr"),
 		RpcPort:     viper.GetString("geth.rpcport"),
 		RpcVHosts:   viper.GetString("geth.rpcvhosts"),
+		SyncMode:    viper.GetString("geth.syncmode"),
+		GcMode:      viper.GetString("geth.gcmode"),
 	}
 
 	if opts.GethBinary == "" {
