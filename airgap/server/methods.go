@@ -58,6 +58,8 @@ var serverMethodsDefinitions = map[*airgap.CeloMethod]argsPreProcessor{
 	airgap.ReleaseGoldAuthorizeVoteSigner:        preprocessAuthorizeSigner,
 	airgap.ReleaseGoldAuthorizeAttestationSigner: preprocessAuthorizeSigner,
 	airgap.ReleaseGoldAuthorizeValidatorSigner:   preprocessAuthorizeSigner,
+	airgap.ReleaseGoldRevokePendingVotes:         preprocessRevoke,
+	airgap.ReleaseGoldRevokeActiveVotes:          preprocessRevoke,
 }
 
 func noopArgsPreProcessor(ctx context.Context, srvCtx ServerContext, args []interface{}) ([]interface{}, error) {
