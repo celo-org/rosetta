@@ -419,6 +419,54 @@ func (s *Servicer) BlockTransaction(ctx context.Context, request *types.BlockTra
 	}, nil
 }
 
+func (s *Servicer) Call(
+	ctx context.Context,
+	callRequest *types.CallRequest,
+) (*types.CallResponse, *types.Error, error) {
+	switch callRequest.Method {
+	case isAccount:
+		accountsContractAddress, ok := callRequest.Parameters["accountsAddress"].(common.Address)
+		if !ok {
+			err := errors.New("failed to parse 'accountsAddress' as common.Address")
+			return nil, LogErrValidation(err), err
+		}
+
+		address, ok := callRequest.Parameters["address"].(common.Address)
+		if !ok {
+			err := errors.New("failed to parse 'address' as common.Address")
+			return nil, LogErrValidation(err), err
+		}
+
+		blockNumber, ok := callRequest.Parameters["blockNumber"].(*big.Int)
+		if !ok {
+			err := errors.New("failed to parse 'blockNumber' as *big.Int")
+			return nil, LogErrValidation(err), err
+		}
+
+		account, err := contracts.NewAccounts(accountsContractAddress, s.cc.Eth)
+		if err != nil {
+			return nil, LogErrValidation(err), err
+		}
+
+		callOpts := &bind.CallOpts{
+			BlockNumber: blockNumber,
+			Context:     ctx,
+		}
+
+		account.IsAccount(callOpts, address)
+
+	case getVoteSigner:
+	case canReceiveVotes:
+	case getEpochNumber:
+	case getEpochNumberOfBlocks:
+	case getActivesVotesForGroup:
+	case getActiveVotesForGroupByAccount:
+	case epochRewardsDistributedToVoters:
+	}
+
+
+}
+
 func (s *Servicer) ConstructionCombine(
 	context.Context,
 	*types.ConstructionCombineRequest,
