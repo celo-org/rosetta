@@ -425,12 +425,6 @@ func (s *Servicer) Call(
 ) (*types.CallResponse, *types.Error, error) {
 	switch callRequest.Method {
 	case isAccount:
-		accountsContractAddress, ok := callRequest.Parameters["accountsAddress"].(common.Address)
-		if !ok {
-			err := errors.New("failed to parse 'accountsAddress' as common.Address")
-			return nil, LogErrValidation(err), err
-		}
-
 		address, ok := callRequest.Parameters["address"].(common.Address)
 		if !ok {
 			err := errors.New("failed to parse 'address' as common.Address")
@@ -443,7 +437,8 @@ func (s *Servicer) Call(
 			return nil, LogErrValidation(err), err
 		}
 
-		account, err := contracts.NewAccounts(accountsContractAddress, s.cc.Eth)
+		registry, err := registry.New(s.cc)
+		account, err := registry.GetAccountsContract(ctx, blockNumber)
 		if err != nil {
 			return nil, LogErrValidation(err), err
 		}
@@ -453,7 +448,19 @@ func (s *Servicer) Call(
 			Context:     ctx,
 		}
 
-		account.IsAccount(callOpts, address)
+		isAccount, err := account.IsAccount(callOpts, address)
+		if err != nil {
+			return nil, LogErrValidation(err), err
+		}
+
+		result := map[string]interface{}{
+			"isAccount": isAccount,
+		}
+
+		return &types.CallResponse{
+			Result:     result,
+			Idempotent: true,
+		}, nil, nil
 
 	case getVoteSigner:
 	case canReceiveVotes:
