@@ -714,9 +714,8 @@ func (s *Servicer) Call(
 			return nil, LogErrValidation(err), err
 		}
 		var eventArray []*contracts.ElectionEpochRewardsDistributedToVoters
-		eventArray = append(eventArray, electionRewardsIterator.Event)
 
-		for electionRewardsIterator.Next() != false {
+		for electionRewardsIterator.Next() {
 			eventArray = append(eventArray, electionRewardsIterator.Event)
 		}
 
