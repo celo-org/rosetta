@@ -120,14 +120,15 @@ func requestLogHandler(handler http.Handler) http.Handler {
 type AllowedCallMethod = string
 
 const (
-	isAccount                       AllowedCallMethod = "isAccount"
-	getVoteSigner                   AllowedCallMethod = "getVoteSigner"
-	canReceiveVotes                 AllowedCallMethod = "canReceiveVotes"
-	getEpochNumber                  AllowedCallMethod = "getEpochNumber"
-	getEpochNumberOfBlocks          AllowedCallMethod = "getEpochNumberOfBlocks"
-	getActivesVotesForGroup         AllowedCallMethod = "getActiveVotesForGroup"
-	getActiveVotesForGroupByAccount AllowedCallMethod = "getActiveVotesForGroupByAccount"
-	epochRewardsDistributedToVoters AllowedCallMethod = "epochRewardsDistributedToVoters"
+	isAccount                             AllowedCallMethod = "isAccount"
+	getVoteSigner                         AllowedCallMethod = "getVoteSigner"
+	canReceiveVotes                       AllowedCallMethod = "canReceiveVotes"
+	getEpochNumber                        AllowedCallMethod = "getEpochNumber"
+	getEpochSize                          AllowedCallMethod = "getEpochSize"
+	getEpochNumberOfBlocks                AllowedCallMethod = "getEpochNumberOfBlocks"
+	getActiveVotesForGroup                AllowedCallMethod = "getActiveVotesForGroup"
+	getActiveVotesForGroupByAccount       AllowedCallMethod = "getActiveVotesForGroupByAccount"
+	filterEpochRewardsDistributedToVoters AllowedCallMethod = "filterEpochRewardsDistributedToVoters"
 )
 
 func createRouter(celoClient *client.CeloClient, db db.RosettaDBReader, chainParams *chain.ChainParameters) (http.Handler, error) {
@@ -146,10 +147,11 @@ func createRouter(celoClient *client.CeloClient, db db.RosettaDBReader, chainPar
 		getVoteSigner,
 		canReceiveVotes,
 		getEpochNumber,
+		getEpochSize,
 		getEpochNumberOfBlocks,
-		getActivesVotesForGroup,
+		getActiveVotesForGroup,
 		getActiveVotesForGroupByAccount,
-		epochRewardsDistributedToVoters,
+		filterEpochRewardsDistributedToVoters,
 	}
 
 	asserter, err := asserter.NewServer(analyzer.AllOperationTypesString(), true, []*types.NetworkIdentifier{network}, allowedCallMethods)

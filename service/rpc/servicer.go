@@ -431,21 +431,15 @@ func (s *Servicer) Call(
 			return nil, LogErrValidation(err), err
 		}
 
-		blockNumber, ok := callRequest.Parameters["blockNumber"].(*big.Int)
-		if !ok {
-			err := errors.New("failed to parse 'blockNumber' as *big.Int")
-			return nil, LogErrValidation(err), err
-		}
-
-		registry, err := registry.New(s.cc)
-		account, err := registry.GetAccountsContract(ctx, blockNumber)
+		callOpts, err := buildCallOpsFromCallRequest(ctx, callRequest)
 		if err != nil {
 			return nil, LogErrValidation(err), err
 		}
 
-		callOpts := &bind.CallOpts{
-			BlockNumber: blockNumber,
-			Context:     ctx,
+		registry, err := registry.New(s.cc)
+		account, err := registry.GetAccountsContract(ctx, nil)
+		if err != nil {
+			return nil, LogErrValidation(err), err
 		}
 
 		isAccount, err := account.IsAccount(callOpts, address)
@@ -463,15 +457,281 @@ func (s *Servicer) Call(
 		}, nil, nil
 
 	case getVoteSigner:
+		address, ok := callRequest.Parameters["address"].(common.Address)
+		if !ok {
+			err := errors.New("failed to parse 'address' as common.Address")
+			return nil, LogErrValidation(err), err
+		}
+
+		callOpts, err := buildCallOpsFromCallRequest(ctx, callRequest)
+		if err != nil {
+			return nil, LogErrValidation(err), err
+		}
+
+		registry, err := registry.New(s.cc)
+		account, err := registry.GetAccountsContract(ctx, nil)
+		if err != nil {
+			return nil, LogErrValidation(err), err
+		}
+
+		voteSigner, err := account.GetVoteSigner(callOpts, address)
+		if err != nil {
+			return nil, LogErrValidation(err), err
+		}
+
+		result := map[string]interface{}{
+			"voteSigner": voteSigner,
+		}
+
+		return &types.CallResponse{
+			Result:     result,
+			Idempotent: true,
+		}, nil, nil
+
 	case canReceiveVotes:
+		group, ok := callRequest.Parameters["group"].(common.Address)
+		if !ok {
+			err := errors.New("failed to parse 'group' as common.Address")
+			return nil, LogErrValidation(err), err
+		}
+
+		votes, ok := callRequest.Parameters["votes"].(*big.Int)
+		if !ok {
+			err := errors.New("failed to parse 'votes' as *big.Int")
+			return nil, LogErrValidation(err), err
+		}
+
+		callOpts, err := buildCallOpsFromCallRequest(ctx, callRequest)
+		if err != nil {
+			return nil, LogErrValidation(err), err
+		}
+
+		registry, err := registry.New(s.cc)
+		election, err := registry.GetElectionContract(ctx, nil)
+		if err != nil {
+			return nil, LogErrValidation(err), err
+		}
+
+
+		canReceiveVotes, err := election.CanReceiveVotes(callOpts, group, votes)
+		if err != nil {
+			return nil, LogErrValidation(err), err
+		}
+
+		result := map[string]interface{}{
+			"canReceiveVotes": canReceiveVotes,
+		}
+
+		return &types.CallResponse{
+			Result:     result,
+			Idempotent: true,
+		}, nil, nil
+
 	case getEpochNumber:
+		callOpts, err := buildCallOpsFromCallRequest(ctx, callRequest)
+		if err != nil {
+			return nil, LogErrValidation(err), err
+		}
+
+		registry, err := registry.New(s.cc)
+		election, err := registry.GetElectionContract(ctx, nil)
+		if err != nil {
+			return nil, LogErrValidation(err), err
+		}
+
+		epochNumber, err := election.GetEpochNumber(callOpts)
+		if err != nil {
+			return nil, LogErrValidation(err), err
+		}
+
+		result := map[string]interface{}{
+			"epochNumber": epochNumber,
+		}
+
+		return &types.CallResponse{
+			Result:     result,
+			Idempotent: true,
+		}, nil, nil
+
+	case getEpochSize:
+		callOpts, err := buildCallOpsFromCallRequest(ctx, callRequest)
+		if err != nil {
+			return nil, LogErrValidation(err), err
+		}
+
+		registry, err := registry.New(s.cc)
+		election, err := registry.GetElectionContract(ctx, nil)
+		if err != nil {
+			return nil, LogErrValidation(err), err
+		}
+
+		size, err := election.GetEpochSize(callOpts)
+		if err != nil {
+			return nil, LogErrValidation(err), err
+		}
+
+		result := map[string]interface{}{
+			"size": size,
+		}
+
+		return &types.CallResponse{
+			Result:     result,
+			Idempotent: true,
+		}, nil, nil
+
 	case getEpochNumberOfBlocks:
-	case getActivesVotesForGroup:
+		callOpts, err := buildCallOpsFromCallRequest(ctx, callRequest)
+		if err != nil {
+			return nil, LogErrValidation(err), err
+		}
+
+		registry, err := registry.New(s.cc)
+		election, err := registry.GetElectionContract(ctx, nil)
+		if err != nil {
+			return nil, LogErrValidation(err), err
+		}
+
+		numberOfBlocks, err := election.GetEpochNumberOfBlock(callOpts, callOpts.BlockNumber)
+		if err != nil {
+			return nil, LogErrValidation(err), err
+		}
+
+		result := map[string]interface{}{
+			"numberOfBlocks": numberOfBlocks,
+		}
+
+		return &types.CallResponse{
+			Result:     result,
+			Idempotent: true,
+		}, nil, nil
+
+	case getActiveVotesForGroup:
+		group, ok := callRequest.Parameters["group"].(common.Address)
+		if !ok {
+			err := errors.New("failed to parse 'group' as common.Address")
+			return nil, LogErrValidation(err), err
+		}
+
+		callOpts, err := buildCallOpsFromCallRequest(ctx, callRequest)
+		if err != nil {
+			return nil, LogErrValidation(err), err
+		}
+
+		registry, err := registry.New(s.cc)
+		election, err := registry.GetElectionContract(ctx, nil)
+		if err != nil {
+			return nil, LogErrValidation(err), err
+		}
+
+		activeVotesForGroup, err := election.GetActiveVotesForGroup(callOpts, group)
+		if err != nil {
+			return nil, LogErrValidation(err), err
+		}
+
+		result := map[string]interface{}{
+			"activeVotesForGroup": activeVotesForGroup,
+		}
+
+		return &types.CallResponse{
+			Result:     result,
+			Idempotent: true,
+		}, nil, nil
+
 	case getActiveVotesForGroupByAccount:
-	case epochRewardsDistributedToVoters:
+		group, ok := callRequest.Parameters["group"].(common.Address)
+		if !ok {
+			err := errors.New("failed to parse 'group' as common.Address")
+			return nil, LogErrValidation(err), err
+		}
+
+		address, ok := callRequest.Parameters["address"].(common.Address)
+		if !ok {
+			err := errors.New("failed to parse 'address' as common.Address")
+			return nil, LogErrValidation(err), err
+		}
+
+		callOpts, err := buildCallOpsFromCallRequest(ctx, callRequest)
+		if err != nil {
+			return nil, LogErrValidation(err), err
+		}
+
+		registry, err := registry.New(s.cc)
+		election, err := registry.GetElectionContract(ctx, nil)
+		if err != nil {
+			return nil, LogErrValidation(err), err
+		}
+
+		activeVotesForGroup, err := election.GetActiveVotesForGroupByAccount(callOpts, group, address)
+		if err != nil {
+			return nil, LogErrValidation(err), err
+		}
+
+		result := map[string]interface{}{
+			"activeVotesForGroup": activeVotesForGroup,
+		}
+
+		return &types.CallResponse{
+			Result:     result,
+			Idempotent: true,
+		}, nil, nil
+
+	case filterEpochRewardsDistributedToVoters:
+		group, ok := callRequest.Parameters["group"].([]common.Address)
+		if !ok {
+			err := errors.New("failed to parse 'group' as common.Address")
+			return nil, LogErrValidation(err), err
+		}
+
+		startBlock, ok := callRequest.Parameters["startBlock"].(uint64)
+		if !ok {
+			err := errors.New("failed to parse 'startBlock' as common.Address")
+			return nil, LogErrValidation(err), err
+		}
+
+		var endBlock *uint64 = nil
+		if callRequest.Parameters["endBlock"] != nil {
+			endBlock, ok = callRequest.Parameters["endBlock"].(*uint64)
+			if !ok {
+				err := errors.New("failed to parse 'endBlock' as *big.Int")
+				return nil, LogErrValidation(err), err
+			}
+		}
+
+		registry, err := registry.New(s.cc)
+		election, err := registry.GetElectionContract(ctx, nil)
+		if err != nil {
+			return nil, LogErrValidation(err), err
+		}
+
+		filterOpts := &bind.FilterOpts{
+			Start:   startBlock,
+			End:     endBlock,
+			Context: nil,
+		}
+
+		electionRewardsIterator, err := election.FilterEpochRewardsDistributedToVoters(filterOpts, group)
+		if err != nil {
+			return nil, LogErrValidation(err), err
+		}
+		var eventArray []*contracts.ElectionEpochRewardsDistributedToVoters
+		eventArray = append(eventArray, electionRewardsIterator.Event)
+
+		for electionRewardsIterator.Next() != false {
+			eventArray = append(eventArray, electionRewardsIterator.Event)
+		}
+
+		result := map[string]interface{}{
+			"events": eventArray,
+		}
+
+		return &types.CallResponse{
+			Result:     result,
+			Idempotent: true,
+		}, nil, nil
 	}
 
-
+	err := fmt.Errorf("unsupported method '%s'", callRequest.Method)
+	return nil, LogErrValidation(err), err
 }
 
 func (s *Servicer) ConstructionCombine(
@@ -583,4 +843,23 @@ func (s *Servicer) blockHeader(ctx context.Context, blockIdentifier *types.Parti
 		return nil, LogErrValidation(ErrBadBlockIdentifier)
 	}
 	return blockHeader, nil
+}
+
+func buildCallOpsFromCallRequest(ctx context.Context,
+	callRequest *types.CallRequest) (*bind.CallOpts, error){
+	if callRequest.Parameters["blockNumber"] == nil {
+		return &bind.CallOpts{
+			Context:     ctx,
+		}, nil
+	}
+	blockNumber, ok := callRequest.Parameters["blockNumber"].(*big.Int)
+	if !ok {
+		err := errors.New("failed to parse 'blockNumber' as *big.Int")
+		return nil, err
+	}
+
+	return &bind.CallOpts{
+		BlockNumber: blockNumber,
+		Context:     ctx,
+	}, nil
 }
