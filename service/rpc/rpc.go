@@ -124,10 +124,11 @@ const(
 	getVoteSigner AllowedCallMethod = "getVoteSigner"
 	canReceiveVotes AllowedCallMethod = "canReceiveVotes"
 	getEpochNumber AllowedCallMethod = "getEpochNumber"
+	getEpochSize AllowedCallMethod = "getEpochSize"
 	getEpochNumberOfBlocks AllowedCallMethod = "getEpochNumberOfBlocks"
-	getActivesVotesForGroup AllowedCallMethod = "getActiveVotesForGroup"
+	getActiveVotesForGroup AllowedCallMethod = "getActiveVotesForGroup"
 	getActiveVotesForGroupByAccount AllowedCallMethod = "getActiveVotesForGroupByAccount"
-	epochRewardsDistributedToVoters AllowedCallMethod = "epochRewardsDistributedToVoters"
+	filterEpochRewardsDistributedToVoters AllowedCallMethod = "filterEpochRewardsDistributedToVoters"
 )
 
 func createRouter(celoClient *client.CeloClient, db db.RosettaDBReader, chainParams *chain.ChainParameters) (http.Handler, error) {
@@ -146,10 +147,11 @@ func createRouter(celoClient *client.CeloClient, db db.RosettaDBReader, chainPar
 		getVoteSigner,
 		canReceiveVotes,
 		getEpochNumber,
+		getEpochSize,
 		getEpochNumberOfBlocks,
-		getActivesVotesForGroup,
+		getActiveVotesForGroup,
 		getActiveVotesForGroupByAccount,
-		epochRewardsDistributedToVoters,
+		filterEpochRewardsDistributedToVoters,
 	}
 
 	asserter, err := asserter.NewServer(analyzer.AllOperationTypesString(), true, []*types.NetworkIdentifier{network}, allowedCallMethods)
