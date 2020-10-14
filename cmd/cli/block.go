@@ -42,7 +42,7 @@ var blockCmd = &cobra.Command{
 
 		blockIdentifier := toBlockIdentifier(args[0])
 		block, err := fetcher.BlockRetry(ctx, network, blockIdentifier)
-		utils.ExitOnError(err)
+		utils.ExitOnError(err.Err)
 
 		// printBlockContext(block)
 
