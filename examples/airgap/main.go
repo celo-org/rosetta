@@ -46,8 +46,8 @@ func main() {
 	// step 2: query rosetta for network/api information ONLINE
 	ctx := context.Background()
 	fetcherInstance := fetcher.New("http://localhost:8080")
-	networkId, _, err := fetcherInstance.InitializeAsserter(ctx)
-	if err != nil {
+	networkId, _, fetcherErr := fetcherInstance.InitializeAsserter(ctx, nil)
+	if fetcherErr != nil {
 		log.Fatalf("Error initializing ")
 	}
 
@@ -59,9 +59,9 @@ func main() {
 			return err
 		}
 		// step 2: fetch metadata ONLINE
-		txMetadataMap, err := fetcherInstance.ConstructionMetadata(ctx, networkId, txArgsMap)
-		if err != nil {
-			return err
+		txMetadataMap, _, fetcherErr := fetcherInstance.ConstructionMetadata(ctx, networkId, txArgsMap, nil)
+		if fetcherErr != nil {
+			return fetcherErr.Err
 		}
 
 		txMetadata := &airgap.TxMetadata{}
@@ -86,9 +86,9 @@ func main() {
 		}
 
 		// step 4: submit transaction ONLINE
-		txId, _, err := fetcherInstance.ConstructionSubmit(ctx, networkId, common.Bytes2Hex(signedTxRaw))
-		if err != nil {
-			return err
+		txId, _, error := fetcherInstance.ConstructionSubmit(ctx, networkId, common.Bytes2Hex(signedTxRaw))
+		if error != nil {
+			return error.Err
 		}
 		log.Printf("'%s' tx submitted successfully with hash '%s'", txArgs.Method, txId.Hash)
 		return nil
