@@ -116,7 +116,11 @@ func runReconciler(cmd *cobra.Command, args []string) {
 			block, fetcherErr := fetcher.BlockRetry(ctx, network, &types.PartialBlockIdentifier{
 				Index: &i,
 			})
+<<<<<<< HEAD
 			utils.ExitOnFetcherError(fetcherErr)
+=======
+			utils.ExitOnError(err.Err)
+>>>>>>> fix build issues
 			blocks = append(blocks, block)
 		}
 
