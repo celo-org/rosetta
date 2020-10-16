@@ -48,7 +48,7 @@ func TestMethodArgumentParsing(t *testing.T) {
 	ctx := context.Background()
 	srvCtx := &serverContextStub{}
 
-	contractMethods, err := hydrateMethods(srvCtx)
+	contractMethods, err := hydrateMethods(srvCtx, serverTransactionMethodDefinitions)
 	Ω(err).ShouldNot(HaveOccurred())
 
 	for _, test := range tests {

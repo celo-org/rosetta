@@ -117,20 +117,6 @@ func requestLogHandler(handler http.Handler) http.Handler {
 	})
 }
 
-type AllowedCallMethod = string
-
-const (
-	isAccount                             AllowedCallMethod = "isAccount"
-	getVoteSigner                         AllowedCallMethod = "getVoteSigner"
-	canReceiveVotes                       AllowedCallMethod = "canReceiveVotes"
-	getEpochNumber                        AllowedCallMethod = "getEpochNumber"
-	getEpochSize                          AllowedCallMethod = "getEpochSize"
-	getEpochNumberOfBlocks                AllowedCallMethod = "getEpochNumberOfBlocks"
-	getActiveVotesForGroup                AllowedCallMethod = "getActiveVotesForGroup"
-	getActiveVotesForGroupByAccount       AllowedCallMethod = "getActiveVotesForGroupByAccount"
-	filterEpochRewardsDistributedToVoters AllowedCallMethod = "filterEpochRewardsDistributedToVoters"
-)
-
 func createRouter(celoClient *client.CeloClient, db db.RosettaDBReader, chainParams *chain.ChainParameters) (http.Handler, error) {
 	servicer, err := NewServicer(celoClient, db, chainParams)
 	if err != nil {
@@ -142,19 +128,7 @@ func createRouter(celoClient *client.CeloClient, db db.RosettaDBReader, chainPar
 		Network:    chainParams.ChainId.String(),
 	}
 
-	var allowedCallMethods = []AllowedCallMethod{
-		isAccount,
-		getVoteSigner,
-		canReceiveVotes,
-		getEpochNumber,
-		getEpochSize,
-		getEpochNumberOfBlocks,
-		getActiveVotesForGroup,
-		getActiveVotesForGroupByAccount,
-		filterEpochRewardsDistributedToVoters,
-	}
-
-	asserter, err := asserter.NewServer(analyzer.AllOperationTypesString(), true, []*types.NetworkIdentifier{network}, allowedCallMethods)
+	asserter, err := asserter.NewServer(analyzer.AllOperationTypesString(), true, []*types.NetworkIdentifier{network}, AllCallMethods())
 	if err != nil {
 		return nil, err
 	}

@@ -33,7 +33,7 @@ var abiFactoryMap = map[string]func() (*abi.ABI, error){
 
 type argsPreProcessor func(ctx context.Context, srvCtx ServerContext, args []interface{}) ([]interface{}, error)
 
-var serverMethodsDefinitions = map[*airgap.CeloMethod]argsPreProcessor{
+var serverTransactionMethodDefinitions = map[*airgap.CeloMethod]argsPreProcessor{
 	airgap.CreateAccount:              noopArgsPreProcessor,
 	airgap.AuthorizeVoteSigner:        preprocessAuthorizeSigner,
 	airgap.AuthorizeAttestationSigner: preprocessAuthorizeSigner,
@@ -62,11 +62,22 @@ var serverMethodsDefinitions = map[*airgap.CeloMethod]argsPreProcessor{
 	airgap.ReleaseGoldRevokeActiveVotes:          preprocessRevoke,
 }
 
+var serverCallMethodDefinitions = map[*airgap.CeloMethod]argsPreProcessor{
+	airgap.IsAccount:                       noopArgsPreProcessor,
+	airgap.GetVoteSigner:                   noopArgsPreProcessor,
+	airgap.CanReceiveVotes:                 noopArgsPreProcessor,
+	airgap.GetEpochNumber:                  noopArgsPreProcessor,
+	airgap.GetEpochSize:                    noopArgsPreProcessor,
+	airgap.GetEpochNumberOfBlock:           noopArgsPreProcessor,
+	airgap.GetActiveVotesForGroup:          noopArgsPreProcessor,
+	airgap.GetActiveVotesForGroupByAccount: noopArgsPreProcessor,
+}
+
 func noopArgsPreProcessor(ctx context.Context, srvCtx ServerContext, args []interface{}) ([]interface{}, error) {
 	return args, nil
 }
 
-func hydrateMethods(srvCtx ServerContext) (map[*airgap.CeloMethod]airGapServerMethod, error) {
+func hydrateMethods(srvCtx ServerContext, methods map[*airgap.CeloMethod]argsPreProcessor) (map[*airgap.CeloMethod]airGapServerMethod, error) {
 	abis := make(map[string]*abi.ABI)
 	for id, abiFactory := range abiFactoryMap {
 		abi, err := abiFactory()
@@ -76,16 +87,16 @@ func hydrateMethods(srvCtx ServerContext) (map[*airgap.CeloMethod]airGapServerMe
 		abis[id] = abi
 	}
 
-	serverMethods := make(map[*airgap.CeloMethod]airGapServerMethod)
-	for method, preProcessor := range serverMethodsDefinitions {
+	mappedMethods := make(map[*airgap.CeloMethod]airGapServerMethod)
+	for method, preProcessor := range methods {
 		abi, ok := abis[method.Contract]
 		if !ok {
 			return nil, fmt.Errorf("Missing abi mapping for %s", method.Contract)
 		}
 
-		serverMethods[method] = airgapMethodFactory(srvCtx, abi, preProcessor, method)
+		mappedMethods[method] = airgapMethodFactory(srvCtx, abi, preProcessor, method)
 	}
-	return serverMethods, nil
+	return mappedMethods, nil
 }
 
 func airgapMethodFactory(srvCtx ServerContext, abi *abi.ABI, argsParser argsPreProcessor, method *airgap.CeloMethod) airGapServerMethod {

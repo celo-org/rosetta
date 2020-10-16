@@ -22,36 +22,74 @@ import (
 
 	"github.com/celo-org/kliento/registry"
 	"github.com/celo-org/rosetta/airgap"
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 )
 
 // airGapServerMethod is a function that returns the tx.data for that method + parameters
 type airGapServerMethod func(context.Context, []interface{}) ([]byte, error)
 
-type airgGapServerImpl struct {
-	srvCtx           ServerContext
-	chainId          *big.Int
-	supportedMethods map[*airgap.CeloMethod]airGapServerMethod
+type airGapServerImpl struct {
+	srvCtx             ServerContext
+	chainId            *big.Int
+	transactionMethods map[*airgap.CeloMethod]airGapServerMethod
+	callMethods        map[*airgap.CeloMethod]airGapServerMethod
 }
 
 func NewAirgapServer(chainId *big.Int, srvCtx ServerContext) (airgap.Server, error) {
-	supportedMethods, err := hydrateMethods(srvCtx)
+	transactionMethods, err := hydrateMethods(srvCtx, serverTransactionMethodDefinitions)
 	if err != nil {
 		return nil, err
 	}
 
-	return &airgGapServerImpl{
-		srvCtx:           srvCtx,
-		chainId:          chainId,
-		supportedMethods: supportedMethods,
+	callMethods, err := hydrateMethods(srvCtx, serverCallMethodDefinitions)
+	if err != nil {
+		return nil, err
+	}
+
+	return &airGapServerImpl{
+		srvCtx,
+		chainId,
+		transactionMethods,
+		callMethods,
 	}, nil
 }
 
-func (b *airgGapServerImpl) SubmitTx(ctx context.Context, rawTx []byte) (*common.Hash, error) {
+func (b *airGapServerImpl) SubmitTx(ctx context.Context, rawTx []byte) (*common.Hash, error) {
 	return b.srvCtx.SendRawTransaction(ctx, rawTx)
 }
 
-func (b *airgGapServerImpl) ObtainMetadata(ctx context.Context, options *airgap.TxArgs) (*airgap.TxMetadata, error) {
+func (b *airGapServerImpl) CallData(ctx context.Context, options *airgap.CallArgs, blockNumber *big.Int) ([]byte, error) {
+	if options.Method == nil {
+		return nil, fmt.Errorf("'Method' must be provided as options")
+	}
+
+	serverMethod, ok := b.callMethods[options.Method]
+	if !ok {
+		return nil, fmt.Errorf("Unsupported method: %s", options.Method)
+	}
+
+	hydratedArgs, err := options.Method.DeserializeArguments(options.Args...)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := serverMethod(ctx, hydratedArgs)
+
+	to, err := b.srvCtx.addressFor(ctx, registry.ContractID(options.Method.Contract))
+	if err != nil {
+		return nil, fmt.Errorf("'Contract' not a valid registry ID")
+	}
+
+	return b.srvCtx.CallContract(ctx, ethereum.CallMsg{
+		From: options.From,
+		To:   &to,
+		Data: data,
+		Gas:  0,
+	}, blockNumber)
+}
+
+func (b *airGapServerImpl) ObtainMetadata(ctx context.Context, options *airgap.TxArgs) (*airgap.TxMetadata, error) {
 	nonce, err := b.srvCtx.NonceAt(ctx, options.From, nil) // nil == latest
 	if err != nil {
 		return nil, err
@@ -90,7 +128,7 @@ func (b *airgGapServerImpl) ObtainMetadata(ctx context.Context, options *airgap.
 			txMetadata.To = addr
 		}
 
-		serverMethod, ok := b.supportedMethods[options.Method]
+		serverMethod, ok := b.transactionMethods[options.Method]
 		if !ok {
 			return nil, fmt.Errorf("Unsupported method: %s", options.Method)
 		}

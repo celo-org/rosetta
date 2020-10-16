@@ -30,6 +30,7 @@ import (
 type Server interface {
 	ObtainMetadata(ctx context.Context, txOpts *TxArgs) (*TxMetadata, error)
 	SubmitTx(ctx context.Context, rawTx []byte) (*common.Hash, error)
+	CallData(ctx context.Context, callOpts *CallArgs, blockNumber *big.Int) ([]byte, error)
 }
 
 type ArgBuilder interface {
@@ -84,14 +85,18 @@ type Client interface {
 	GenerateProofOfPossessionSignature(privateKey *ecdsa.PrivateKey, address *common.Address) ([]byte, error)
 }
 
-type TxArgs struct {
-	From  common.Address
-	Value *big.Int
-	// non-nil means exclusively cGLD transfer
-	To *common.Address
+type CallArgs struct {
+	From common.Address
 	// non-nil means celo registry contract invokation
 	Method *CeloMethod
 	Args   []interface{}
+}
+
+type TxArgs struct {
+	CallArgs
+	// non-nil means exclusively cGLD transfer
+	To    *common.Address
+	Value *big.Int
 }
 
 type TxMetadata struct {

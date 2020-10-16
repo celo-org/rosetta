@@ -31,6 +31,8 @@ var (
 	AuthorizeVoteSigner        = registerMethod(registry.AccountsContractID.String(), "authorizeVoteSigner", []argParser{addressParser, bytesParser})
 	AuthorizeAttestationSigner = registerMethod(registry.AccountsContractID.String(), "authorizeAttestationSigner", []argParser{addressParser, bytesParser})
 	AuthorizeValidatorSigner   = registerMethod(registry.AccountsContractID.String(), "authorizeValidatorSigner", []argParser{addressParser, bytesParser})
+	IsAccount                  = registerMethod(registry.AccountsContractID.String(), "isAccount", []argParser{addressParser})
+	GetVoteSigner              = registerMethod(registry.AccountsContractID.String(), "getVoteSigner", []argParser{addressParser})
 
 	// Locked Gold
 	LockGold     = registerMethod(registry.LockedGoldContractID.String(), "lock", nil)
@@ -39,10 +41,16 @@ var (
 	WithdrawGold = registerMethod(registry.LockedGoldContractID.String(), "withdraw", []argParser{bigIntParser})
 
 	// Election
-	Vote               = registerMethod(registry.ElectionContractID.String(), "vote", []argParser{addressParser, bigIntParser})
-	ActivateVotes      = registerMethod(registry.ElectionContractID.String(), "activate", []argParser{addressParser})
-	RevokePendingVotes = registerMethod(registry.ElectionContractID.String(), "revokePending", []argParser{addressParser, addressParser, bigIntParser})
-	RevokeActiveVotes  = registerMethod(registry.ElectionContractID.String(), "revokeActive", []argParser{addressParser, addressParser, bigIntParser})
+	Vote                            = registerMethod(registry.ElectionContractID.String(), "vote", []argParser{addressParser, bigIntParser})
+	ActivateVotes                   = registerMethod(registry.ElectionContractID.String(), "activate", []argParser{addressParser})
+	RevokePendingVotes              = registerMethod(registry.ElectionContractID.String(), "revokePending", []argParser{addressParser, addressParser, bigIntParser})
+	RevokeActiveVotes               = registerMethod(registry.ElectionContractID.String(), "revokeActive", []argParser{addressParser, addressParser, bigIntParser})
+	CanReceiveVotes                 = registerMethod(registry.ElectionContractID.String(), "canReceiveVotes", []argParser{addressParser, bigIntParser})
+	GetEpochNumber                  = registerMethod(registry.ElectionContractID.String(), "getEpochNumber", []argParser{})
+	GetEpochSize                    = registerMethod(registry.ElectionContractID.String(), "getEpochSize", []argParser{})
+	GetEpochNumberOfBlock           = registerMethod(registry.ElectionContractID.String(), "getEpochNumberOfBlock", []argParser{bigIntParser})
+	GetActiveVotesForGroup          = registerMethod(registry.ElectionContractID.String(), "getActiveVotesForGroup", []argParser{addressParser})
+	GetActiveVotesForGroupByAccount = registerMethod(registry.ElectionContractID.String(), "getActiveVotesForGroupByAccount", []argParser{addressParser, addressParser})
 
 	// ReleaseGold
 	ReleaseGoldWithdraw = registerMethod(ReleaseGold, "withdraw", []argParser{bigIntParser})
