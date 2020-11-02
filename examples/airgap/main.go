@@ -22,6 +22,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/coinbase/rosetta-sdk-go/fetcher"
+	"github.com/coinbase/rosetta-sdk-go/types"
 )
 
 func main() {
@@ -46,52 +47,52 @@ func main() {
 	// step 2: query rosetta for network/api information ONLINE
 	ctx := context.Background()
 	fetcherInstance := fetcher.New("http://localhost:8080")
-	networkId, _, err := fetcherInstance.InitializeAsserter(ctx)
-	if err != nil {
+	networkId, _, fetcherErr := fetcherInstance.InitializeAsserter(ctx, nil)
+	if (*fetcherErr).Err != nil {
 		log.Fatalf("Error initializing ")
 	}
 
 	// generalizes tx flow
-	submitSigned := func(txArgs *airgap.TxArgs) error {
+	submitSigned := func(txArgs *airgap.TxArgs) (error, *types.Error) {
 		// step 1: decide options OFFLINE
 		txArgsMap, err := airgap.MarshallToMap(txArgs)
 		if err != nil {
-			return err
+			return err, nil
 		}
 		// step 2: fetch metadata ONLINE
-		txMetadataMap, err := fetcherInstance.ConstructionMetadata(ctx, networkId, txArgsMap)
-		if err != nil {
-			return err
+		txMetadataMap, _, fetcherErr := fetcherInstance.ConstructionMetadata(ctx, networkId, txArgsMap, nil)
+		if ((*fetcherErr).Err != nil || (*fetcherErr).ClientErr != nil) {
+			return fetcherErr.Err, fetcherErr.ClientErr
 		}
 
 		txMetadata := &airgap.TxMetadata{}
 		if err := airgap.UnmarshallFromMap(txMetadataMap, &txMetadata); err != nil {
-			return err
+			return err, nil
 		}
 
 		// step 3: sign transaction OFFLINE
 		tx, err := client.ConstructTxFromMetadata(txMetadata)
 		if err != nil {
-			return err
+			return err, nil
 		}
 
 		signedTx, err := client.SignTx(tx, privKey)
 		if err != nil {
-			return err
+			return err, nil
 		}
 
 		signedTxRaw, err := signedTx.Serialize()
 		if err != nil {
-			return err
+			return err, nil
 		}
 
 		// step 4: submit transaction ONLINE
-		txId, _, err := fetcherInstance.ConstructionSubmit(ctx, networkId, common.Bytes2Hex(signedTxRaw))
-		if err != nil {
-			return err
+		txId, _, fetcherErr := fetcherInstance.ConstructionSubmit(ctx, networkId, common.Bytes2Hex(signedTxRaw))
+		if ((*fetcherErr).Err != nil || (*fetcherErr).ClientErr != nil) {
+			return fetcherErr.Err, fetcherErr.ClientErr
 		}
 		log.Printf("'%s' tx submitted successfully with hash '%s'", txArgs.Method, txId.Hash)
-		return nil
+		return nil, nil
 	}
 
 	argBuilder := airgap.NewArgBuilder()
@@ -102,7 +103,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error build txArgs: %s", err)
 	}
-	if err = submitSigned(txArgs); err != nil {
+	if err, _ := submitSigned(txArgs); err != nil {
 		log.Fatalf("Error on submit Tx: %s", err)
 	}
 

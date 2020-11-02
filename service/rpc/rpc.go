@@ -128,7 +128,7 @@ func createRouter(celoClient *client.CeloClient, db db.RosettaDBReader, chainPar
 		Network:    chainParams.ChainId.String(),
 	}
 
-	asserter, err := asserter.NewServer(analyzer.AllOperationTypesString(), true, []*types.NetworkIdentifier{network})
+	asserter, err := asserter.NewServer(analyzer.AllOperationTypesString(), true, []*types.NetworkIdentifier{network}, nil)
 	if err != nil {
 		return nil, err
 	}
