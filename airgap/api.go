@@ -207,7 +207,7 @@ func (tx *Transaction) Deserialize(data []byte, chainId *big.Int) error {
 	if v == nil || r == nil || s == nil {
 		return errors.New("can't deserialize unsigned transactions")
 	}
-	tx.Signature = valuesToSignature(chainId, v, r, s)
+	tx.Signature = ValuesToSignature(chainId, v, r, s)
 	tx.From, err = types.Sender(types.NewEIP155Signer(chainId), gethTx)
 	if err != nil {
 		return err
@@ -216,7 +216,7 @@ func (tx *Transaction) Deserialize(data []byte, chainId *big.Int) error {
 	return nil
 }
 
-func valuesToSignature(chainId, v, r, s *big.Int) []byte {
+func ValuesToSignature(chainId, v, r, s *big.Int) []byte {
 	sig := make([]byte, crypto.SignatureLength)
 
 	// doing the inverse of signer.SignatureValues()
