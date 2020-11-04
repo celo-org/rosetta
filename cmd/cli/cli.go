@@ -57,7 +57,7 @@ func getFetcher() (*fetcher.Fetcher, *types.NetworkIdentifier, *types.NetworkSta
 	// network status and uses the response to inform
 	// the asserter what are valid responses.
 	primaryNetwork, networkStatus, fetcherErr := fetcher.InitializeAsserter(ctx, nil)
-	utils.ExitOnError((*fetcherErr).Err)
+	utils.ExitOnFetcherError(fetcherErr)
 
 	return fetcher, primaryNetwork, networkStatus
 }

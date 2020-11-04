@@ -22,7 +22,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/coinbase/rosetta-sdk-go/fetcher"
-	"github.com/coinbase/rosetta-sdk-go/types"
 )
 
 func main() {
@@ -48,51 +47,51 @@ func main() {
 	ctx := context.Background()
 	fetcherInstance := fetcher.New("http://localhost:8080")
 	networkId, _, fetcherErr := fetcherInstance.InitializeAsserter(ctx, nil)
-	if (*fetcherErr).Err != nil {
+	if fetcherErr != nil {
 		log.Fatalf("Error initializing ")
 	}
 
 	// generalizes tx flow
-	submitSigned := func(txArgs *airgap.TxArgs) (error, *types.Error) {
+	submitSigned := func(txArgs *airgap.TxArgs) (error) {
 		// step 1: decide options OFFLINE
 		txArgsMap, err := airgap.MarshallToMap(txArgs)
 		if err != nil {
-			return err, nil
+			return err
 		}
 		// step 2: fetch metadata ONLINE
 		txMetadataMap, _, fetcherErr := fetcherInstance.ConstructionMetadata(ctx, networkId, txArgsMap, nil)
-		if ((*fetcherErr).Err != nil || (*fetcherErr).ClientErr != nil) {
-			return fetcherErr.Err, fetcherErr.ClientErr
+		if fetcherErr != nil {
+			return fetcherErr.Err
 		}
 
 		txMetadata := &airgap.TxMetadata{}
 		if err := airgap.UnmarshallFromMap(txMetadataMap, &txMetadata); err != nil {
-			return err, nil
+			return err
 		}
 
 		// step 3: sign transaction OFFLINE
 		tx, err := client.ConstructTxFromMetadata(txMetadata)
 		if err != nil {
-			return err, nil
+			return err
 		}
 
 		signedTx, err := client.SignTx(tx, privKey)
 		if err != nil {
-			return err, nil
+			return err
 		}
 
 		signedTxRaw, err := signedTx.Serialize()
 		if err != nil {
-			return err, nil
+			return err
 		}
 
 		// step 4: submit transaction ONLINE
 		txId, _, fetcherErr := fetcherInstance.ConstructionSubmit(ctx, networkId, common.Bytes2Hex(signedTxRaw))
-		if ((*fetcherErr).Err != nil || (*fetcherErr).ClientErr != nil) {
-			return fetcherErr.Err, fetcherErr.ClientErr
+		if fetcherErr != nil {
+			return fetcherErr.Err
 		}
 		log.Printf("'%s' tx submitted successfully with hash '%s'", txArgs.Method, txId.Hash)
-		return nil, nil
+		return nil
 	}
 
 	argBuilder := airgap.NewArgBuilder()
@@ -103,7 +102,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error build txArgs: %s", err)
 	}
-	if err, _ := submitSigned(txArgs); err != nil {
+	if err := submitSigned(txArgs); err != nil {
 		log.Fatalf("Error on submit Tx: %s", err)
 	}
 
