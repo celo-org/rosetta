@@ -407,9 +407,9 @@ func ReconcileLogOpsWithTransfers(logOps, transferOps []Operation, tobinTax *Tob
 	// 			append logOp
 	// 		append remaining transferOps
 	i := 0
-	for _, logOp := range logOps {
+	for	index, logOp := range logOps {
 		if logOp.Type.requiresTransfer() {
-			matchIndex, err := findMatchAndReconcile(transferOps, &logOp, i)
+			matchIndex, err := findMatchAndReconcile(transferOps, &logOps[index], i)
 			if err != nil {
 				return nil, err
 			}

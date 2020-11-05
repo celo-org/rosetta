@@ -410,8 +410,8 @@ func (s *Servicer) BlockTransaction(ctx context.Context, request *types.BlockTra
 			return nil, LogErrCeloClient("TraceTransaction", err)
 		}
 
-		for _, aop := range ops {
-			transferOps := OperationsFromAnalyzer(&aop, int64(len(operations)))
+		for i := range ops {
+			transferOps := OperationsFromAnalyzer(&ops[i], int64(len(operations)))
 			operations = append(operations, transferOps...)
 		}
 	}
