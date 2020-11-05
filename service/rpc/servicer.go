@@ -15,6 +15,7 @@
 package rpc
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -461,7 +462,6 @@ func (s *Servicer) ConstructionCombine(
 		return nil, ErrInternal
 	}
 
-
 	signedTxJSON, err := signedTx.MarshalJSON()
 	if err != nil {
 		return nil, ErrInternal
@@ -504,36 +504,33 @@ func (s *Servicer) ConstructionParse(
 	if !req.Signed {
 		err := json.Unmarshal([]byte(req.Transaction), &tx)
 		if err != nil {
-			// complaining about nonce stuff??
-			// return nil, ErrInternal
+			return nil, ErrInternal
 		}
 	} else {
 		t := new(ethTypes.Transaction)
 		err := t.UnmarshalJSON([]byte(req.Transaction))
-
 		if err != nil {
 			return nil, ErrInternal
 		}
-
 		
-		txMetadata := &airgap.TxMetadata{
-			To: *t.To(),
-			ChainId: t.ChainId(),
-			Gas:uint64(21000) ,
-			FeeCurrency: &common.ZeroAddress,
-			GatewayFee: big.NewInt(0),
-			GasPrice:  t.GasPrice(),
-			Nonce: t.Nonce(),
-			Data: []byte{},
-			Value: t.Value(),
-			GatewayFeeRecipient: &common.ZeroAddress,
-		}
 		from, err := ethTypes.Sender(ethTypes.NewEIP155Signer(t.ChainId()), t)
 		if err != nil {
 			return nil, ErrInternal
 		}
-		txMetadata.From = from
 
+		txMetadata := &airgap.TxMetadata{
+			To: *t.To(),
+			From: from,
+			ChainId: t.ChainId(),
+			Gas: t.Gas(),
+			GasPrice:  t.GasPrice(),
+			Nonce: t.Nonce(),
+			Data: t.Data(),
+			Value: t.Value(),
+			FeeCurrency: t.FeeCurrency(),
+			GatewayFee: t.GatewayFee(),
+			GatewayFeeRecipient: t.GatewayFeeRecipient(),
+		}
 		v, r, s := t.RawSignatureValues()
 		signature := airgap.ValuesToSignature(t.ChainId(), v, r, s)
 
@@ -589,30 +586,21 @@ func (s *Servicer) ConstructionParse(
 	}
 
 	var resp *types.ConstructionParseResponse
+	resp = &types.ConstructionParseResponse{
+		Operations:               ops,
+		Metadata:                 metaMap,
+	}
 	if req.Signed {
-		resp = &types.ConstructionParseResponse{
-			Operations:               ops,
-			Metadata:                 metaMap,
-			AccountIdentifierSigners: []*types.AccountIdentifier{
-				&types.AccountIdentifier{
-					Address: tx.From.Hex(),
-				},
+		resp.AccountIdentifierSigners = []*types.AccountIdentifier{
+			{
+				Address: tx.From.Hex(),
 			},
 		}
-	} else {
-		resp = &types.ConstructionParseResponse{
-			Operations:               ops,
-			Metadata:                 metaMap,
-		}
 	}
-
+	
 	return resp, nil
 }
 
-type metadata struct {
-	Nonce    uint64   `json:"nonce"`
-	GasPrice *big.Int `json:"gas_price"`
-}
 func unmarshalJSONMap(m map[string]interface{}, i interface{}) error {
 	b, err := json.Marshal(m)
 	if err != nil {
@@ -639,47 +627,31 @@ func (s *Servicer) ConstructionPayloads(
 	ctx context.Context,
 	req *types.ConstructionPayloadsRequest,
 ) (*types.ConstructionPayloadsResponse, *types.Error) {
-
-	var metadata metadata
+	var metadata airgap.TxMetadata
 	if err := unmarshalJSONMap(req.Metadata, &metadata); err != nil {
 		return nil, ErrInternal
 	}
 
-	from := common.HexToAddress(req.Operations[0].Account.Address)
 	value := req.Operations[0].Amount.Value
-	chainID := s.chainParams.ChainId
-	to := common.HexToAddress(req.Operations[1].Account.Address)
-	
 	valueInt, ok := new(big.Int).SetString(value, 10)
 	if !ok {
 		return nil, nil
 	}
 	valueInt.Abs(valueInt)
+	metadata.Value = valueInt
 
-	txMetadata := &airgap.TxMetadata{
-		From: from,
-		To: to,
-		ChainId: chainID,
-		Gas:uint64(21000) ,
-		FeeCurrency: &common.ZeroAddress,
-		GatewayFee: big.NewInt(0),
-		GasPrice:  metadata.GasPrice,
-		Nonce: metadata.Nonce,
-		Data: []byte{},
-		Value: valueInt,
-		GatewayFeeRecipient: &common.ZeroAddress,
-	}
 	tx := airgap.Transaction{
-		TxMetadata: txMetadata,
+		TxMetadata: &metadata,
 		Signature: []byte{},
 	}
 	
 	gethTx, _ := tx.AsGethTransaction()
-	signer := ethTypes.NewEIP155Signer(chainID)
+	signer := ethTypes.NewEIP155Signer(tx.ChainId)
+	
 	// Construct SigningPayload
 	payload := &types.SigningPayload{
 		AccountIdentifier: &types.AccountIdentifier{
-			Address: from.String(),
+			Address: tx.From.Hex(),
 		},
 		Bytes:             signer.Hash(gethTx).Bytes(),
 		SignatureType:     types.EcdsaRecovery,
@@ -730,10 +702,21 @@ func (s *Servicer) ConstructionMetadata(ctx context.Context, request *types.Cons
 	return &response, nil
 }
 
-func (s *Servicer) ConstructionSubmit(ctx context.Context, request *types.ConstructionSubmitRequest) (*types.TransactionIdentifierResponse, *types.Error) {
-	rawTx := common.Hex2Bytes(request.SignedTransaction)
+func (s *Servicer) ConstructionSubmit(ctx context.Context, req *types.ConstructionSubmitRequest) (*types.TransactionIdentifierResponse, *types.Error) {
+	t := new(ethTypes.Transaction)
 
-	txhash, err := s.airgap.SubmitTx(ctx, rawTx)
+	err := t.UnmarshalJSON([]byte(req.SignedTransaction))
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	var buf bytes.Buffer
+	err = t.EncodeRLP(&buf)
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	txhash, err := s.airgap.SubmitTx(ctx, buf.Bytes())
 	if err != nil {
 		return nil, LogErrCeloClient("SendRawTx", err)
 	}
