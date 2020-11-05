@@ -20,12 +20,19 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/coinbase/rosetta-sdk-go/fetcher"
 	"github.com/ethereum/go-ethereum/log"
 )
 
 func ExitOnError(err error) {
 	if err != nil {
 		log.Crit("Unknown error", "err", err)
+	}
+}
+
+func ExitOnFetcherError(err *fetcher.Error) {
+	if err != nil {
+		ExitOnError(err.Err)
 	}
 }
 

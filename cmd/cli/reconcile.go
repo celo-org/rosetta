@@ -57,9 +57,9 @@ func runReconciler(cmd *cobra.Command, args []string) {
 	fetcher, network, _ := getFetcher()
 
 	getBalance := func(acc *types.AccountIdentifier, block *types.BlockIdentifier) (*big.Int, error) {
-		_, amounts, _, _, err := fetcher.AccountBalance(ctx, network, acc, types.ConstructPartialBlockIdentifier(block))
-		if err != nil {
-			return nil, err
+		_, amounts, _, _, fetcherErr := fetcher.AccountBalance(ctx, network, acc, types.ConstructPartialBlockIdentifier(block))
+		if fetcherErr != nil {
+			return nil, fetcherErr.Err
 		}
 		if len(amounts) != 1 {
 			return nil, fmt.Errorf("Invalid number of amounts %d", len(amounts))
@@ -113,10 +113,10 @@ func runReconciler(cmd *cobra.Command, args []string) {
 
 		blocks := []*types.Block{}
 		for i := curr; i <= to; i++ {
-			block, err := fetcher.BlockRetry(ctx, network, &types.PartialBlockIdentifier{
+			block, fetcherErr := fetcher.BlockRetry(ctx, network, &types.PartialBlockIdentifier{
 				Index: &i,
 			})
-			utils.ExitOnError(err)
+			utils.ExitOnFetcherError(fetcherErr)
 			blocks = append(blocks, block)
 		}
 
