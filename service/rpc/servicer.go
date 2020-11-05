@@ -490,12 +490,6 @@ func (s *Servicer) ConstructionHash(
 	}, nil
 }
 
-type parseMetadata struct {
-	Nonce    uint64   `json:"nonce"`
-	GasPrice *big.Int `json:"gas_price"`
-	ChainID  *big.Int `json:"chain_id"`
-}
-
 func (s *Servicer) ConstructionParse(
 	ctx context.Context,
 	req *types.ConstructionParseRequest,
@@ -574,21 +568,9 @@ func (s *Servicer) ConstructionParse(
 		},
 	}
 
-
-	metadata := &parseMetadata{
-		Nonce:    tx.Nonce,
-		GasPrice: tx.GasPrice,
-		ChainID:  tx.ChainId,
-	}
-	metaMap, err := marshalJSONMap(metadata)
-	if err != nil {
-		return nil, ErrInternal
-	}
-
 	var resp *types.ConstructionParseResponse
 	resp = &types.ConstructionParseResponse{
 		Operations:               ops,
-		Metadata:                 metaMap,
 	}
 	if req.Signed {
 		resp.AccountIdentifierSigners = []*types.AccountIdentifier{
@@ -601,34 +583,17 @@ func (s *Servicer) ConstructionParse(
 	return resp, nil
 }
 
-func unmarshalJSONMap(m map[string]interface{}, i interface{}) error {
-	b, err := json.Marshal(m)
-	if err != nil {
-		return err
-	}
-
-	return json.Unmarshal(b, i)
-}
-func marshalJSONMap(i interface{}) (map[string]interface{}, error) {
-	b, err := json.Marshal(i)
-	if err != nil {
-		return nil, err
-	}
-
-	var m map[string]interface{}
-	if err := json.Unmarshal(b, &m); err != nil {
-		return nil, err
-	}
-
-	return m, nil
-}
-
 func (s *Servicer) ConstructionPayloads(
 	ctx context.Context,
 	req *types.ConstructionPayloadsRequest,
 ) (*types.ConstructionPayloadsResponse, *types.Error) {
+	bz, err := json.Marshal(req.Metadata)
+	if err != nil {
+		return nil, ErrInternal
+	}
 	var metadata airgap.TxMetadata
-	if err := unmarshalJSONMap(req.Metadata, &metadata); err != nil {
+	err = metadata.UnmarshalJSON(bz)
+	if err != nil {
 		return nil, ErrInternal
 	}
 
