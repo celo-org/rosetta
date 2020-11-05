@@ -19,7 +19,7 @@ linters:
     - varcheck
 
     - goconst
-    - goimports
+    # - goimports
     - gosec
     - misspell
     # - prealloc
