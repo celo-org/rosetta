@@ -108,6 +108,8 @@ func (c *clientImpl) SignTx(tx *Transaction, privateKey *ecdsa.PrivateKey) (*Tra
 		return nil, err
 	}
 
+	fmt.Println("Signing", len(sig))
+
 	tx.Signature = sig
 	return tx, nil
 }
