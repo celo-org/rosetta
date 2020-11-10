@@ -50,7 +50,7 @@ func (data *txArgsRawData) transform(args *TxArgs) error {
 }
 
 func (args *TxArgs) transform() *txArgsRawData {
-	var data *txArgsRawData
+	var data txArgsRawData
 	data.From = args.From
 	data.Value = bigIntToString(args.Value)
 	data.To = args.To
@@ -59,7 +59,7 @@ func (args *TxArgs) transform() *txArgsRawData {
 		data.Method = &str
 	}
 	data.Args = args.Args
-	return data
+	return &data
 }
 
 func (args TxArgs) MarshalJSON() ([]byte, error) {
