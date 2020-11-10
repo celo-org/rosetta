@@ -450,7 +450,8 @@ func (s *Servicer) Call(ctx context.Context, request *types.CallRequest) (*types
 			},
 			Idempotent: false,
 		}, nil
-	case CeloGetLogs.String():
+	case CeloGetLogs.String(): // TODO: implement
+		return nil, LogErrUnimplemented("Call(method=celo_getLogs)")
 		// case filterEpochRewardsDistributedToVoters:
 		// 	group, ok := callRequest.Parameters["group"].([]common.Address)
 		// 	if !ok {
@@ -504,7 +505,6 @@ func (s *Servicer) Call(ctx context.Context, request *types.CallRequest) (*types
 		// 		Idempotent: true,
 		// 	}, nil, nil
 		// }
-		break
 	}
 
 	return nil, LogErrValidation(fmt.Errorf("unsupported method '%s'", request.Method))
