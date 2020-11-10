@@ -160,12 +160,10 @@ func (c *clientImpl) ParseTxArgs(metadata *TxMetadata) (*TxArgs, error) {
 	}
 
 	return &TxArgs{
-		CallArgs: CallArgs{
-			From:   metadata.From,
-			Method: method,
-			Args:   args,
-		},
-		To:    &metadata.To,
-		Value: metadata.Value,
+		From:   metadata.From,
+		Method: method,
+		Args:   args,
+		To:     &metadata.To,
+		Value:  metadata.Value,
 	}, nil
 }

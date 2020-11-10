@@ -59,7 +59,7 @@ func (b *airGapServerImpl) SubmitTx(ctx context.Context, rawTx []byte) (*common.
 	return b.srvCtx.SendRawTransaction(ctx, rawTx)
 }
 
-func (b *airGapServerImpl) CallData(ctx context.Context, options *airgap.CallArgs, blockNumber *big.Int) ([]byte, error) {
+func (b *airGapServerImpl) CallData(ctx context.Context, options *airgap.CallParams) ([]byte, error) {
 	if options.Method == nil {
 		return nil, fmt.Errorf("'Method' must be provided as options")
 	}
@@ -76,7 +76,7 @@ func (b *airGapServerImpl) CallData(ctx context.Context, options *airgap.CallArg
 
 	data, err := serverMethod(ctx, hydratedArgs)
 
-	to, err := b.srvCtx.addressFor(ctx, registry.ContractID(options.Method.Contract))
+	to, err := b.srvCtx.addressFor(ctx, registry.ContractID(options.Method.Contract), options.BlockNumber)
 	if err != nil {
 		return nil, fmt.Errorf("'Contract' not a valid registry ID")
 	}
@@ -86,7 +86,7 @@ func (b *airGapServerImpl) CallData(ctx context.Context, options *airgap.CallArg
 		To:   &to,
 		Data: data,
 		Gas:  0,
-	}, blockNumber)
+	}, options.BlockNumber)
 }
 
 func (b *airGapServerImpl) ObtainMetadata(ctx context.Context, options *airgap.TxArgs) (*airgap.TxMetadata, error) {
@@ -121,7 +121,7 @@ func (b *airGapServerImpl) ObtainMetadata(ctx context.Context, options *airgap.T
 	if options.Method != nil {
 		log.Printf("Building metadata for celo method %s", options.Method.String())
 		if options.To == nil { // 'to' is implicit from registry
-			addr, err := b.srvCtx.addressFor(ctx, registry.ContractID(options.Method.Contract))
+			addr, err := b.srvCtx.addressFor(ctx, registry.ContractID(options.Method.Contract), nil)
 			if err != nil {
 				return nil, fmt.Errorf("'To' not provided and 'Contract' not a valid registry ID")
 			}

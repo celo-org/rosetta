@@ -66,6 +66,8 @@ var (
 	ReleaseGoldAuthorizeValidatorSigner   = registerMethod(ReleaseGold, "authorizeValidatorSigner", []argParser{addressParser, bytesParser})
 	ReleaseGoldRevokePendingVotes         = registerMethod(ReleaseGold, "revokePending", []argParser{addressParser, addressParser, bigIntParser})
 	ReleaseGoldRevokeActiveVotes          = registerMethod(ReleaseGold, "revokeActive", []argParser{addressParser, addressParser, bigIntParser})
+	ReleaseGoldMaxDistribution            = registerMethod(ReleaseGold, "maxDistribution", nil)
+	ReleaseGoldTotalWithdrawn             = registerMethod(ReleaseGold, "totalWithdrawn", nil)
 )
 
 // Represents a CeloMethod that can be called with the AirgapClient

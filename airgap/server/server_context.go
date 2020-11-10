@@ -28,7 +28,7 @@ import (
 )
 
 type ServerContext interface {
-	addressFor(ctx context.Context, identifier registry.ContractID) (common.Address, error)
+	addressFor(ctx context.Context, identifier registry.ContractID, blockNumber *big.Int) (common.Address, error)
 
 	authorizeMetadata(ctx context.Context, popSignature []byte) (*helpers.SignatureValues, error)
 	voteMetadata(ctx context.Context, group common.Address, value *big.Int) (*helpers.AddressLesserGreater, error)
@@ -61,8 +61,8 @@ func NewServerContext(cc *client.CeloClient) (ServerContext, error) {
 	}, nil
 }
 
-func (sc *serverContextImpl) addressFor(ctx context.Context, identifier registry.ContractID) (common.Address, error) {
-	return sc.registry.GetAddressFor(ctx, nil, identifier)
+func (sc *serverContextImpl) addressFor(ctx context.Context, identifier registry.ContractID, blockNumber *big.Int) (common.Address, error) {
+	return sc.registry.GetAddressFor(ctx, blockNumber, identifier)
 }
 
 func (sc *serverContextImpl) authorizeMetadata(ctx context.Context, popSignature []byte) (*helpers.SignatureValues, error) {

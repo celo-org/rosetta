@@ -28,7 +28,7 @@ type serverContextStub struct{}
 
 var _ ServerContext = &serverContextStub{}
 
-func (sc *serverContextStub) addressFor(ctx context.Context, identifier registry.ContractID) (common.Address, error) {
+func (sc *serverContextStub) addressFor(ctx context.Context, identifier registry.ContractID, blockNumber *big.Int) (common.Address, error) {
 	return common.ZeroAddress, nil
 }
 
