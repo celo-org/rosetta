@@ -138,7 +138,8 @@ func createRouter(celoClient *client.CeloClient, db db.RosettaDBReader, chainPar
 	ConstructionApiController := server.NewConstructionAPIController(servicer, asserter)
 	MempoolApiController := server.NewMempoolAPIController(servicer, asserter)
 	NetworkApiController := server.NewNetworkAPIController(servicer, asserter)
+	CallApiController := server.NewCallAPIController(servicer, asserter)
 
-	router := server.NewRouter(AccountApiController, BlockApiController, ConstructionApiController, MempoolApiController, NetworkApiController)
+	router := server.NewRouter(AccountApiController, BlockApiController, ConstructionApiController, MempoolApiController, NetworkApiController, CallApiController)
 	return router, nil
 }
