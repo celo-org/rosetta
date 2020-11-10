@@ -71,6 +71,8 @@ var serverCallMethodDefinitions = map[*airgap.CeloMethod]argsPreProcessor{
 	airgap.GetEpochNumberOfBlock:           noopArgsPreProcessor,
 	airgap.GetActiveVotesForGroup:          noopArgsPreProcessor,
 	airgap.GetActiveVotesForGroupByAccount: noopArgsPreProcessor,
+	airgap.ReleaseGoldMaxDistribution:      noopArgsPreProcessor,
+	airgap.ReleaseGoldTotalWithdrawn:       noopArgsPreProcessor,
 }
 
 func noopArgsPreProcessor(ctx context.Context, srvCtx ServerContext, args []interface{}) ([]interface{}, error) {
