@@ -30,6 +30,7 @@ import (
 type Server interface {
 	ObtainMetadata(ctx context.Context, txOpts *TxArgs) (*TxMetadata, error)
 	SubmitTx(ctx context.Context, rawTx []byte) (*common.Hash, error)
+	CallData(ctx context.Context, callOpts *CallParams) ([]byte, error)
 }
 
 type ArgBuilder interface {
@@ -92,6 +93,11 @@ type TxArgs struct {
 	// non-nil means celo registry contract invokation
 	Method *CeloMethod
 	Args   []interface{}
+}
+
+type CallParams struct {
+	TxArgs
+	BlockNumber *big.Int
 }
 
 type TxMetadata struct {
