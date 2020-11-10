@@ -434,12 +434,12 @@ func (s *Servicer) Call(ctx context.Context, request *types.CallRequest) (*types
 
 	switch request.Method {
 	case CeloCall.String():
-		var callParams *airgap.CallParams
-		if err := airgap.UnmarshallFromMap(request.Parameters, callParams); err != nil {
+		var callParams airgap.CallParams
+		if err := airgap.UnmarshallFromMap(request.Parameters, &callParams); err != nil {
 			return nil, LogErrValidation(err)
 		}
 
-		data, err := s.airgap.CallData(ctx, callParams)
+		data, err := s.airgap.CallData(ctx, &callParams)
 		if err != nil {
 			return nil, LogErrCeloClient(request.Method, err)
 		}
