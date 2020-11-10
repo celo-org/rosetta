@@ -75,6 +75,9 @@ func (b *airGapServerImpl) CallData(ctx context.Context, options *airgap.CallPar
 	}
 
 	data, err := serverMethod(ctx, hydratedArgs)
+	if err != nil {
+		return nil, err
+	}
 
 	to, err := b.srvCtx.addressFor(ctx, registry.ContractID(options.Method.Contract), options.BlockNumber)
 	if err != nil {

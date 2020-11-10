@@ -620,22 +620,3 @@ func (s *Servicer) blockHeader(ctx context.Context, blockIdentifier *types.Parti
 	}
 	return blockHeader, nil
 }
-
-func buildCallOpsFromCallRequest(ctx context.Context,
-	callRequest *types.CallRequest) (*bind.CallOpts, error) {
-	if callRequest.Parameters["blockNumber"] == nil {
-		return &bind.CallOpts{
-			Context: ctx,
-		}, nil
-	}
-	blockNumber, ok := callRequest.Parameters["blockNumber"].(*big.Int)
-	if !ok {
-		err := errors.New("failed to parse 'blockNumber' as *big.Int")
-		return nil, err
-	}
-
-	return &bind.CallOpts{
-		BlockNumber: blockNumber,
-		Context:     ctx,
-	}, nil
-}
