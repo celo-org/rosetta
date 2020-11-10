@@ -86,13 +86,13 @@ type Client interface {
 }
 
 type TxArgs struct {
-	From common.Address
+	From  common.Address
+	Value *big.Int
+	// non-nil means exclusively cGLD transfer
+	To *common.Address
 	// non-nil means celo registry contract invokation
 	Method *CeloMethod
 	Args   []interface{}
-	// non-nil means exclusively cGLD transfer
-	To    *common.Address
-	Value *big.Int
 }
 
 type CallParams struct {
