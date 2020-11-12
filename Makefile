@@ -12,7 +12,9 @@ GITHUB_REPO?=rosetta
 CELO_BLOCKCHAIN_PATH=../celo-blockchain
 CELO_MONOREPO_PATH=../celo-monorepo
 
+GOLANGCI_VERSION=1.32.2
 GOLANGCI_exists := $(shell command -v golangci-lint 2> /dev/null)
+GOLANGCI_v_installed := $(shell echo $(shell golangci-lint --version) | cut -d " " -f 4)
 
 COMMIT_SHA=$(shell git rev-parse HEAD)
 
@@ -38,9 +40,15 @@ test-cover:
 fmt: 
 	go fmt ./...
 
+install-lint:
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v$(GOLANGCI_VERSION)
+
 lint: ## Run linters.
 ifeq ("$(GOLANGCI_exists)","")
 	$(error "No golangci in PATH, consult https://github.com/golangci/golangci-lint#install")
+else ifneq ($(GOLANGCI_v_installed), $(GOLANGCI_VERSION))
+	$(error "Installed golangci version $(GOLANGCI_v_installed) \
+	 does not match expected version $(GOLANGCI_VERSION)")
 else
 	golangci-lint run -c .golangci.yml
 endif
@@ -63,11 +71,6 @@ alfajoresstaging-env:
 rc0-env:
 	mkdir -p ./envs/rc0
 	curl 'https://storage.googleapis.com/genesis_blocks/rc0' > ./envs/rc0/genesis.json
-
-ci-test:
-	mkdir -p /tmp/test-results
-	trap "go-junit-report < /tmp/test-results/go-test.out > /tmp/test-results/go-test-report.xml" EXIT
-	go test -v ./... | tee /tmp/test-results/go-test.out
 
 add-license:
 	${LICENCE_SCRIPT} analyzer airgap cmd db examples internal service main.go
