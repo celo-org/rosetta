@@ -30,7 +30,7 @@ type txArgsRawData struct {
 
 type callParamsRawData struct {
 	txArgsRawData
-	BlockNumber *string `json:"value,omitempty"`
+	BlockNumber *string `json:"block_number,omitempty"`
 }
 
 func (data *txArgsRawData) transform(args *TxArgs) error {
