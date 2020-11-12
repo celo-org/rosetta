@@ -49,6 +49,7 @@ var (
 	GetEpochNumber                  = registerMethod(registry.ElectionContractID.String(), "getEpochNumber", []argParser{})
 	GetEpochSize                    = registerMethod(registry.ElectionContractID.String(), "getEpochSize", []argParser{})
 	GetEpochNumberOfBlock           = registerMethod(registry.ElectionContractID.String(), "getEpochNumberOfBlock", []argParser{bigIntParser})
+	GetGroupsVotedForByAccount      = registerMethod(registry.ElectionContractID.String(), "getGroupsVotedForByAccount", []argParser{addressParser})
 	GetActiveVotesForGroup          = registerMethod(registry.ElectionContractID.String(), "getActiveVotesForGroup", []argParser{addressParser})
 	GetActiveVotesForGroupByAccount = registerMethod(registry.ElectionContractID.String(), "getActiveVotesForGroupByAccount", []argParser{addressParser, addressParser})
 
