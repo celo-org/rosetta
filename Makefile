@@ -11,7 +11,7 @@ GITHUB_ORG?=celo-org
 GITHUB_REPO?=rosetta
 CELO_BLOCKCHAIN_PATH=../celo-blockchain
 CELO_MONOREPO_PATH=../celo-monorepo
-GOLANGCI_VERSION=1.25.1
+GOLANGCI_VERSION=1.32.2
 
 GOLANGCI_exists := $(shell command -v golangci-lint 2> /dev/null)
 GOLANGCI_v_installed := $(shell echo $(shell golangci-lint --version) | cut -d " " -f 4)
