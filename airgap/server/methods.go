@@ -69,6 +69,7 @@ var serverCallMethodDefinitions = map[*airgap.CeloMethod]argsPreProcessor{
 	airgap.GetEpochNumber:                  noopArgsPreProcessor,
 	airgap.GetEpochSize:                    noopArgsPreProcessor,
 	airgap.GetEpochNumberOfBlock:           noopArgsPreProcessor,
+	airgap.GetGroupsVotedForByAccount:      noopArgsPreProcessor,
 	airgap.GetActiveVotesForGroup:          noopArgsPreProcessor,
 	airgap.GetActiveVotesForGroupByAccount: noopArgsPreProcessor,
 	airgap.ReleaseGoldMaxDistribution:      noopArgsPreProcessor,
