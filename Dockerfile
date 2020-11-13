@@ -22,7 +22,7 @@
 # Stage 1: Build Rosetta
 # Outputs: binary @ /rosetta/rosetta 
 #---------------------------------------------------------------------
-FROM golang:1.15.5-alpine as builder
+FROM golang:1.14.12-alpine as builder
 WORKDIR /rosetta
 RUN apk add --no-cache make gcc musl-dev linux-headers git
 
