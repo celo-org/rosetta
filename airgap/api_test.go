@@ -66,7 +66,7 @@ func TestTransaction(t *testing.T) {
 		gethTx, _ := signedTx.AsGethTransaction()
 
 		v, r, s := gethTx.RawSignatureValues()
-		sig := valuesToSignature(tx.ChainId, v, r, s)
+		sig := ValuesToSignature(tx.ChainId, v, r, s)
 		Ω(sig).Should(Equal(signedTx.Signature))
 
 		addr, err := types.NewEIP155Signer(tx.ChainId).Sender(gethTx)
