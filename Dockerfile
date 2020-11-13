@@ -45,7 +45,7 @@ RUN go build --tags musl -o rosetta .
 
 # adbdc7f8c27e50e77b407cb328193bd3ee823643 is mainet(1.0.0) + a few compatible commits that include tracing fix
 # 63ece0c2482b596eac8ad9bc9d3af64e1af99a5a is mainnet(1.1.1) - unknown whether it has the tracing fixes
-FROM http://us.gcr.io/celo-org/geth:63ece0c2482b596eac8ad9bc9d3af64e1af99a5a
+FROM us.gcr.io/celo-org/geth:63ece0c2482b596eac8ad9bc9d3af64e1af99a5a
 ARG COMMIT_SHA
 
 RUN apk add --no-cache ca-certificates
