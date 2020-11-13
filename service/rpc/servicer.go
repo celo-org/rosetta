@@ -525,7 +525,7 @@ func (s *Servicer) ConstructionDerive(
 	}
 
 	addr := crypto.PubkeyToAddress(*pubkey)
-	
+
 	return &types.ConstructionDeriveResponse{
 		AccountIdentifier: &types.AccountIdentifier{
 			Address: addr.Hex(),
@@ -545,7 +545,7 @@ func (s *Servicer) ConstructionCombine(
 
 	tx := airgap.Transaction{
 		TxMetadata: &metadata,
-		Signature: req.Signatures[0].Bytes,
+		Signature:  req.Signatures[0].Bytes,
 	}
 
 	signedTx, err := tx.AsGethTransaction()
@@ -597,23 +597,23 @@ func (s *Servicer) ConstructionParse(
 		if err != nil {
 			return nil, ErrInternal
 		}
-		
+
 		from, err := ethTypes.Sender(ethTypes.NewEIP155Signer(t.ChainId()), t)
 		if err != nil {
 			return nil, ErrInternal
 		}
 
 		txMetadata := &airgap.TxMetadata{
-			To: *t.To(),
-			From: from,
-			ChainId: t.ChainId(),
-			Gas: t.Gas(),
-			GasPrice:  t.GasPrice(),
-			Nonce: t.Nonce(),
-			Data: t.Data(),
-			Value: t.Value(),
-			FeeCurrency: t.FeeCurrency(),
-			GatewayFee: t.GatewayFee(),
+			To:                  *t.To(),
+			From:                from,
+			ChainId:             t.ChainId(),
+			Gas:                 t.Gas(),
+			GasPrice:            t.GasPrice(),
+			Nonce:               t.Nonce(),
+			Data:                t.Data(),
+			Value:               t.Value(),
+			FeeCurrency:         t.FeeCurrency(),
+			GatewayFee:          t.GatewayFee(),
 			GatewayFeeRecipient: t.GatewayFeeRecipient(),
 		}
 		v, r, s := t.RawSignatureValues()
@@ -621,7 +621,7 @@ func (s *Servicer) ConstructionParse(
 
 		tx = airgap.Transaction{
 			TxMetadata: txMetadata,
-			Signature: signature,
+			Signature:  signature,
 		}
 	}
 
@@ -661,7 +661,7 @@ func (s *Servicer) ConstructionParse(
 
 	var resp *types.ConstructionParseResponse
 	resp = &types.ConstructionParseResponse{
-		Operations:               ops,
+		Operations: ops,
 	}
 	if req.Signed {
 		resp.AccountIdentifierSigners = []*types.AccountIdentifier{
@@ -670,7 +670,7 @@ func (s *Servicer) ConstructionParse(
 			},
 		}
 	}
-	
+
 	return resp, nil
 }
 
@@ -698,19 +698,19 @@ func (s *Servicer) ConstructionPayloads(
 
 	tx := airgap.Transaction{
 		TxMetadata: &metadata,
-		Signature: []byte{},
+		Signature:  []byte{},
 	}
-	
+
 	gethTx, _ := tx.AsGethTransaction()
 	signer := ethTypes.NewEIP155Signer(tx.ChainId)
-	
+
 	// Construct SigningPayload
 	payload := &types.SigningPayload{
 		AccountIdentifier: &types.AccountIdentifier{
 			Address: tx.From.Hex(),
 		},
-		Bytes:             signer.Hash(gethTx).Bytes(),
-		SignatureType:     types.EcdsaRecovery,
+		Bytes:         signer.Hash(gethTx).Bytes(),
+		SignatureType: types.EcdsaRecovery,
 	}
 
 	unsignedTxJSON, err := json.Marshal(tx)

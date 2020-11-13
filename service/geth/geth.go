@@ -60,7 +60,6 @@ type gethService struct {
 }
 
 func NewGethService(opts *GethOpts) *gethService {
-	opts.Verbosity = "3"
 	return &gethService{
 		opts:   opts,
 		logger: log.New("service", "geth"),

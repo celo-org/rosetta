@@ -35,6 +35,9 @@ test:
 test-cover:
 	go test ./... -covermode=count
 
+fmt: 
+	go fmt ./...
+
 lint: ## Run linters.
 ifeq ("$(GOLANGCI_exists)","")
 	$(error "No golangci in PATH, consult https://github.com/golangci/golangci-lint#install")
@@ -76,4 +79,4 @@ check-license:
 gen-contracts:
 	go run ./scripts/gen-contracts.go -gcelo $(CELO_BLOCKCHAIN_PATH) -monorepo $(CELO_MONOREPO_PATH)
 
-.PHONY: gen-contracts
+.PHONY: gen-contracts lint fmt 
