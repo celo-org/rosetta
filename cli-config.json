@@ -1,17 +1,77 @@
 {
- "network": {
-  "blockchain": "celo",
-  "network": "44787"
- },
- "online_url": "http://localhost:8080",
- "data_directory": "celo-data",
- "http_timeout": 25,
- "max_sync_concurrency": 16,
- "tip_delay": 30,
- "data": {
-   "end_conditions":{
-     "tip": true
-   }
- },
- "construction": null
+  "network": {
+    "blockchain": "celo",
+    "network": "44787"
+  },
+  "online_url": "http://localhost:8080",
+  "data_directory": "",
+  "http_timeout": 10,
+  "max_retries": 5,
+  "retry_elapsed_time": 0,
+  "max_online_connections": 120,
+  "max_sync_concurrency": 1,
+  "tip_delay": 300,
+  "log_configuration": false,
+  "compression_disabled": false,
+  "memory_limit_disabled": false,
+  "construction": {
+    "offline_url": "http://localhost:8080",
+    "max_offline_connections": 4,
+    "stale_depth": 30,
+    "broadcast_limit": 3,
+    "ignore_broadcast_failures": false,
+    "clear_broadcasts": false,
+    "broadcast_behind_tip": false,
+    "block_broadcast_limit": 5,
+    "rebroadcast_all": false,
+    "prefunded_accounts": [
+      {
+        "privkey": "b803642b3a58699b8442546ccbd5d5c0d5dba97b2b5b868a263fd0f4c0fd7bc5",
+        "account_identifier": {
+          "address": "0x03dDDE31C7d3Bd9C6d190185E04A340981586427"
+        },
+        "curve_type": "secp256k1",
+        "currency": {
+          "symbol": "cGLD",
+          "decimals": 18
+        }
+      },
+      {
+        "privkey": "5f61492dd59584ee1fccbba0ccc47afb2a24e3a3655c9f23f6b5895e5830e653",
+        "account_identifier": {
+          "address": "0x2442bA7697A485e3da2aE648A8D0Fa18c3E70fa9"
+        },
+        "curve_type": "secp256k1",
+        "currency": {
+          "symbol": "cGLD",
+          "decimals": 18
+        }
+      }
+    ],
+    "constructor_dsl_file": "./workflows/transfer.ros",
+    "status_port": 9090,
+    "initial_balance_fetch_disabled": false
+  },
+  "data": {
+    "active_reconciliation_concurrency": 16,
+    "inactive_reconciliation_concurrency": 4,
+    "inactive_reconciliation_frequency": 250,
+    "log_blocks": false,
+    "log_transactions": false,
+    "log_balance_changes": false,
+    "log_reconciliations": false,
+    "ignore_reconciliation_error": false,
+    "exempt_accounts": "",
+    "bootstrap_balances": "",
+    "interesting_accounts": "",
+    "reconciliation_disabled": false,
+    "reconciliation_drain_disabled": false,
+    "inactive_discrepency_search_disabled": false,
+    "balance_tracking_disabled": false,
+    "coin_tracking_disabled": false,
+    "status_port": 9090,
+    "results_output_file": "",
+    "pruning_disabled": false,
+    "initial_balance_fetch_disabled": false
+  }
 }

@@ -9,6 +9,8 @@ GO ?= latest
 
 GITHUB_ORG?=celo-org
 GITHUB_REPO?=rosetta
+CELO_BLOCKCHAIN_PATH=../celo-blockchain
+CELO_MONOREPO_PATH=../celo-monorepo
 
 GOLANGCI_exists := $(shell command -v golangci-lint 2> /dev/null)
 
@@ -32,6 +34,9 @@ test:
 
 test-cover:
 	go test ./... -covermode=count
+
+fmt: 
+	go fmt ./...
 
 lint: ## Run linters.
 ifeq ("$(GOLANGCI_exists)","")
@@ -70,3 +75,8 @@ add-license:
 
 check-license:
 	${LICENCE_SCRIPT} -check analyzer airgap cmd db examples internal service main.go
+
+gen-contracts:
+	go run ./scripts/gen-contracts.go -gcelo $(CELO_BLOCKCHAIN_PATH) -monorepo $(CELO_MONOREPO_PATH)
+
+.PHONY: gen-contracts lint fmt 
