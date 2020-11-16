@@ -40,7 +40,7 @@ test-cover:
 fmt: 
 	go fmt ./...
 
-install-lint:
+install-lint-ci:
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v$(GOLANGCI_VERSION)
 
 lint: ## Run linters.
