@@ -24,6 +24,7 @@ import (
 	"github.com/celo-org/rosetta/airgap"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 )
 
 // airGapServerMethod is a function that returns the tx.data for that method + parameters
@@ -160,4 +161,23 @@ func (b *airGapServerImpl) ObtainMetadata(ctx context.Context, options *airgap.T
 	txMetadata.Gas = estimatedGas
 
 	return &txMetadata, nil
+}
+
+func (b *airGapServerImpl) FilterQuery(ctx context.Context, options *airgap.FilterQueryParams) ([]types.Log, error) {
+	var addresses []common.Address
+	for _, contract := range options.Contracts {
+		address, err := b.srvCtx.addressFor(ctx, registry.ContractID(contract), options.FromBlock)
+		if err != nil {
+			return nil, fmt.Errorf("'Contract' not a valid registry ID")
+		}
+		addresses = append(addresses, address)
+	}
+
+	query := ethereum.FilterQuery{
+		Addresses: addresses,
+		FromBlock: options.FromBlock,
+		ToBlock:   options.ToBlock,
+		Topics:    options.Topics,
+	}
+	return b.srvCtx.FilterLogs(ctx, query)
 }

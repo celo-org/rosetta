@@ -455,61 +455,23 @@ func (s *Servicer) Call(ctx context.Context, request *types.CallRequest) (*types
 			},
 			Idempotent: false,
 		}, nil
-	case CeloGetLogs.String(): // TODO: implement
-		return nil, LogErrUnimplemented("Call(method=celo_getLogs)")
-		// case filterEpochRewardsDistributedToVoters:
-		// 	group, ok := callRequest.Parameters["group"].([]common.Address)
-		// 	if !ok {
-		// 		err := errors.New("failed to parse 'group' as common.Address")
-		// 		return nil, LogErrValidation(err), err
-		// 	}
+	case CeloGetLogs.String():
+		var filterQueryParams airgap.FilterQueryParams
+		if err := airgap.UnmarshallFromMap(request.Parameters, &filterQueryParams); err != nil {
+			return nil, LogErrValidation(err)
+		}
 
-		// 	startBlock, ok := callRequest.Parameters["startBlock"].(uint64)
-		// 	if !ok {
-		// 		err := errors.New("failed to parse 'startBlock' as common.Address")
-		// 		return nil, LogErrValidation(err), err
-		// 	}
+		logs, err := s.airgap.FilterQuery(ctx, &filterQueryParams)
+		if err != nil {
+			return nil, LogErrCeloClient(request.Method, err)
+		}
 
-		// 	var endBlock *uint64 = nil
-		// 	if callRequest.Parameters["endBlock"] != nil {
-		// 		endBlock, ok = callRequest.Parameters["endBlock"].(*uint64)
-		// 		if !ok {
-		// 			err := errors.New("failed to parse 'endBlock' as *big.Int")
-		// 			return nil, LogErrValidation(err), err
-		// 		}
-		// 	}
-
-		// 	registry, err := registry.New(s.cc)
-		// 	election, err := registry.GetElectionContract(ctx, nil)
-		// 	if err != nil {
-		// 		return nil, LogErrValidation(err), err
-		// 	}
-
-		// 	filterOpts := &bind.FilterOpts{
-		// 		Start:   startBlock,
-		// 		End:     endBlock,
-		// 		Context: nil,
-		// 	}
-
-		// 	electionRewardsIterator, err := election.FilterEpochRewardsDistributedToVoters(filterOpts, group)
-		// 	if err != nil {
-		// 		return nil, LogErrValidation(err), err
-		// 	}
-		// 	var eventArray []*contracts.ElectionEpochRewardsDistributedToVoters
-
-		// 	for electionRewardsIterator.Next() {
-		// 		eventArray = append(eventArray, electionRewardsIterator.Event)
-		// 	}
-
-		// 	result := map[string]interface{}{
-		// 		"events": eventArray,
-		// 	}
-
-		// 	return &types.CallResponse{
-		// 		Result:     result,
-		// 		Idempotent: true,
-		// 	}, nil, nil
-		// }
+		return &types.CallResponse{
+			Result: map[string]interface{}{
+				"logs": logs,
+			},
+			Idempotent: true,
+		}, nil
 	}
 
 	return nil, LogErrValidation(fmt.Errorf("unsupported method '%s'", request.Method))

@@ -22,6 +22,7 @@ import (
 	"github.com/celo-org/kliento/registry"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 )
 
 type serverContextStub struct{}
@@ -73,4 +74,16 @@ func (sc *serverContextStub) NonceAt(ctx context.Context, account common.Address
 func (sc *serverContextStub) SendRawTransaction(ctx context.Context, data []byte) (*common.Hash, error) {
 	hash := common.HexToHash("0x666777888")
 	return &hash, nil
+}
+
+func (sc *serverContextStub) FilterLogs(ctx context.Context, q ethereum.FilterQuery) ([]types.Log, error) {
+	log := types.Log{
+		Address:   common.HexToAddress("0x01"),
+		Topics:    []common.Hash{common.HexToHash("0x666777888")},
+		Data:      []byte{100},
+		BlockHash: common.HexToHash("0x123"),
+		TxHash:    common.HexToHash("0xfoobar"),
+		TxIndex:   0,
+	}
+	return []types.Log{log}, nil
 }
