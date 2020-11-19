@@ -22,7 +22,7 @@ import (
 var eventRegistry = make(map[string]map[string]*CeloEvent)
 
 // FromString returns the CeloEvent that matches the given string
-// Methods are represented as "Contract.Name"
+// Events are represented as "Contract.EventName"
 func EventFromString(celoEventStr string) (*CeloEvent, error) {
 	parts := strings.Split(celoEventStr, ".")
 	if len(parts) != 2 {
