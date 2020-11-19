@@ -31,6 +31,7 @@ type Server interface {
 	ObtainMetadata(ctx context.Context, txOpts *TxArgs) (*TxMetadata, error)
 	SubmitTx(ctx context.Context, rawTx []byte) (*common.Hash, error)
 	CallData(ctx context.Context, callOpts *CallParams) ([]byte, error)
+	FilterQuery(ctx context.Context, filterQueryOps *FilterQueryParams) ([]types.Log, error)
 }
 
 type ArgBuilder interface {
@@ -98,6 +99,13 @@ type TxArgs struct {
 type CallParams struct {
 	TxArgs
 	BlockNumber *big.Int
+}
+
+type FilterQueryParams struct {
+	Event     *CeloEvent
+	Topics    [][]interface{}
+	FromBlock *big.Int
+	ToBlock   *big.Int
 }
 
 type TxMetadata struct {

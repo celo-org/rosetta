@@ -24,16 +24,21 @@ import (
 	"github.com/celo-org/rosetta/airgap"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 )
 
 // airGapServerMethod is a function that returns the tx.data for that method + parameters
 type airGapServerMethod func(context.Context, []interface{}) ([]byte, error)
+
+// airGapServerEvent is a function that returns the topic[0] for that event name + parameters
+type airGapServerEvent func(context.Context, [][]common.Hash) [][]common.Hash
 
 type airGapServerImpl struct {
 	srvCtx             ServerContext
 	chainId            *big.Int
 	transactionMethods map[*airgap.CeloMethod]airGapServerMethod
 	callMethods        map[*airgap.CeloMethod]airGapServerMethod
+	callEvents         map[*airgap.CeloEvent]airGapServerEvent
 }
 
 func NewAirgapServer(chainId *big.Int, srvCtx ServerContext) (airgap.Server, error) {
@@ -47,11 +52,17 @@ func NewAirgapServer(chainId *big.Int, srvCtx ServerContext) (airgap.Server, err
 		return nil, err
 	}
 
+	callEvents, err := hydrateEvents(srvCtx, serverCallEventDefinitions)
+	if err != nil {
+		return nil, err
+	}
+
 	return &airGapServerImpl{
 		srvCtx,
 		chainId,
 		transactionMethods,
 		callMethods,
+		callEvents,
 	}, nil
 }
 
@@ -160,4 +171,35 @@ func (b *airGapServerImpl) ObtainMetadata(ctx context.Context, options *airgap.T
 	txMetadata.Gas = estimatedGas
 
 	return &txMetadata, nil
+}
+
+func (b *airGapServerImpl) FilterQuery(ctx context.Context, options *airgap.FilterQueryParams) ([]types.Log, error) {
+	if options.Event == nil {
+		return nil, fmt.Errorf("'Event' must be provided as options")
+	}
+
+	serverEvent, ok := b.callEvents[options.Event]
+	if !ok {
+		return nil, fmt.Errorf("Unsupported event: %v", options.Event)
+	}
+
+	hydratedTopics, err := options.Event.DeserializeTopics(options.Topics...)
+	if err != nil {
+		return nil, err
+	}
+
+	topics := serverEvent(ctx, hydratedTopics)
+
+	address, err := b.srvCtx.addressFor(ctx, registry.ContractID(options.Event.Contract), options.FromBlock)
+	if err != nil {
+		return nil, fmt.Errorf("'%s' not a valid registry ID", options.Event.Contract)
+	}
+
+	query := ethereum.FilterQuery{
+		Addresses: []common.Address{address},
+		FromBlock: options.FromBlock,
+		ToBlock:   options.ToBlock,
+		Topics:    topics,
+	}
+	return b.srvCtx.FilterLogs(ctx, query)
 }
