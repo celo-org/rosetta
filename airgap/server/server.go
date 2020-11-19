@@ -30,7 +30,7 @@ import (
 // airGapServerMethod is a function that returns the tx.data for that method + parameters
 type airGapServerMethod func(context.Context, []interface{}) ([]byte, error)
 
-// airGapServerMethod is a function that returns the topic[0] for that event name + parameters
+// airGapServerEvent is a function that returns the topic[0] for that event name + parameters
 type airGapServerEvent func(context.Context, [][]common.Hash) [][]common.Hash
 
 type airGapServerImpl struct {
