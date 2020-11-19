@@ -74,3 +74,14 @@ func stringToMethod(input *string) (*CeloMethod, error) {
 	}
 	return out, nil
 }
+
+func stringToEvent(input *string) (*CeloEvent, error) {
+	if input == nil {
+		return nil, nil
+	}
+	out, err := EventFromString(*input)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}

@@ -102,10 +102,10 @@ type CallParams struct {
 }
 
 type FilterQueryParams struct {
-	Contracts []string        `json:"contracts"`
-	Topics    [][]common.Hash `json:"topics"`
-	FromBlock *big.Int        `json:"from_block"`
-	ToBlock   *big.Int        `json:"to_block"`
+	Event     *CeloEvent
+	Topics    [][]interface{}
+	FromBlock *big.Int
+	ToBlock   *big.Int
 }
 
 type TxMetadata struct {
