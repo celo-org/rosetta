@@ -194,9 +194,7 @@ func (gs *gethService) ensureGethInit() error {
 
 func (gs *gethService) startGeth(stdErr *os.File) error {
 	gethArgs := []string{
-		"--syncmode", "full",
 		"--networkid", gs.chainParams.ChainId.String(),
-		"--gcmode", "archive",
 		"--nousb",
 		"--rpc",
 		"--rpcaddr", gs.opts.RpcAddr,

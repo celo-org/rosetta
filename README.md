@@ -50,6 +50,8 @@ Flags:
       --geth.binary string        Path to the celo-blockchain binary
       --geth.bootnodes string     Bootnodes to use (separated by ,)
       --geth.genesis string       path to the genesis.json
+      --geth.syncmode string      Geth blockchain sync mode (fast, full, light)
+      --geth.gcmode string        Geth garbage collection mode (full, archive)
       --geth.ipcpath string       Path to the geth ipc file
       --geth.logfile string       Path to logs file
       --geth.publicip string      Public Ip to configure geth (sometimes required for discovery)
@@ -189,6 +191,8 @@ Prerequisites:
 go run main.go run \
   --geth.genesis ./envs/rc1/genesis.json \
   --geth.binary ../celo-blockchain/build/bin/geth \
+  --geth.syncmode full \
+  --geth.gcmode archive \
   --geth.staticnodes "enode://5e0f4e3aaa096e2a2db76622b335cab4d3224d08d16cb11e8855a3a5f30c19d35d81a74b21271562e459495ab203c2f3a5a5747a83eb53ba046aeeb09aa240ff@34.83.110.24:30303" \
   --datadir "./envs/rc1"
 ```
@@ -205,6 +209,8 @@ Prerequisites:
 go run main.go run \
   --geth.genesis ./envs/alfajores/genesis.json \
   --geth.binary ../celo-blockchain/build/bin/geth \
+  --geth.syncmode full \
+  --geth.gcmode archive \
   --geth.staticnodes "enode://05977f6b7d3e16a99d27b714f8a029a006e41ec7732167d373dd920d31f72b3a1776650798d8763560854369d36867e9564dad13b4b60a90c347feeb491d83a9@34.83.42.50:30303" \
   --datadir "./envs/alfajores"
 ```
@@ -215,6 +221,8 @@ go run main.go run \
 go run main.go run \
   --geth.genesis ./envs/alfajoresstaging/genesis.json \
   --geth.binary ../celo-blockchain/build/bin/geth \
+  --geth.syncmode full \
+  --geth.gcmode archive \
   --geth.staticnodes "enode://ec86feaa5738d806cbe5431cfef97ce147c6ca4efa815f5684008c2f9455d8d39a8540e3fa19c151b3c9f5db89e86cb2565a05a4dbfb2d13f30834a01297e964@34.82.69.157:30303" \
   --datadir "./envs/alfajoresstaging"
 ```
