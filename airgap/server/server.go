@@ -90,9 +90,14 @@ func (b *airGapServerImpl) CallData(ctx context.Context, options *airgap.CallPar
 		return nil, err
 	}
 
-	to, err := b.srvCtx.addressFor(ctx, registry.ContractID(options.Method.Contract), options.BlockNumber)
-	if err != nil {
-		return nil, fmt.Errorf("'Contract' not a valid registry ID")
+	var to common.Address
+	if options.To != nil {
+		to = *options.To
+	} else {
+		to, err = b.srvCtx.addressFor(ctx, registry.ContractID(options.Method.Contract), options.BlockNumber)
+		if err != nil {
+			return nil, fmt.Errorf("'Contract' not a valid registry ID")
+		}
 	}
 
 	return b.srvCtx.CallContract(ctx, ethereum.CallMsg{
