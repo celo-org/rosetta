@@ -37,7 +37,7 @@
         }
       }
     ],
-    "constructor_dsl_file": "./workflows/transfer.ros",
+    "constructor_dsl_file": "celo.ros",
     "status_port": 9090,
     "initial_balance_fetch_disabled": false,
     "end_conditions": {
