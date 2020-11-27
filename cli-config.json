@@ -35,22 +35,15 @@
           "symbol": "cGLD",
           "decimals": 18
         }
-      },
-      {
-        "privkey": "5f61492dd59584ee1fccbba0ccc47afb2a24e3a3655c9f23f6b5895e5830e653",
-        "account_identifier": {
-          "address": "0x2442bA7697A485e3da2aE648A8D0Fa18c3E70fa9"
-        },
-        "curve_type": "secp256k1",
-        "currency": {
-          "symbol": "cGLD",
-          "decimals": 18
-        }
       }
     ],
     "constructor_dsl_file": "./workflows/transfer.ros",
     "status_port": 9090,
-    "initial_balance_fetch_disabled": false
+    "initial_balance_fetch_disabled": false,
+    "end_conditions": {
+      "create_account": 10,
+      "transfer": 10
+    }
   },
   "data": {
     "active_reconciliation_concurrency": 16,
@@ -72,6 +65,13 @@
     "status_port": 9090,
     "results_output_file": "",
     "pruning_disabled": false,
-    "initial_balance_fetch_disabled": false
+    "initial_balance_fetch_disabled": false,
+    "end_conditions": {
+      "reconciliation_coverage": {
+        "coverage": 0.95,
+        "from_tip": true,
+        "tip": true
+      }
+    }
   }
 }

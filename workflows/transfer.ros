@@ -1,22 +1,70 @@
+request_funds(1){
+  find_account{
+    currency = {"symbol":"cGLD", "decimals":18};
+    random_account = find_balance({
+      "minimum_balance":{
+        "value": "0",
+        "currency": {{currency}}
+      },
+      "create_limit":1
+    });
+  },
+
+  // Create a separate scenario to request funds so that
+  // the address we are using to request funds does not
+  // get rolled back if funds do not yet exist.
+  request{
+    loaded_account = find_balance({
+      "account_identifier": {{random_account.account_identifier}},
+      "minimum_balance":{
+        "value": "10000000000000000",
+        "currency": {{currency}}
+      }
+    });
+  }
+}
+
+create_account(1){
+  create{
+    network = {"network":"44787", "blockchain":"celo"};
+    key = generate_key({"curve_type": "secp256k1"});
+    account = derive({
+      "network_identifier": {{network}},
+      "public_key": {{key.public_key}}
+    });
+    save_account({
+      "account_identifier": {{account.account_identifier}},
+      "keypair": {{key}}
+    });
+  }
+}
+
 transfer(1){
   transfer{
     transfer.network = {"network":"44787", "blockchain":"celo"};
     currency = {"symbol":"cGLD", "decimals":18};
+    min_balance = "10000000000000000";
     sender = find_balance({
       "minimum_balance":{
-        "value": "100000",
+        "value": {{min_balance}},
             "currency": {{currency}}
         }
     });
 
-    recipient_amount = "10000";
-    sender_amount = 0 - "10000";
+    // rough estimate of cap on transaction fee for transfer on Celo
+    max_fee = "50000000000000";
+    // set a lower cap so as to not drain prefunded account too quickly
+    // TODO: division not yet supported in DSL
+    transaction_cap = {{min_balance}} - {{max_fee}};
+
+    recipient_amount = random_number({"minimum": "1", "maximum": {{transaction_cap}}});
     print_message({"recipient_amount":{{recipient_amount}}});
 
+    sender_amount = 0 - {{recipient_amount}};
     recipient = find_balance({
       "not_account_identifier":[{{sender.account_identifier}}],
       "minimum_balance":{
-        "value": "100000",
+        "value": "0",
         "currency": {{currency}}
       },
       "create_limit": 100,
@@ -48,5 +96,52 @@ transfer(1){
         ]
       }
   ];
+  }
+}
+
+return_funds(10){
+  // TODO: add suggested fee dry run to ensure account fully cleared
+  transfer{
+    transfer.network = {"network":"44787", "blockchain":"celo"};
+    currency = {"symbol":"cGLD", "decimals":18};
+    max_fee = "50000000000000";
+
+    prefunded_account = {"address": "0x03dDDE31C7d3Bd9C6d190185E04A340981586427"};
+
+    sender = find_balance({
+      "not_account_identifier":[{{prefunded_account}}],
+      "minimum_balance":{
+        "value": {{max_fee}},
+        "currency": {{currency}}
+      }
+    });
+
+    // Set the recipient_amount as some sender.balance-max_fee
+    available_amount = {{sender.balance.value}} - {{max_fee}};
+    print_message({"available_amount":{{available_amount}}});
+    sender_amount = 0 - {{available_amount}};
+
+    // Provide a static address as the recipient and construct operations
+    transfer.confirmation_depth = "1";
+    transfer.operations = [
+      {
+        "operation_identifier":{"index":0},
+        "type":"transfer",
+        "account":{{sender.account_identifier}},
+        "amount":{
+          "value":{{sender_amount}},
+          "currency":{{currency}}
+        }
+      },
+      {
+        "operation_identifier":{"index":1},
+        "type":"transfer",
+        "account":{{prefunded_account}},
+        "amount":{
+          "value":{{available_amount}},
+          "currency":{{currency}}
+        }
+      }
+    ];
   }
 }
