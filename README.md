@@ -166,17 +166,14 @@ Commands:
   * `make docker-build`
   * `make docker-publish`
 
-## How to run rosetta-validator
-
+## How to run rosetta-cli-checks
+Install the [`rosetta-cli`](https://github.com/coinbase/rosetta-cli) according to the instructions. Current testing has been done with `v0.5.16`.
+- Run the Rosetta service in the background for the respective network (currently only alfajores)
+- Run the CLI checks as follows:
 ```
-go get -u github.com/coinbase/rosetta-validator@v0.1.2
-mkdir validator-data 
-go run examples/generate_balances/main.go \
-  https://storage.googleapis.com/genesis_blocks/alfajores \
-  validator-data/bootstrap_balances.json
-rosetta-validator check:complete
+# alfajores; specify construction or data
+rosetta-cli check:construction --configuration-file PATH/TO/rosetta/rosetta-cli-conf/testnet/cli-config.json
 ```
-
 ### Running on development
 
 #### Running on RC1:
