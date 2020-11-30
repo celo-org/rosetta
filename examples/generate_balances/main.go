@@ -17,11 +17,13 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/coinbase/rosetta-sdk-go/types"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"strings"
+
+	"github.com/coinbase/rosetta-sdk-go/types"
 )
 
 type genesis struct {
@@ -63,6 +65,10 @@ func main() {
 	for k, v := range genesisAllocations.Alloc {
 		if v.Balance == "0" {
 			continue
+		}
+		// rosetta CLI expects "0x..." format; case sensitive
+		if len(k) >= 2 && !(strings.ToLower(k)[:2] == "0x") {
+			k = "0x" + k;
 		}
 		balances = append(balances, &BootstrapBalance{
 			Account: &types.AccountIdentifier{
