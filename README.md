@@ -174,6 +174,13 @@ Install the [`rosetta-cli`](https://github.com/coinbase/rosetta-cli) according t
 # alfajores; specify construction or data
 rosetta-cli check:construction --configuration-file PATH/TO/rosetta/rosetta-cli-conf/testnet/cli-config.json
 ```
+### How to generate `bootstrap_balances.json`
+This is only necessary for running the data checks if it has not already been created for the particular network. Here's how to generate this for alfajores (for another network, specify the appropriate genesis block URL and output path):
+```
+go run examples/generate_balances/main.go \
+  https://storage.googleapis.com/genesis_blocks/alfajores \
+  rosetta-cli-conf/testnet/bootstrap_balances.json
+```
 ### Running on development
 
 #### Running on RC1:
