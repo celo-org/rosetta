@@ -409,6 +409,8 @@ func ReconcileLogOpsWithTransfers(logOps, transferOps []Operation, tobinTax *Tob
 	i := 0
 	for _, logOp := range logOps {
 		if logOp.Type.requiresTransfer() {
+			// TODO - revisit
+			// nolint:gosec
 			matchIndex, err := findMatchAndReconcile(transferOps, &logOp, i)
 			if err != nil {
 				return nil, err

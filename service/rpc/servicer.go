@@ -406,6 +406,8 @@ func (s *Servicer) BlockTransaction(ctx context.Context, request *types.BlockTra
 		}
 
 		for _, aop := range ops {
+			// TODO - revisit
+			// nolint:gosec
 			transferOps := OperationsFromAnalyzer(&aop, int64(len(operations)))
 			operations = append(operations, transferOps...)
 		}
