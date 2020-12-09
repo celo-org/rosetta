@@ -130,7 +130,7 @@ For a code resource, please see the [examples](./examples/airgap/main.go).
 ### Setup
 
 You need:
-  * go >= 1.13
+  * go >= 1.14
   * rust >= 1.41.0
   * openapi-generator To re-generate rpc scaffold ([install link](https://openapi-generator.tech))
   * golangci To run linter (check https://github.com/golangci/golangci-lint#install )
