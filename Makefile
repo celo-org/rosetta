@@ -9,8 +9,6 @@ GO ?= latest
 
 GITHUB_ORG?=celo-org
 GITHUB_REPO?=rosetta
-CELO_BLOCKCHAIN_PATH=../celo-blockchain
-CELO_MONOREPO_PATH=../celo-monorepo
 
 GOLANGCI_VERSION=1.32.2
 GOLANGCI_exists := $(shell command -v golangci-lint 2> /dev/null)
