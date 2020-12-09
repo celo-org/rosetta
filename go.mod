@@ -1,6 +1,6 @@
 module github.com/celo-org/rosetta
 
-go 1.13
+go 1.14
 
 require (
 	github.com/celo-org/kliento v0.1.2-0.20200608140637-c5afc8cf0f44
@@ -23,4 +23,4 @@ require (
 // replace github.com/ethereum/go-ethereum => ../celo-blockchain
 
 // Use this to use external build
-replace github.com/ethereum/go-ethereum => github.com/celo-org/celo-blockchain v0.0.0-20200612100840-bf2ba25426f9
+replace github.com/ethereum/go-ethereum => github.com/celo-org/celo-blockchain v1.1.1
