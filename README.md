@@ -83,7 +83,7 @@ You will need the following three repositories cloned locally: `rosetta` (this r
 
 Prerequisites:
 
-* Checkout `celo-monorepo` branch `alfajores` and `yarn && yarn build`
+* Checkout `celo-monorepo` branch `alfajores` and run `yarn && yarn build`
 * Checkout `celo-blockchain` tag `v1.1.1` (NOTE: check that this matches the version specified in the `rosetta` `go.mod` file) and `make all`
 * Export paths to `celo-monorepo` and `celo-blockchain` as `CELO_MONOREPO_PATH` and `CELO_BLOCKCHAIN_PATH` respectively (can be paths relative to `rosetta` repo)
 * Checkout `rosetta` tag `v0.7.5` (or latest released tag) and `make gen-contracts && make all`
@@ -109,7 +109,7 @@ This is the same as above with a few differences (generally: specifying `rc1` vs
 
 Prerequisites:
 
-* Checkout `celo-monorepo` branch `rc1` instead of `alfajores`
+* Checkout `celo-monorepo` branch `rc1` instead of `alfajores`, run `yarn && yarn build` as above
 * `celo-blockchain`: same as above
 * Export paths: same as above
 * Checkout `rosetta`: same as above
