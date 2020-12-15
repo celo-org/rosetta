@@ -137,7 +137,7 @@ The command below runs the Celo Rosetta RPC server for `alfajores`:
 
 ```bash
 export STATICNODE="enode://e99a883d0b7d0bacb84cde98c4729933b49adbc94e718b77fdb31779c7ed9da6c49236330a9ae096f42bcbf6e803394229120201704b7a4a3ae8004993fa0876@34.83.92.243:30303"
-export RELEASE="0.7.2"
+export RELEASE="latest"  # or specify a release version
 # folder for rosetta to use as data directory (saves rosetta.db & celo-blockchain datadir)
 export DATADIR="${PWD}/datadir"
 mkdir $DATADIR
@@ -147,7 +147,10 @@ docker run --name rosetta --rm \
   -v "${DATADIR}:/data" \
   -p 8080:8080 \
   us.gcr.io/celo-testnet/rosetta:$RELEASE \
-  run --geth.staticnodes $STATICNODE
+  run --geth.staticnodes $STATICNODE \
+  --geth.syncmode full \
+  --geth.gcmode archive
+
 ```
 
 To run this for a different network, replace the genesis block generation and staticnode lines with values specific to the network, as detailed directly below:
