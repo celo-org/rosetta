@@ -8,9 +8,10 @@ A monitoring server for celo-blockchain
 ## What is Celo Rosetta?
 
 Celo Rosetta is an RPC server that exposes an API to:
- * Query Celo's Blockchain
- * Obtain Balance Changing Operations
- * Construct Airgapped Transactions
+
+* Query Celo's Blockchain
+* Obtain Balance Changing Operations
+* Construct Airgapped Transactions
 
 With a special focus on getting balance change operations, Celo Rosetta provides an easy way to obtain changes that are not easily queryable using
 the celo-blockchain rpc; such as:
@@ -24,16 +25,16 @@ the celo-blockchain rpc; such as:
 
 Rosetta exposes the following endpoints:
 
- * `POST /network/list`: Get List of Available Networks
- * `POST /network/status`: Get Network Status
- * `POST /network/options`: Get Network Options
- * `POST /block`: Get a Block
- * `POST /block/transaction`: Get a Block Transaction
- * `POST /mempool`: Get All Mempool Transactions
- * `POST /mempool/transaction`: Get a Mempool Transaction
- * `POST /account/balance`: Get an Account Balance
- * `POST /construction/metadata`: Get Transaction Construction Metadata
- * `POST /construction/submit`: Submit a Signed Transaction
+* `POST /network/list`: Get List of Available Networks
+* `POST /network/status`: Get Network Status
+* `POST /network/options`: Get Network Options
+* `POST /block`: Get a Block
+* `POST /block/transaction`: Get a Block Transaction
+* `POST /mempool`: Get All Mempool Transactions
+* `POST /mempool/transaction`: Get a Mempool Transaction
+* `POST /account/balance`: Get an Account Balance
+* `POST /construction/metadata`: Get Transaction Construction Metadata
+* `POST /construction/submit`: Submit a Signed Transaction
 
 For an understanding of inputs & outputs check [servicer.go](./service/rpc/servicer.go)
 
@@ -41,7 +42,7 @@ For an understanding of inputs & outputs check [servicer.go](./service/rpc/servi
 
 The main command is `rosetta run`, whose arguments are:
 
-```
+```txt
 Usage:
   rosetta run [flags]
 
@@ -64,38 +65,99 @@ Flags:
 ```
 
 Every argument can be defined using environment variables using `ROSETTA_` prefix; and replacing `.` for `_`; for example:
-```
+
+```sh
 ROSETTA_DATADIR="/my/dir"
 ROSETTA_GETH_GENESIS="/path/to/genesis.json"
-``` 
+```
 
-## Running Rosetta Docker Image
+## Running the Rosetta RPC Server
+
+Running the Rosetta RPC Server from scratch will take some time to sync, since it runs a full archive node in the background. While it may be possible to run the Construction API in the future with a non-archive node, this is still required by the Rosetta spec for the Data API implementation in order to perform balance reconciliation.
+
+### Version 1: Running from `rosetta` source code
+
+You will need the following three repositories cloned locally: `rosetta` (this repo), `celo-monorepo`, `celo-blockchain`. You also need: `go >= 1.14`, `rust >= 1.41.0` (blockchain dependency)
+
+#### Running on Alfajores (Testnet)
+
+Prerequisites:
+
+* Checkout `celo-monorepo` branch `alfajores` and `yarn && yarn build`
+* Checkout `celo-blockchain` tag `v1.1.1` (NOTE: check that this matches the version specified in the `rosetta` `go.mod` file) and `make all`
+* Export paths to `celo-monorepo` and `celo-blockchain` as `CELO_MONOREPO_PATH` and `CELO_BLOCKCHAIN_PATH` respectively (can be paths relative to `rosetta` repo)
+* Checkout `rosetta` tag `v0.7.5` (or latest released tag) and `make gen-contracts && make all`
+* Run `make alfajores-env` to create an empty datadir with the genesis block (only needs to be run the first time, upon initializing the service)
+
+Then run:
+
+```bash
+go run main.go run \
+  --geth.genesis ./envs/alfajores/genesis.json \
+  --geth.binary ../celo-blockchain/build/bin/geth \
+  --geth.syncmode full \
+  --geth.gcmode archive \
+  --geth.staticnodes "enode://05977f6b7d3e16a99d27b714f8a029a006e41ec7732167d373dd920d31f72b3a1776650798d8763560854369d36867e9564dad13b4b60a90c347feeb491d83a9@34.83.42.50:30303" \
+  --datadir "./envs/alfajores"
+```
+
+You can stop the service and restart by re-running just the last command above (`go run main.go` ... )
+
+#### Running on RC1
+
+This is the same as above with a few differences (generally: specifying `rc1` vs. `alfajores`)
+
+Prerequisites:
+
+* Checkout `celo-monorepo` branch `rc1` instead of `alfajores`
+* `celo-blockchain`: same as above
+* Export paths: same as above
+* Checkout `rosetta`: same as above
+* Run `make rc1-env` to create an empty datadir with the genesis block
+
+Then run:
+
+```bash
+go run main.go run \
+  --geth.genesis ./envs/rc1/genesis.json \
+  --geth.binary ../celo-blockchain/build/bin/geth \
+  --geth.syncmode full \
+  --geth.gcmode archive \
+  --geth.staticnodes "enode://5e0f4e3aaa096e2a2db76622b335cab4d3224d08d16cb11e8855a3a5f30c19d35d81a74b21271562e459495ab203c2f3a5a5747a83eb53ba046aeeb09aa240ff@34.83.110.24:30303" \
+  --datadir "./envs/rc1"
+```
+
+### Version 2: Running Rosetta Docker Image
+
+**Note:** This is currently slightly out of date, but we are working on getting this up-to-date and improving our release process.
 
 Rosetta is released as a docker image: `us.gcr.io/celo-testnet/rosetta`. All version can be found on the [registry page](https://us.gcr.io/celo-testnet/rosetta)
 
 Within the docker image, we pack `rosetta` binary and also `geth` binary from celo-blockchain. Rosetta will run both.
 
 To run Rosetta using the docker container, the following options must be configured:
-  * `genesis.json` for the target network (can be found by `curl 'https://storage.googleapis.com/genesis_blocks/baklava' > genesis.json`)
-  * `staticNodes` or `bootnodes`.
-    * With `staticNodes` Rosetta will directly peer to the list of staticNode provided. This node can be any you have access to. For a public list check `https://storage.cloud.google.com/static_nodes/baklava`
+
+* `genesis.json` for the target network (can be found by `curl 'https://storage.googleapis.com/genesis_blocks/baklava' > genesis.json`)
+* `staticNodes` or `bootnodes`.
+  * With `staticNodes` Rosetta will directly peer to the list of staticNode provided. This node can be any you have access to. For a public list check `https://storage.cloud.google.com/static_nodes/baklava`
 
 Additionaly, it needs a data directory for the geth datadir & rosetta.db
 
 To run Celo Rosetta:
 
 ```bash
-# Use the last release
-export RELEASE="0.5.4" #might be outdated
+export STATICNODE="enode://e99a883d0b7d0bacb84cde98c4729933b49adbc94e718b77fdb31779c7ed9da6c49236330a9ae096f42bcbf6e803394229120201704b7a4a3ae8004993fa0876@34.83.92.243:30303"
+export RELEASE="0.7.2"
 # folder for rosetta to use as data directory (saves rosetta.db & celo-blockchain datadir)
-export DATADIR="/var/rosetta"
+export DATADIR="${PWD}/datadir"
+mkdir $DATADIR
+curl 'https://storage.googleapis.com/genesis_blocks/alfajores' > "${DATADIR}/genesis.json"
 docker pull us.gcr.io/celo-testnet/rosetta:$RELEASE
 docker run --name rosetta --rm \
   -v "${DATADIR}:/data" \
   -p 8080:8080 \
-  -e ROSETTA_GETH_STATICNODES="enode://33ac194052ccd10ce54101c8340dbbe7831de02a3e7dcbca7fd35832ff8c53a72fd75e57ce8c8e73a0ace650dc2c2ec1e36f0440e904bc20a3cf5927f2323e85@34.83.199.225:30303"
   us.gcr.io/celo-testnet/rosetta:$RELEASE \
-  run --staticNode $STATICNODE
+  run --geth.staticnodes $STATICNODE
 ```
 
 ## Airgap Client Guide
@@ -130,14 +192,16 @@ For a code resource, please see the [examples](./examples/airgap/main.go).
 ### Setup
 
 You need:
-  * go >= 1.14
-  * rust >= 1.41.0
-  * openapi-generator To re-generate rpc scaffold ([install link](https://openapi-generator.tech))
-  * golangci To run linter (check https://github.com/golangci/golangci-lint#install )
+
+* go >= 1.14
+* rust >= 1.41.0
+* openapi-generator To re-generate rpc scaffold ([install link](https://openapi-generator.tech))
+* golangci To run linter (check https://github.com/golangci/golangci-lint#install )
 
 `Makefile` requires the following env variables:
-  * `CELO_BLOCKCHAIN_PATH`: By default defines as `../celo-blockchain`
-  * `CELO_MONOREPO_PATH`: By default defines as `../celo-monorepo`
+
+* `CELO_BLOCKCHAIN_PATH`
+* `CELO_MONOREPO_PATH`
 
 `go.mod` is set up to build `celo-blockchain` from `../celo-blockchain`. Which is the default path,
 if you need to change it **DON'T COMMIT IT**
@@ -163,70 +227,28 @@ Rosetta requires a few Celo Core Contracts
 ## How to build Docker Image
 
 Commands:
-  * `make docker-build`
-  * `make docker-publish`
+
+* `make docker-build`
+* `make docker-publish`
 
 ## How to run rosetta-cli-checks
+
 Install the [`rosetta-cli`](https://github.com/coinbase/rosetta-cli) according to the instructions. Current testing has been done with `v0.5.16`.
-- Run the Rosetta service in the background for the respective network (currently only alfajores)
-- Run the CLI checks as follows:
-```
+
+* Run the Rosetta service in the background for the respective network (currently only alfajores)
+* Run the CLI checks as follows:
+
+```sh
 # alfajores; specify construction or data
 rosetta-cli check:construction --configuration-file PATH/TO/rosetta/rosetta-cli-conf/testnet/cli-config.json
 ```
+
 ### How to generate `bootstrap_balances.json`
+
 This is only necessary for running the data checks if it has not already been created for the particular network. Here's how to generate this for alfajores (for another network, specify the appropriate genesis block URL and output path):
-```
+
+```sh
 go run examples/generate_balances/main.go \
   https://storage.googleapis.com/genesis_blocks/alfajores \
   rosetta-cli-conf/testnet/bootstrap_balances.json
-```
-### Running on development
-
-#### Running on RC1:
-
-Prerequisites:
-  * Download `celo-monorepo` branch `rc1` and `yarn && yarn build`
-  * Download `celo-blockchain` branch `rc1-tracing-fix` and `make all`
-  * Download `rosetta` branch `master` update go.mod and `make gen-contracts && make all`
-  * Run `make rc1-env` to create an empty datadir with the genesis block
-
-```bash
-go run main.go run \
-  --geth.genesis ./envs/rc1/genesis.json \
-  --geth.binary ../celo-blockchain/build/bin/geth \
-  --geth.syncmode full \
-  --geth.gcmode archive \
-  --geth.staticnodes "enode://5e0f4e3aaa096e2a2db76622b335cab4d3224d08d16cb11e8855a3a5f30c19d35d81a74b21271562e459495ab203c2f3a5a5747a83eb53ba046aeeb09aa240ff@34.83.110.24:30303" \
-  --datadir "./envs/rc1"
-```
-
-#### Running on Alfajores:
-
-Prerequisites:
-  * Download `celo-monorepo` branch `alfajores` and `yarn && yarn build`
-  * Download `celo-blockchain` branch `alfajores-tracing-fix` and `make all`
-  * Download `rosetta` branch `master` update go.mod and `make gen-contracts && make all`
-  * Run `make alfajores-env` to create an empty datadir with the genesis block
-
-```bash
-go run main.go run \
-  --geth.genesis ./envs/alfajores/genesis.json \
-  --geth.binary ../celo-blockchain/build/bin/geth \
-  --geth.syncmode full \
-  --geth.gcmode archive \
-  --geth.staticnodes "enode://05977f6b7d3e16a99d27b714f8a029a006e41ec7732167d373dd920d31f72b3a1776650798d8763560854369d36867e9564dad13b4b60a90c347feeb491d83a9@34.83.42.50:30303" \
-  --datadir "./envs/alfajores"
-```
-
-#### Running on Alfajores-Staging:
-
-```bash
-go run main.go run \
-  --geth.genesis ./envs/alfajoresstaging/genesis.json \
-  --geth.binary ../celo-blockchain/build/bin/geth \
-  --geth.syncmode full \
-  --geth.gcmode archive \
-  --geth.staticnodes "enode://ec86feaa5738d806cbe5431cfef97ce147c6ca4efa815f5684008c2f9455d8d39a8540e3fa19c151b3c9f5db89e86cb2565a05a4dbfb2d13f30834a01297e964@34.82.69.157:30303" \
-  --datadir "./envs/alfajoresstaging"
 ```
