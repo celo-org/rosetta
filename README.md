@@ -129,21 +129,11 @@ go run main.go run \
 
 ### Version 2: Running Rosetta Docker Image
 
-**Note:** This is currently slightly out of date, but we are working on getting this up-to-date and improving our release process.
+***Note:** This is currently slightly out of date, but we are working on getting this up-to-date and improving our release process.*
 
-Rosetta is released as a docker image: `us.gcr.io/celo-testnet/rosetta`. All version can be found on the [registry page](https://us.gcr.io/celo-testnet/rosetta)
+Rosetta is released as a docker image: `us.gcr.io/celo-testnet/rosetta`. All version can be found on the [registry page](https://us.gcr.io/celo-testnet/rosetta). Within the docker image, we pack `rosetta` binary and also `geth` binary from celo-blockchain. Rosetta will run both.
 
-Within the docker image, we pack `rosetta` binary and also `geth` binary from celo-blockchain. Rosetta will run both.
-
-To run Rosetta using the docker container, the following options must be configured:
-
-* `genesis.json` for the target network (can be found by `curl 'https://storage.googleapis.com/genesis_blocks/baklava' > genesis.json`)
-* `staticNodes` or `bootnodes`.
-  * With `staticNodes` Rosetta will directly peer to the list of staticNode provided. This node can be any you have access to. For a public list check `https://storage.cloud.google.com/static_nodes/baklava`
-
-Additionaly, it needs a data directory for the geth datadir & rosetta.db
-
-To run Celo Rosetta:
+The command below runs the Celo Rosetta RPC server for `alfajores`:
 
 ```bash
 export STATICNODE="enode://e99a883d0b7d0bacb84cde98c4729933b49adbc94e718b77fdb31779c7ed9da6c49236330a9ae096f42bcbf6e803394229120201704b7a4a3ae8004993fa0876@34.83.92.243:30303"
@@ -159,6 +149,14 @@ docker run --name rosetta --rm \
   us.gcr.io/celo-testnet/rosetta:$RELEASE \
   run --geth.staticnodes $STATICNODE
 ```
+
+To run this for a different network, replace the genesis block generation and staticnode lines with values specific to the network, as detailed directly below:
+
+* `genesis.json` for the target network (can be found by running the following, selecting one of `alfajores`, `baklava`, `rc1` as `<NETWORK>` in `curl 'https://storage.googleapis.com/genesis_blocks/<NETWORK>' > genesis.json`).
+* `staticNodes` or `bootnodes`.
+  * With `staticNodes` Rosetta will directly peer to the list of staticNode provided. This node can be any you have access to. For a public list check `https://storage.cloud.google.com/static_nodes/<NETWORK>`
+
+
 
 ## Airgap Client Guide
 
