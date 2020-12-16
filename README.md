@@ -77,7 +77,7 @@ Running the Rosetta RPC Server from scratch will take some time to sync, since i
 
 ### Version 1: Running from `rosetta` source code
 
-You will need the following three repositories cloned locally: `rosetta` (this repo), `celo-monorepo`, `celo-blockchain`. You also need: `go >= 1.14`, `rust >= 1.41.0` (blockchain dependency)
+You will need the following three repositories cloned locally: `rosetta` (this repo), [`celo-monorepo`](https://github.com/celo-org/celo-monorepo), [`celo-blockchain`](https://github.com/celo-org/celo-blockchain). You also need: `go >= 1.14`, `rust >= 1.41.0` (blockchain dependency)
 
 #### Running on Alfajores (Testnet)
 
