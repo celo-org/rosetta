@@ -24,6 +24,8 @@ import (
 var (
 	// Election
 	EpochRewardsDistributedToVoters = registerEvent(registry.ElectionContractID.String(), "EpochRewardsDistributedToVoters", []topicParser{addressTopicParser})
+	// StableToken
+	StableTokenTransfer = registerEvent(registry.StableTokenContractID.String(), "Transfer", []topicParser{addressTopicParser, addressTopicParser})
 )
 
 type CeloEvent struct {

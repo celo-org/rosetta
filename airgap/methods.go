@@ -69,6 +69,9 @@ var (
 	ReleaseGoldRevokeActiveVotes          = registerMethod(ReleaseGold, "revokeActive", []argParser{addressParser, addressParser, bigIntParser})
 	ReleaseGoldMaxDistribution            = registerMethod(ReleaseGold, "maxDistribution", nil)
 	ReleaseGoldTotalWithdrawn             = registerMethod(ReleaseGold, "totalWithdrawn", nil)
+
+	// StableToken
+	StableTokenBalanceOf = registerMethod(registry.StableTokenContractID.String(), "balanceOf", []argParser{addressParser})
 )
 
 // Represents a CeloMethod that can be called with the AirgapClient
