@@ -16,6 +16,7 @@ package rpc
 
 import (
 	"github.com/coinbase/rosetta-sdk-go/types"
+	gethTypes "github.com/ethereum/go-ethereum/core/types"
 )
 
 var (
@@ -28,6 +29,15 @@ var (
 		Decimals: 18,
 	}
 )
+
+type CallResult struct {
+	Raw             []byte                 `json:"raw"`
+	BlockIdentifier *types.BlockIdentifier `json:"block_identifier"`
+}
+
+type CallLogsResult struct {
+	Logs []gethTypes.Log `json:"logs"`
+}
 
 type OperationResult string
 

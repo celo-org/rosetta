@@ -456,19 +456,22 @@ func (s *Servicer) Call(ctx context.Context, request *types.CallRequest) (*types
 		callParams.BlockNumber = blockHeader.Number
 		blockIdentifier := &types.BlockIdentifier{
 			Index: blockHeader.Number.Int64(),
-			Hash: blockHeader.Hash().String(),
+			Hash:  blockHeader.Hash().String(),
 		}
 		data, err := s.airgap.CallData(ctx, &callParams)
 		if err != nil {
 			return nil, LogErrCeloClient(request.Method, err)
 		}
 
+		result, err := airgap.MarshallToMap(CallResult{
+			Raw:             data,
+			BlockIdentifier: blockIdentifier,
+		})
+		if err != nil {
+			return nil, LogErrInternal(err)
+		}
 		return &types.CallResponse{
-			Result: map[string]interface{}{
-				"raw": data,
-				// TODO consider making this part of official call response
-				"block_identifier": blockIdentifier,
-			},
+			Result:     result,
 			Idempotent: false,
 		}, nil
 	case CeloGetLogs.String():
@@ -482,10 +485,14 @@ func (s *Servicer) Call(ctx context.Context, request *types.CallRequest) (*types
 			return nil, LogErrCeloClient(request.Method, err)
 		}
 
+		result, err := airgap.MarshallToMap(CallLogsResult{
+			Logs: logs,
+		})
+		if err != nil {
+			return nil, LogErrInternal(err)
+		}
 		return &types.CallResponse{
-			Result: map[string]interface{}{
-				"logs": logs,
-			},
+			Result:     result,
 			Idempotent: true,
 		}, nil
 	}

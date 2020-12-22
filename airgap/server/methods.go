@@ -25,10 +25,10 @@ import (
 )
 
 var abiFactoryMap = map[string]func() (*abi.ABI, error){
-	registry.AccountsContractID.String():   contracts.ParseAccountsABI,
-	registry.ElectionContractID.String():   contracts.ParseElectionABI,
-	registry.LockedGoldContractID.String(): contracts.ParseLockedGoldABI,
-	airgap.ReleaseGold:                     contracts.ParseReleaseGoldABI,
+	registry.AccountsContractID.String():    contracts.ParseAccountsABI,
+	registry.ElectionContractID.String():    contracts.ParseElectionABI,
+	registry.LockedGoldContractID.String():  contracts.ParseLockedGoldABI,
+	airgap.ReleaseGold:                      contracts.ParseReleaseGoldABI,
 	registry.StableTokenContractID.String(): contracts.ParseStableTokenABI,
 }
 
