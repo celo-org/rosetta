@@ -15,7 +15,9 @@
 package rpc
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math/big"
@@ -32,6 +34,8 @@ import (
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
@@ -172,6 +176,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 	emptyResponse := &types.AccountBalanceResponse{
 		BlockIdentifier: HeaderToBlockIdentifier(&blockHeader.Header),
 	}
+
 	createResponse := func(amount *types.Amount) *types.AccountBalanceResponse {
 		return &types.AccountBalanceResponse{
 			BlockIdentifier: HeaderToBlockIdentifier(&blockHeader.Header),
@@ -405,10 +410,8 @@ func (s *Servicer) BlockTransaction(ctx context.Context, request *types.BlockTra
 			return nil, LogErrCeloClient("TraceTransaction", err)
 		}
 
-		for _, aop := range ops {
-			// TODO - revisit
-			// nolint:gosec
-			transferOps := OperationsFromAnalyzer(&aop, int64(len(operations)))
+		for i := range ops {
+			transferOps := OperationsFromAnalyzer(&ops[i], int64(len(operations)))
 			operations = append(operations, transferOps...)
 		}
 	}
@@ -500,50 +503,228 @@ func (s *Servicer) Call(ctx context.Context, request *types.CallRequest) (*types
 	return nil, LogErrValidation(fmt.Errorf("unsupported method '%s'", request.Method))
 }
 
-func (s *Servicer) ConstructionCombine(
-	context.Context,
-	*types.ConstructionCombineRequest,
-) (*types.ConstructionCombineResponse, *types.Error) {
-	return nil, LogErrUnimplemented("ConstructionCombine")
+func (s *Servicer) ConstructionDerive(
+	ctx context.Context,
+	req *types.ConstructionDeriveRequest,
+) (*types.ConstructionDeriveResponse, *types.Error) {
+	pubkey, err := crypto.DecompressPubkey(req.PublicKey.Bytes)
+	if err != nil {
+		return nil, LogErrInternal(errors.New("unable to decompress public key"), err)
+	}
+
+	addr := crypto.PubkeyToAddress(*pubkey)
+
+	return &types.ConstructionDeriveResponse{
+		AccountIdentifier: &types.AccountIdentifier{
+			Address: addr.Hex(),
+		},
+	}, nil
 }
 
-func (s *Servicer) ConstructionDerive(
-	context.Context,
-	*types.ConstructionDeriveRequest,
-) (*types.ConstructionDeriveResponse, *types.Error) {
-	return nil, LogErrUnimplemented("ConstructionDerive")
+func (s *Servicer) ConstructionCombine(
+	ctx context.Context,
+	req *types.ConstructionCombineRequest,
+) (*types.ConstructionCombineResponse, *types.Error) {
+	var metadata airgap.TxMetadata
+
+	if err := json.Unmarshal([]byte(req.UnsignedTransaction), &metadata); err != nil {
+		return nil, ErrInternal
+	}
+
+	tx := airgap.Transaction{
+		TxMetadata: &metadata,
+		Signature:  req.Signatures[0].Bytes,
+	}
+
+	signedTx, err := tx.AsGethTransaction()
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	signedTxJSON, err := signedTx.MarshalJSON()
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	return &types.ConstructionCombineResponse{
+		SignedTransaction: string(signedTxJSON),
+	}, nil
 }
 
 func (s *Servicer) ConstructionHash(
-	context.Context,
-	*types.ConstructionHashRequest,
+	ctx context.Context,
+	req *types.ConstructionHashRequest,
 ) (*types.TransactionIdentifierResponse, *types.Error) {
-	return nil, LogErrUnimplemented("ConstructionHash")
+	t := new(ethTypes.Transaction)
+	err := t.UnmarshalJSON([]byte(req.SignedTransaction))
+
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	return &types.TransactionIdentifierResponse{
+		TransactionIdentifier: &types.TransactionIdentifier{
+			Hash: t.Hash().Hex(),
+		},
+	}, nil
 }
 
 func (s *Servicer) ConstructionParse(
-	context.Context,
-	*types.ConstructionParseRequest,
+	ctx context.Context,
+	req *types.ConstructionParseRequest,
 ) (*types.ConstructionParseResponse, *types.Error) {
-	return nil, LogErrUnimplemented("ConstructionParse")
+	var tx airgap.Transaction
+	if !req.Signed {
+		err := json.Unmarshal([]byte(req.Transaction), &tx)
+		if err != nil {
+			return nil, ErrInternal
+		}
+	} else {
+		t := new(ethTypes.Transaction)
+		err := t.UnmarshalJSON([]byte(req.Transaction))
+		if err != nil {
+			return nil, ErrInternal
+		}
+
+		from, err := ethTypes.Sender(ethTypes.NewEIP155Signer(t.ChainId()), t)
+		if err != nil {
+			return nil, ErrInternal
+		}
+
+		txMetadata := &airgap.TxMetadata{
+			To:                  *t.To(),
+			From:                from,
+			ChainId:             t.ChainId(),
+			Gas:                 t.Gas(),
+			GasPrice:            t.GasPrice(),
+			Nonce:               t.Nonce(),
+			Data:                t.Data(),
+			Value:               t.Value(),
+			FeeCurrency:         t.FeeCurrency(),
+			GatewayFee:          t.GatewayFee(),
+			GatewayFeeRecipient: t.GatewayFeeRecipient(),
+		}
+		v, r, s := t.RawSignatureValues()
+		signature := airgap.ValuesToSignature(t.ChainId(), v, r, s)
+
+		tx = airgap.Transaction{
+			TxMetadata: txMetadata,
+			Signature:  signature,
+		}
+	}
+
+	ops := []*types.Operation{
+		{
+			Type: "transfer",
+			OperationIdentifier: &types.OperationIdentifier{
+				Index: 0,
+			},
+			Account: &types.AccountIdentifier{
+				Address: tx.From.Hex(),
+			},
+			Amount: &types.Amount{
+				Value:    new(big.Int).Neg(tx.Value).String(),
+				Currency: CeloGold,
+			},
+		},
+		{
+			Type: "transfer",
+			OperationIdentifier: &types.OperationIdentifier{
+				Index: 1,
+			},
+			RelatedOperations: []*types.OperationIdentifier{
+				{
+					Index: 0,
+				},
+			},
+			Account: &types.AccountIdentifier{
+				Address: tx.To.Hex(),
+			},
+			Amount: &types.Amount{
+				Value:    tx.Value.String(),
+				Currency: CeloGold,
+			},
+		},
+	}
+
+	var resp *types.ConstructionParseResponse
+	resp = &types.ConstructionParseResponse{
+		Operations: ops,
+	}
+	if req.Signed {
+		resp.AccountIdentifierSigners = []*types.AccountIdentifier{
+			{
+				Address: tx.From.Hex(),
+			},
+		}
+	}
+
+	return resp, nil
 }
 
 func (s *Servicer) ConstructionPayloads(
-	context.Context,
-	*types.ConstructionPayloadsRequest,
+	ctx context.Context,
+	req *types.ConstructionPayloadsRequest,
 ) (*types.ConstructionPayloadsResponse, *types.Error) {
-	return nil, LogErrUnimplemented("ConstructionPayloads")
+	bz, err := json.Marshal(req.Metadata)
+	if err != nil {
+		return nil, ErrInternal
+	}
+	var metadata airgap.TxMetadata
+	err = metadata.UnmarshalJSON(bz)
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	value := req.Operations[0].Amount.Value
+	valueInt, ok := new(big.Int).SetString(value, 10)
+	if !ok {
+		return nil, nil
+	}
+	valueInt.Abs(valueInt)
+	metadata.Value = valueInt
+
+	tx := airgap.Transaction{
+		TxMetadata: &metadata,
+		Signature:  []byte{},
+	}
+
+	gethTx, _ := tx.AsGethTransaction()
+	signer := ethTypes.NewEIP155Signer(tx.ChainId)
+
+	// Construct SigningPayload
+	payload := &types.SigningPayload{
+		AccountIdentifier: &types.AccountIdentifier{
+			Address: tx.From.Hex(),
+		},
+		Bytes:         signer.Hash(gethTx).Bytes(),
+		SignatureType: types.EcdsaRecovery,
+	}
+
+	unsignedTxJSON, err := json.Marshal(tx)
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	return &types.ConstructionPayloadsResponse{
+		UnsignedTransaction: string(unsignedTxJSON),
+		Payloads:            []*types.SigningPayload{payload},
+	}, nil
 }
 
 func (s *Servicer) ConstructionPreprocess(
-	context.Context,
-	*types.ConstructionPreprocessRequest,
+	ctx context.Context,
+	req *types.ConstructionPreprocessRequest,
 ) (*types.ConstructionPreprocessResponse, *types.Error) {
-	return nil, LogErrUnimplemented("ConstructionPreprocess")
+	options := make(map[string]interface{})
+	options["From"] = req.Operations[0].Account.Address
+	options["To"] = req.Operations[1].Account.Address
+	return &types.ConstructionPreprocessResponse{
+		Options: options,
+	}, nil
 }
 
 func (s *Servicer) ConstructionMetadata(ctx context.Context, request *types.ConstructionMetadataRequest) (*types.ConstructionMetadataResponse, *types.Error) {
-
 	var txArgs airgap.TxArgs
 	if err := airgap.UnmarshallFromMap(request.Options, &txArgs); err != nil {
 		return nil, LogErrValidation(err)
@@ -565,10 +746,21 @@ func (s *Servicer) ConstructionMetadata(ctx context.Context, request *types.Cons
 	return &response, nil
 }
 
-func (s *Servicer) ConstructionSubmit(ctx context.Context, request *types.ConstructionSubmitRequest) (*types.TransactionIdentifierResponse, *types.Error) {
-	rawTx := common.Hex2Bytes(request.SignedTransaction)
+func (s *Servicer) ConstructionSubmit(ctx context.Context, req *types.ConstructionSubmitRequest) (*types.TransactionIdentifierResponse, *types.Error) {
+	t := new(ethTypes.Transaction)
 
-	txhash, err := s.airgap.SubmitTx(ctx, rawTx)
+	err := t.UnmarshalJSON([]byte(req.SignedTransaction))
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	var buf bytes.Buffer
+	err = t.EncodeRLP(&buf)
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	txhash, err := s.airgap.SubmitTx(ctx, buf.Bytes())
 	if err != nil {
 		return nil, LogErrCeloClient("SendRawTx", err)
 	}
