@@ -25,10 +25,11 @@ import (
 )
 
 var abiFactoryMap = map[string]func() (*abi.ABI, error){
-	registry.AccountsContractID.String():   contracts.ParseAccountsABI,
-	registry.ElectionContractID.String():   contracts.ParseElectionABI,
-	registry.LockedGoldContractID.String(): contracts.ParseLockedGoldABI,
-	airgap.ReleaseGold:                     contracts.ParseReleaseGoldABI,
+	registry.AccountsContractID.String():    contracts.ParseAccountsABI,
+	registry.ElectionContractID.String():    contracts.ParseElectionABI,
+	registry.LockedGoldContractID.String():  contracts.ParseLockedGoldABI,
+	airgap.ReleaseGold:                      contracts.ParseReleaseGoldABI,
+	registry.StableTokenContractID.String(): contracts.ParseStableTokenABI,
 }
 
 type argsPreProcessor func(ctx context.Context, srvCtx ServerContext, args []interface{}) ([]interface{}, error)
@@ -74,6 +75,7 @@ var serverCallMethodDefinitions = map[*airgap.CeloMethod]argsPreProcessor{
 	airgap.GetActiveVotesForGroupByAccount: noopArgsPreProcessor,
 	airgap.ReleaseGoldMaxDistribution:      noopArgsPreProcessor,
 	airgap.ReleaseGoldTotalWithdrawn:       noopArgsPreProcessor,
+	airgap.StableTokenBalanceOf:            noopArgsPreProcessor,
 }
 
 func noopArgsPreProcessor(ctx context.Context, srvCtx ServerContext, args []interface{}) ([]interface{}, error) {

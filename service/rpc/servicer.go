@@ -441,15 +441,37 @@ func (s *Servicer) Call(ctx context.Context, request *types.CallRequest) (*types
 			return nil, LogErrValidation(err)
 		}
 
+		var partialBlockId *types.PartialBlockIdentifier
+		if callParams.BlockNumber != nil {
+			// Block number is far enough away from INT64_MAX to not overflow for >10^12 years
+			intBlockNum := callParams.BlockNumber.Int64()
+			partialBlockId = &types.PartialBlockIdentifier{
+				Index: &intBlockNum,
+			}
+		}
+		blockHeader, errRsp := s.blockHeader(ctx, partialBlockId)
+		if errRsp != nil {
+			return nil, errRsp
+		}
+		callParams.BlockNumber = blockHeader.Number
+		blockIdentifier := &types.BlockIdentifier{
+			Index: blockHeader.Number.Int64(),
+			Hash:  blockHeader.Hash().String(),
+		}
 		data, err := s.airgap.CallData(ctx, &callParams)
 		if err != nil {
 			return nil, LogErrCeloClient(request.Method, err)
 		}
 
+		result, err := airgap.MarshallToMap(CallResult{
+			Raw:             data,
+			BlockIdentifier: blockIdentifier,
+		})
+		if err != nil {
+			return nil, LogErrInternal(err)
+		}
 		return &types.CallResponse{
-			Result: map[string]interface{}{
-				"raw": data,
-			},
+			Result:     result,
 			Idempotent: false,
 		}, nil
 	case CeloGetLogs.String():
@@ -463,10 +485,14 @@ func (s *Servicer) Call(ctx context.Context, request *types.CallRequest) (*types
 			return nil, LogErrCeloClient(request.Method, err)
 		}
 
+		result, err := airgap.MarshallToMap(CallLogsResult{
+			Logs: logs,
+		})
+		if err != nil {
+			return nil, LogErrInternal(err)
+		}
 		return &types.CallResponse{
-			Result: map[string]interface{}{
-				"logs": logs,
-			},
+			Result:     result,
 			Idempotent: true,
 		}, nil
 	}
