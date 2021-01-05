@@ -11,8 +11,8 @@ require (
 	github.com/gorilla/handlers v1.4.2
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/miguelmota/go-ethereum-hdwallet v0.0.0-20200123000308-a60dcd172b4c
+	github.com/onsi/ginkgo v1.10.2 // indirect
 	github.com/onsi/gomega v1.9.0
-	github.com/segmentio/golines v0.0.0-20200306054842-869934f8da7b // indirect
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.6.3
 	golang.org/x/net v0.0.0-20200904194848-62affa334b73
