@@ -43,6 +43,8 @@ func TestMethodArgumentParsing(t *testing.T) {
 		{airgap.UnlockGold, []interface{}{big.NewInt(100)}},
 		{airgap.RelockGold, []interface{}{big.NewInt(1), big.NewInt(100)}},
 		{airgap.WithdrawGold, []interface{}{big.NewInt(1)}},
+
+		{airgap.StableTokenTransfer, []interface{}{common.HexToAddress("0x1234"), big.NewInt(1)}},
 	}
 
 	ctx := context.Background()

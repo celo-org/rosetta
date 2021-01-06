@@ -119,3 +119,7 @@ func (c *airgapArgBuilderImpl) ReleaseGoldRevokePendingVotes(releaseGold common.
 func (c *airgapArgBuilderImpl) ReleaseGoldRevokeActiveVotes(releaseGold common.Address, signer common.Address, group common.Address, amount *big.Int) (*TxArgs, error) {
 	return c.FillTxArgs(&TxArgs{Method: ReleaseGoldRevokeActiveVotes, To: &releaseGold, From: signer}, signer, group, amount)
 }
+
+func (c *airgapArgBuilderImpl) StableTokenTransfer(to common.Address, value *big.Int) (*TxArgs, error) {
+	return c.FillTxArgs(&TxArgs{Method: StableTokenTransfer, To: &to, Value: value})
+}

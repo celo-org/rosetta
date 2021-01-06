@@ -72,6 +72,7 @@ var (
 
 	// StableToken
 	StableTokenBalanceOf = registerMethod(registry.StableTokenContractID.String(), "balanceOf", []argParser{addressParser})
+	StableTokenTransfer  = registerMethod(registry.StableTokenContractID.String(), "transfer", []argParser{addressParser, bigIntParser})
 )
 
 // Represents a CeloMethod that can be called with the AirgapClient

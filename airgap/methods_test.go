@@ -160,6 +160,13 @@ func TestMethodArgsSerializing(t *testing.T) {
 				big.NewInt(1000),
 			},
 		},
+		{
+			method: StableTokenTransfer,
+			args: []interface{}{
+				common.HexToAddress("0x1111"),
+				big.NewInt(1000),
+			},
+		},
 	}
 
 	for _, _testCase := range testCases {

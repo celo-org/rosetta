@@ -59,6 +59,8 @@ type ArgBuilder interface {
 	ReleaseGoldWithdrawGold(releaseGold common.Address, signer common.Address, index *big.Int) (*TxArgs, error)
 	ReleaseGoldRevokePendingVotes(releaseGold common.Address, signer common.Address, group common.Address, value *big.Int) (*TxArgs, error)
 	ReleaseGoldRevokeActiveVotes(releaseGold common.Address, signer common.Address, group common.Address, value *big.Int) (*TxArgs, error)
+
+	StableTokenTransfer(to common.Address, value *big.Int) (*TxArgs, error)
 }
 
 type Client interface {

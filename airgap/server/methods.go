@@ -61,6 +61,8 @@ var serverTransactionMethodDefinitions = map[*airgap.CeloMethod]argsPreProcessor
 	airgap.ReleaseGoldAuthorizeValidatorSigner:   preprocessAuthorizeSigner,
 	airgap.ReleaseGoldRevokePendingVotes:         preprocessRevoke,
 	airgap.ReleaseGoldRevokeActiveVotes:          preprocessRevoke,
+
+	airgap.StableTokenTransfer: noopArgsPreProcessor,
 }
 
 var serverCallMethodDefinitions = map[*airgap.CeloMethod]argsPreProcessor{
