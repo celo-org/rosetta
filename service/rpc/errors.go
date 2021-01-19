@@ -87,4 +87,6 @@ var (
 	ErrBadBlockIdentifier = errors.New("Bad block identifier")
 	ErrFetchBlockHeader   = errors.New("Failed to fetch block header")
 	ErrMissingTxInBlock   = errors.New("Transaction doesn't belong to block")
+	ErrUnclearIntent      = errors.New("Operations provided are not valid")
+	ErrInvalidAddr        = errors.New("Address provided is not valid")
 )
