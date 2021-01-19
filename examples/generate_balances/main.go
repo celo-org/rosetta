@@ -68,7 +68,7 @@ func main() {
 		}
 		// rosetta CLI expects "0x..." format; case sensitive
 		if len(k) >= 2 && !(strings.ToLower(k)[:2] == "0x") {
-			k = "0x" + k;
+			k = "0x" + k
 		}
 		balances = append(balances, &BootstrapBalance{
 			Account: &types.AccountIdentifier{

@@ -31,6 +31,7 @@ import (
 	"github.com/celo-org/rosetta/airgap/server"
 	"github.com/celo-org/rosetta/analyzer"
 	"github.com/celo-org/rosetta/db"
+	"github.com/coinbase/rosetta-sdk-go/parser"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -569,6 +570,42 @@ func (s *Servicer) ConstructionHash(
 	}, nil
 }
 
+func txToOps(tx airgap.Transaction) []*types.Operation {
+	return []*types.Operation{
+		{
+			Type: analyzer.OpTransfer.String(),
+			OperationIdentifier: &types.OperationIdentifier{
+				Index: 0,
+			},
+			Account: &types.AccountIdentifier{
+				Address: tx.From.Hex(),
+			},
+			Amount: &types.Amount{
+				Value:    new(big.Int).Neg(tx.Value).String(),
+				Currency: CeloGold,
+			},
+		},
+		{
+			Type: analyzer.OpTransfer.String(),
+			OperationIdentifier: &types.OperationIdentifier{
+				Index: 1,
+			},
+			RelatedOperations: []*types.OperationIdentifier{
+				{
+					Index: 0,
+				},
+			},
+			Account: &types.AccountIdentifier{
+				Address: tx.To.Hex(),
+			},
+			Amount: &types.Amount{
+				Value:    tx.Value.String(),
+				Currency: CeloGold,
+			},
+		},
+	}
+}
+
 func (s *Servicer) ConstructionParse(
 	ctx context.Context,
 	req *types.ConstructionParseRequest,
@@ -612,40 +649,7 @@ func (s *Servicer) ConstructionParse(
 			Signature:  signature,
 		}
 	}
-
-	ops := []*types.Operation{
-		{
-			Type: "transfer",
-			OperationIdentifier: &types.OperationIdentifier{
-				Index: 0,
-			},
-			Account: &types.AccountIdentifier{
-				Address: tx.From.Hex(),
-			},
-			Amount: &types.Amount{
-				Value:    new(big.Int).Neg(tx.Value).String(),
-				Currency: CeloGold,
-			},
-		},
-		{
-			Type: "transfer",
-			OperationIdentifier: &types.OperationIdentifier{
-				Index: 1,
-			},
-			RelatedOperations: []*types.OperationIdentifier{
-				{
-					Index: 0,
-				},
-			},
-			Account: &types.AccountIdentifier{
-				Address: tx.To.Hex(),
-			},
-			Amount: &types.Amount{
-				Value:    tx.Value.String(),
-				Currency: CeloGold,
-			},
-		},
-	}
+	ops := txToOps(tx)
 
 	var resp *types.ConstructionParseResponse
 	resp = &types.ConstructionParseResponse{
@@ -666,24 +670,18 @@ func (s *Servicer) ConstructionPayloads(
 	ctx context.Context,
 	req *types.ConstructionPayloadsRequest,
 ) (*types.ConstructionPayloadsResponse, *types.Error) {
-	bz, err := json.Marshal(req.Metadata)
-	if err != nil {
-		return nil, ErrInternal
+
+	txArgs, rosettaErr := parseTransfer(req.Operations)
+	if rosettaErr != nil {
+		return nil, rosettaErr
 	}
+
 	var metadata airgap.TxMetadata
-	err = metadata.UnmarshalJSON(bz)
+	err := airgap.UnmarshallFromMap(req.Metadata, &metadata)
 	if err != nil {
-		return nil, ErrInternal
+		return nil, ErrValidation
 	}
-
-	value := req.Operations[0].Amount.Value
-	valueInt, ok := new(big.Int).SetString(value, 10)
-	if !ok {
-		return nil, nil
-	}
-	valueInt.Abs(valueInt)
-	metadata.Value = valueInt
-
+	metadata.Value = txArgs.Value
 	tx := airgap.Transaction{
 		TxMetadata: &metadata,
 		Signature:  []byte{},
@@ -712,16 +710,76 @@ func (s *Servicer) ConstructionPayloads(
 	}, nil
 }
 
+// parseTransfer extracts TxArgs from operations.
+func parseTransfer(ops []*types.Operation) (*airgap.TxArgs, *types.Error) {
+	descriptions := &parser.Descriptions{
+		OperationDescriptions: []*parser.OperationDescription{
+			{
+				Type:    analyzer.OpTransfer.String(),
+				Account: &parser.AccountDescription{Exists: true},
+				Amount: &parser.AmountDescription{
+					Exists:   true,
+					Sign:     parser.NegativeAmountSign,
+					Currency: CeloGold,
+				},
+			},
+			{
+				Type:    analyzer.OpTransfer.String(),
+				Account: &parser.AccountDescription{Exists: true},
+				Amount: &parser.AmountDescription{
+					Exists:   true,
+					Sign:     parser.PositiveAmountSign,
+					Currency: CeloGold,
+				},
+			},
+		},
+		OppositeAmounts: [][]int{{0, 1}},
+		ErrUnmatched:    true,
+	}
+	matches, err := parser.MatchOperations(descriptions, ops)
+	if err != nil {
+		return nil, LogErrValidation(err)
+	}
+	fromOp, _ := matches[0].First()
+	fromAddr, ok := ChecksumAddress(fromOp.Account.Address)
+	if !ok {
+		return nil, LogErrValidation(ErrInvalidAddr)
+	}
+	toOp, _ := matches[1].First()
+	toAddr, ok := ChecksumAddress(toOp.Account.Address)
+	if !ok {
+		return nil, LogErrValidation(ErrInvalidAddr)
+	}
+
+	var txArgs airgap.TxArgs
+	txArgs.From = *fromAddr
+	txArgs.To = toAddr
+	txArgs.Value, ok = new(big.Int).SetString(toOp.Amount.Value, 10)
+	if !ok {
+		return nil, ErrValidation
+	}
+
+	return &txArgs, nil
+}
+
 func (s *Servicer) ConstructionPreprocess(
 	ctx context.Context,
 	req *types.ConstructionPreprocessRequest,
 ) (*types.ConstructionPreprocessResponse, *types.Error) {
+	// Ensure descriptions match expected format.
+	txArgs, rosettaErr := parseTransfer(req.Operations)
+	if rosettaErr != nil {
+		return nil, rosettaErr
+	}
+
 	options := make(map[string]interface{})
-	options["From"] = req.Operations[0].Account.Address
-	options["To"] = req.Operations[1].Account.Address
+	options["From"] = txArgs.From.Hex()
+	options["To"] = txArgs.To.Hex()
+
 	return &types.ConstructionPreprocessResponse{
 		Options: options,
 	}, nil
+
 }
 
 func (s *Servicer) ConstructionMetadata(ctx context.Context, request *types.ConstructionMetadataRequest) (*types.ConstructionMetadataResponse, *types.Error) {
@@ -771,6 +829,23 @@ func (s *Servicer) ConstructionSubmit(ctx context.Context, req *types.Constructi
 		},
 	}
 	return &response, nil
+}
+
+// ----------------------------------------------------------------------------------------
+// Public Helper Functions (useful for modules)
+// ----------------------------------------------------------------------------------------
+
+// ChecksumAddress ensures a Celo hex address
+// is in Checksum Format and converts it to an Address.
+// If it cannot be converted, it returns !ok.
+func ChecksumAddress(address string) (*common.Address, bool) {
+	var addr common.Address
+	mcAddr, err := common.NewMixedcaseAddressFromString(address)
+	if err != nil {
+		return &addr, false
+	}
+	addr = mcAddr.Address()
+	return &addr, true
 }
 
 // ----------------------------------------------------------------------------------------
