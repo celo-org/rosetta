@@ -84,9 +84,9 @@ You will need the following three repositories cloned locally: `rosetta` (this r
 Prerequisites:
 
 * Checkout `celo-monorepo` branch `alfajores` and run `yarn && yarn build`
-* Checkout `celo-blockchain` tag `v1.1.1` (NOTE: check that this matches the version specified in the `rosetta` `go.mod` file) and `make all`
+* Checkout `celo-blockchain` tag `v1.1.2` (NOTE: check that this matches the version specified in the `rosetta` `go.mod` file) and `make all`
 * Export paths to `celo-monorepo` and `celo-blockchain` as `CELO_MONOREPO_PATH` and `CELO_BLOCKCHAIN_PATH` respectively (can be paths relative to `rosetta` repo)
-* Checkout `rosetta` tag `v0.7.5` (or latest released tag) and `make gen-contracts && make all`
+* Checkout `rosetta` tag `v0.7.6` (or latest released tag) and `make gen-contracts && make all`
 * Run `make alfajores-env` to create an empty datadir with the genesis block (only needs to be run the first time, upon initializing the service)
 
 Then run:
