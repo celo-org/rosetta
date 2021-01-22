@@ -77,13 +77,13 @@ Running the Rosetta RPC Server from scratch will take some time to sync, since i
 
 ### Version 1: Running from `rosetta` source code
 
-You will need the following three repositories cloned locally: `rosetta` (this repo), [`celo-monorepo`](https://github.com/celo-org/celo-monorepo), [`celo-blockchain`](https://github.com/celo-org/celo-blockchain). You also need: `go >= 1.14`, `rust >= 1.41.0` (blockchain dependency)
+You will need the following three repositories cloned locally: `rosetta` (this repo), [`celo-monorepo`](https://github.com/celo-org/celo-monorepo), [`celo-blockchain`](https://github.com/celo-org/celo-blockchain). You also need: `go >= 1.14`, `rust >= 1.41.0` (`blockchain` dependency), and `node = 10` (`celo-monorepo` dependency).
 
 #### Running on Alfajores (Testnet)
 
 Prerequisites:
 
-* Checkout `celo-monorepo` branch `alfajores` and run `yarn && yarn build`
+* Checkout `celo-monorepo` branch `alfajores` and run `yarn && yarn build --ignore docs`
 * Checkout `celo-blockchain` tag `v1.1.2` (NOTE: check that this matches the version specified in the `rosetta` `go.mod` file) and `make all`
 * Export paths to `celo-monorepo` and `celo-blockchain` as `CELO_MONOREPO_PATH` and `CELO_BLOCKCHAIN_PATH` respectively (can be paths relative to `rosetta` repo)
 * Checkout `rosetta` tag `v0.7.6` (or latest released tag) and `make gen-contracts && make all`
@@ -109,7 +109,7 @@ This is the same as above with a few differences (generally: specifying `rc1` vs
 
 Prerequisites:
 
-* Checkout `celo-monorepo` branch `rc1` instead of `alfajores`, run `yarn && yarn build` as above
+* Checkout `celo-monorepo` branch `rc1` instead of `alfajores`, run `yarn && yarn build --ignore docs` as above
 * `celo-blockchain`: same as above
 * Export paths: same as above
 * Checkout `rosetta`: same as above
@@ -129,9 +129,7 @@ go run main.go run \
 
 ### Version 2: Running Rosetta Docker Image
 
-***Note:** This is currently slightly out of date, but we are working on getting this up-to-date and improving our release process.*
-
-Rosetta is released as a docker image: `us.gcr.io/celo-testnet/rosetta`. All version can be found on the [registry page](https://us.gcr.io/celo-testnet/rosetta). Within the docker image, we pack `rosetta` binary and also `geth` binary from celo-blockchain. Rosetta will run both.
+Rosetta is released as a docker image: `us.gcr.io/celo-testnet/rosetta`. All versions can be found on the [registry page](https://us.gcr.io/celo-testnet/rosetta). Within the docker image, we pack the `rosetta` binary and also the `geth` binary from `celo-blockchain`. Rosetta will run both.
 
 The command below runs the Celo Rosetta RPC server for `alfajores`:
 
@@ -158,8 +156,6 @@ To run this for a different network, replace the genesis block generation and st
 * `genesis.json` for the target network (can be found by running the following, selecting one of `alfajores`, `baklava`, `rc1` as `<NETWORK>` in `curl 'https://storage.googleapis.com/genesis_blocks/<NETWORK>' > genesis.json`).
 * `staticNodes` or `bootnodes`.
   * With `staticNodes` Rosetta will directly peer to the list of staticNode provided. This node can be any you have access to. For a public list check `https://storage.cloud.google.com/static_nodes/<NETWORK>`
-
-
 
 ## Airgap Client Guide
 
@@ -196,16 +192,14 @@ You need:
 
 * go >= 1.14
 * rust >= 1.41.0
+* node = 10
 * openapi-generator To re-generate rpc scaffold ([install link](https://openapi-generator.tech))
 * golangci To run linter (check https://github.com/golangci/golangci-lint#install )
 
-`Makefile` requires the following env variables:
+`Makefile` requires the following env variable to be set and pointed to your local `celo-blockchain` and `celo-monorepo` clones, respectively:
 
 * `CELO_BLOCKCHAIN_PATH`
 * `CELO_MONOREPO_PATH`
-
-`go.mod` is set up to build `celo-blockchain` from `../celo-blockchain`. Which is the default path,
-if you need to change it **DON'T COMMIT IT**
 
 ### Build Commands
 
@@ -224,13 +218,6 @@ Rosetta requires a few Celo Core Contracts
 * Generation requires acces to `celo-blockchain` & `celo-monorepo`.
 * Generation assumes both projects are **already properly built**
 * To run generator do `make gen-contracts`
-
-## How to build Docker Image
-
-Commands:
-
-* `make docker-build`
-* `make docker-publish`
 
 ## How to run rosetta-cli-checks
 
