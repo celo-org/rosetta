@@ -77,7 +77,7 @@ Running the Rosetta RPC Server from scratch will take some time to sync, since i
 
 ### Version 1: Running from `rosetta` source code
 
-You will need the following three repositories cloned locally: `rosetta` (this repo), [`celo-monorepo`](https://github.com/celo-org/celo-monorepo), [`celo-blockchain`](https://github.com/celo-org/celo-blockchain). You also need: `go >= 1.14`, `rust >= 1.41.0` (`blockchain` dependency), and `node = 10` (`celo-monorepo` dependency).
+You will need the following three repositories cloned locally: `rosetta` (this repo), [`celo-monorepo`](https://github.com/celo-org/celo-monorepo), [`celo-blockchain`](https://github.com/celo-org/celo-blockchain). You also need: `go >= 1.14`, `rust >= 1.41.0` (`blockchain` dependency), `node = 10` (`celo-monorepo` dependency), and `golangci` ([installation instructions](https://golangci-lint.run/usage/install/#local-installation)) (linter dependency for the Makefile).
 
 #### Running on Alfajores (Testnet)
 
@@ -193,8 +193,8 @@ You need:
 * go >= 1.14
 * rust >= 1.41.0
 * node = 10
+* golangci ([install link](https://golangci-lint.run/usage/install/#local-installation))
 * openapi-generator To re-generate rpc scaffold ([install link](https://openapi-generator.tech))
-* golangci To run linter (check https://github.com/golangci/golangci-lint#install )
 
 `Makefile` requires the following env variable to be set and pointed to your local `celo-blockchain` and `celo-monorepo` clones, respectively:
 
