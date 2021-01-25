@@ -77,16 +77,33 @@ Running the Rosetta RPC Server from scratch will take some time to sync, since i
 
 ### Version 1: Running from `rosetta` source code
 
-You will need the following three repositories cloned locally: `rosetta` (this repo), [`celo-monorepo`](https://github.com/celo-org/celo-monorepo), [`celo-blockchain`](https://github.com/celo-org/celo-blockchain). You also need: `go >= 1.14`, `rust >= 1.41.0` (`blockchain` dependency), `node = 10` (`celo-monorepo` dependency), and `golangci` ([installation instructions](https://golangci-lint.run/usage/install/#local-installation)) (linter dependency for the Makefile).
+You will need the following three repositories cloned locally:
+
+* `rosetta` (this repo)
+* [`celo-monorepo`](https://github.com/celo-org/celo-monorepo)
+* [`celo-blockchain`](https://github.com/celo-org/celo-blockchain)
+
+You also need the following dependencies to be met:
+
+* `go >= 1.14`
+* `rust >= 1.41.0` (`blockchain` dependency)
+* `node = 10` (`celo-monorepo` dependency)
+* `golangci` ([installation instructions](https://golangci-lint.run/usage/install/#local-installation)) (linter dependency for the Makefile)
 
 #### Running on Alfajores (Testnet)
 
 Prerequisites:
 
 * Checkout `celo-monorepo` branch `alfajores` and run `yarn && yarn build --ignore docs`
-* Checkout `celo-blockchain` tag `v1.1.2` (NOTE: check that this matches the version specified in the `rosetta` `go.mod` file) and `make all`
-* Export paths to `celo-monorepo` and `celo-blockchain` as `CELO_MONOREPO_PATH` and `CELO_BLOCKCHAIN_PATH` respectively (can be paths relative to `rosetta` repo)
-* Checkout `rosetta` tag `v0.7.6` (or latest released tag) and `make gen-contracts && make all`
+* Checkout `celo-blockchain` tag `v1.1.2` (`git fetch --all && git checkout v1.1.2`) (NOTE: check that this matches the version specified in the `rosetta` `go.mod` file) and `make all`
+* Set paths to `celo-monorepo` and `celo-blockchain` as `CELO_MONOREPO_PATH` and `CELO_BLOCKCHAIN_PATH` respectively (paths can be absolute or relative to the `rosetta` repo. If desired, add these lines to your bash profile:
+
+  ```sh
+  export CELO_MONOREPO_PATH=path/to/celo-monorepo
+  export CELO_BLOCKCHAIN_PATH=path/to/celo-blockchain
+  ```
+
+* Checkout `rosetta` tag `v0.7.6` (`git fetch --all && git checkout v0.7.6`) (or latest released tag) and `make gen-contracts && make all`
 * Run `make alfajores-env` to create an empty datadir with the genesis block (only needs to be run the first time, upon initializing the service)
 
 Then run:
@@ -188,15 +205,11 @@ For a code resource, please see the [examples](./examples/airgap/main.go).
 
 ### Setup
 
-You need:
+In addition to the dependencies listed above under the instructions for running from `rosetta` source code, you also need:
 
-* go >= 1.14
-* rust >= 1.41.0
-* node = 10
-* golangci ([install link](https://golangci-lint.run/usage/install/#local-installation))
 * openapi-generator To re-generate rpc scaffold ([install link](https://openapi-generator.tech))
 
-`Makefile` requires the following env variable to be set and pointed to your local `celo-blockchain` and `celo-monorepo` clones, respectively:
+The `Makefile` requires the following env variable to be set and pointed to your local `celo-blockchain` and `celo-monorepo` clones, respectively. Note that relative paths are fine:
 
 * `CELO_BLOCKCHAIN_PATH`
 * `CELO_MONOREPO_PATH`
@@ -216,7 +229,7 @@ Rosetta requires a few Celo Core Contracts
 
 * The list of required contracts is defined on `scripts/gen-contracts.go` file
 * Generation requires acces to `celo-blockchain` & `celo-monorepo`.
-* Generation assumes both projects are **already properly built**
+* Generation assumes both projects are **already properly built** (see above under instructions for running `rosetta` from source for more details on how to do this)
 * To run generator do `make gen-contracts`
 
 ## How to run rosetta-cli-checks
