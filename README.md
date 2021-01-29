@@ -104,7 +104,15 @@ Prerequisites:
   ```
 
 * Checkout `rosetta` tag `v0.7.6` (`git fetch --all && git checkout v0.7.6`) (or latest released tag) and `make gen-contracts && make all`
-* Run `make alfajores-env` to create an empty datadir with the genesis block (only needs to be run the first time, upon initializing the service)
+* Run `make alfajores-env` to create an empty datadir with the genesis block (only needs to be run the first time, upon initializing the service). The output should look something like this:
+
+  ```sh
+  mkdir -p ./envs/alfajores
+  curl 'https://storage.googleapis.com/genesis_blocks/alfajores' > ./envs/alfajores/genesis.json
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                  Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:-100 12600  100 12600    0     0  36842      0 --:--:-- --:--:-- --:--:-- 36842
+  ```
 
 Then run:
 
@@ -130,7 +138,15 @@ Prerequisites:
 * `celo-blockchain`: same as above
 * Export paths: same as above
 * Checkout `rosetta`: same as above
-* Run `make rc1-env` to create an empty datadir with the genesis block
+* Run `make rc1-env` to create an empty datadir with the genesis block. The output should look something like this:
+
+  ```sh
+  mkdir -p ./envs/rc1
+  curl 'https://storage.googleapis.com/genesis_blocks/rc1' > ./envs/rc1/genesis.json
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                  Dload  Upload   Total   Spent    Left  Speed
+  100 25643  100 25643    0     0  56732      0 --:--:-- --:--:-- --:--:-- 56858
+  ```
 
 Then run:
 
@@ -144,7 +160,28 @@ go run main.go run \
   --datadir "./envs/rc1"
 ```
 
+You should start to see continuous output looking similar to this:
+
+```sh
+INFO [01-28|14:09:03.434] Press CTRL-C to stop the process
+INFO [01-28|14:09:03.440] Running geth init                        service=geth
+INFO [01-28|14:09:04.104] Geth Already initialized... skipping init service=geth
+geth --networkid 44787 --nousb --rpc --rpcaddr 127.0.0.1 --rpcport 8545 --rpcvhosts localhost --syncmode full --gcmode archive --rpcapi eth,net,web3,debug,admin,personal --ipcpath <YourPathToRosetta>/rosetta/envs/alfajores/celo/geth.ipc --light.serve 0 --light.maxpeers 0 --maxpeers 1100 --consoleformat term
+INFO [01-28|14:09:05.110] Detected Chain Parameters                chainId=44787 epochSize=17280
+INFO [01-28|14:09:05.120] Starting httpServer                      listen_address=:8080
+INFO [01-28|14:09:05.120] Resuming operation from last persisted  block srv=celo-monitor block=0
+INFO [01-28|14:09:05.121] SubscriptionFetchMode:Start              srv=celo-monitor pipe=header_listener start=1
+
+...
+
+INFO [01-28|14:09:25.731] Stored 1000 blocks                       srv=celo-monitor pipe=persister       block=1000 registryUpdates=0
+```
+
 ### Version 2: Running Rosetta Docker Image
+
+Prerequisites:
+
+* [Install](https://docs.docker.com/engine/install/) and run `docker` (tested with version `19.03.12`)
 
 Rosetta is released as a docker image: `us.gcr.io/celo-testnet/rosetta`. All versions can be found on the [registry page](https://us.gcr.io/celo-testnet/rosetta). Within the docker image, we pack the `rosetta` binary and also the `geth` binary from `celo-blockchain`. Rosetta will run both.
 
@@ -207,7 +244,7 @@ For a code resource, please see the [examples](./examples/airgap/main.go).
 
 In addition to the dependencies listed above under the instructions for running from `rosetta` source code, you also need:
 
-* openapi-generator To re-generate rpc scaffold ([install link](https://openapi-generator.tech))
+* `openapi-generator` To re-generate rpc scaffold ([install link](https://openapi-generator.tech))
 
 The `Makefile` requires the following env variable to be set and pointed to your local `celo-blockchain` and `celo-monorepo` clones, respectively. Note that relative paths are fine:
 
@@ -234,15 +271,16 @@ Rosetta requires a few Celo Core Contracts
 
 ## How to run rosetta-cli-checks
 
-Install the [`rosetta-cli`](https://github.com/coinbase/rosetta-cli) according to the instructions. Current testing has been done with `v0.5.16`.
-
-* Run the Rosetta service in the background for the respective network (currently only alfajores)
-* Run the CLI checks as follows:
+* Install the [`rosetta-cli`](https://github.com/coinbase/rosetta-cli) according to the instructions. (Note that on Mac, installing the `rosetta-cli` to `/usr/local/bin` or adding its location to you `$PATH` will allow you to call `rosetta-cli` directly on the command line rather than needing to provide the path to the executable). Current testing has been done with `v0.5.16` of the `rosetta-cli`.
+* Run the Rosetta service in the background for the respective network (currently only alfajores for both Data and Construction checks)
+* Run the CLI checks for alfajores as follows:
 
 ```sh
 # alfajores; specify construction or data
 rosetta-cli check:construction --configuration-file PATH/TO/rosetta/rosetta-cli-conf/testnet/cli-config.json
 ```
+
+*Note that running the checks to completion will take a long time if this is the first time you are running Rosetta locally. Under the hood, the service is syncing a full archive node, which takes time (likely a couple of days on a normal laptop). The construction service needs to reach the tip before submitting transactions. The data checks will take a while to complete as well (likely a couple of days on a normal laptop with the current settings) as they reconcile balances for the entire chain.*
 
 ### How to generate `bootstrap_balances.json`
 
