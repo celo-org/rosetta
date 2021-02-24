@@ -77,6 +77,10 @@ var serverCallMethodDefinitions = map[*airgap.CeloMethod]argsPreProcessor{
 	airgap.GetActiveVotesForGroupByAccount: noopArgsPreProcessor,
 	airgap.ReleaseGoldMaxDistribution:      noopArgsPreProcessor,
 	airgap.ReleaseGoldTotalWithdrawn:       noopArgsPreProcessor,
+	airgap.ReleaseGoldBeneficiary:          noopArgsPreProcessor,
+	airgap.ReleaseGoldReleaseOwner:         noopArgsPreProcessor,
+	airgap.ReleaseGoldRefundAddress:        noopArgsPreProcessor,
+	airgap.ReleaseGoldRevocationInfo:       noopArgsPreProcessor,
 	airgap.StableTokenBalanceOf:            noopArgsPreProcessor,
 }
 

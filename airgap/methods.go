@@ -69,6 +69,10 @@ var (
 	ReleaseGoldRevokeActiveVotes          = registerMethod(ReleaseGold, "revokeActive", []argParser{addressParser, addressParser, bigIntParser})
 	ReleaseGoldMaxDistribution            = registerMethod(ReleaseGold, "maxDistribution", nil)
 	ReleaseGoldTotalWithdrawn             = registerMethod(ReleaseGold, "totalWithdrawn", nil)
+	ReleaseGoldBeneficiary                = registerMethod(ReleaseGold, "beneficiary", nil)
+	ReleaseGoldReleaseOwner               = registerMethod(ReleaseGold, "releaseOwner", nil)
+	ReleaseGoldRefundAddress              = registerMethod(ReleaseGold, "refundAddress", nil)
+	ReleaseGoldRevocationInfo             = registerMethod(ReleaseGold, "revocationInfo", nil)
 
 	// StableToken
 	StableTokenBalanceOf = registerMethod(registry.StableTokenContractID.String(), "balanceOf", []argParser{addressParser})
