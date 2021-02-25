@@ -42,8 +42,8 @@ RUN go build --tags musl -o rosetta .
 # Integrates celo-blockchain & rosetta builds into a single container
 # Outputs: rosetta & geth binaries on /usr/loca/bin
 #---------------------------------------------------------------------
-# geth mainnet (1.1.2)
-FROM us.gcr.io/celo-org/geth:239d0b42be934784ba6a59a03b32ec4aa1895641
+# geth mainnet (1.2.2)
+FROM us.gcr.io/celo-org/geth:dba095d2aea40e3ae5da65392de3b3b44105651b
 ARG COMMIT_SHA
 
 RUN apk add --no-cache ca-certificates

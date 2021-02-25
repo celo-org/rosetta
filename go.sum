@@ -67,6 +67,8 @@ github.com/btcsuite/snappy-go v0.0.0-20151229074030-0bdef8d06723/go.mod h1:8woku
 github.com/btcsuite/snappy-go v1.0.0/go.mod h1:8woku9dyThutzjeg+3xrA5iCpBRH8XEEg3lh6TiUghc=
 github.com/btcsuite/websocket v0.0.0-20150119174127-31079b680792/go.mod h1:ghJtEyQwv5/p4Mg4C0fgbePVuGr935/5ddU9Z3TmDRY=
 github.com/btcsuite/winsvc v1.0.0/go.mod h1:jsenWakMcC0zFBFurPLEAyrnc/teJEM1O46fmI40EZs=
+github.com/buraksezer/consistent v0.0.0-20191006190839-693edf70fd72 h1:fUmDBbSvv1uOzo/t8WaxZMVb7BxJ8JECo5lGoR9c5bA=
+github.com/buraksezer/consistent v0.0.0-20191006190839-693edf70fd72/go.mod h1:OEE5igu/CDjGegM1Jn6ZMo7R6LlV/JChAkjfQQIRLpg=
 github.com/celo-org/bls-zexe/go v0.0.0-20200502082044-230d2f4866d5 h1:9tRTgwOba1uX4OpX8w0w/F3F0SwrkhGnrjsr6Qs65eo=
 github.com/celo-org/bls-zexe/go v0.0.0-20200502082044-230d2f4866d5/go.mod h1:CzbB0Yl65q4G1bsLEZGKW+wTLdIInCLLXyJSL7IZqnk=
 github.com/celo-org/celo-blockchain v0.0.0-20200612100840-bf2ba25426f9 h1:hBlXuAwnR62EHo1xHSoXcG6CYWwSL5YWArRhKneWzJU=
@@ -75,6 +77,8 @@ github.com/celo-org/celo-blockchain v1.1.1 h1:R6w5ckC7J/BfLIBh4qElZ7E55vRZFEdKfk
 github.com/celo-org/celo-blockchain v1.1.1/go.mod h1:/3n/+Rf2pTN4j8qenJ2kAK/yCqKeMoMR2e+X2k42qsU=
 github.com/celo-org/celo-blockchain v1.1.2 h1:cqMAJPe4ND8VE27Nin31O4yEvT/OHemZAhdDHMNbTZw=
 github.com/celo-org/celo-blockchain v1.1.2/go.mod h1:/3n/+Rf2pTN4j8qenJ2kAK/yCqKeMoMR2e+X2k42qsU=
+github.com/celo-org/celo-blockchain v1.2.2 h1:3gEgGjkUk6cdlpJg7qruoeONUMNvakQJSGDCIFRtE8A=
+github.com/celo-org/celo-blockchain v1.2.2/go.mod h1:SPXvHaURkjPybfqabXf159vDuo2SCHusO0lIImwqoHY=
 github.com/celo-org/celo-bls-go v0.1.4 h1:d99spabDiuyMJ4uYa/0MbpCsEhaWSYNIujIoZ5Bu38o=
 github.com/celo-org/celo-bls-go v0.1.4/go.mod h1:eXUCLXu5F1yfd3M+3VaUk5ZUXaA0sLK2rWdLC1Cfaqo=
 github.com/celo-org/celo-bls-go v0.1.6 h1:S9hfmKp02Wbd6k3GkCwc/1uCeg68ZP6JZ7qFGHIhCB8=
