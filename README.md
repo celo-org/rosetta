@@ -103,7 +103,7 @@ Prerequisites:
   export CELO_BLOCKCHAIN_PATH=path/to/celo-blockchain
   ```
 
-* Checkout `rosetta` tag `v0.7.7` (`git fetch --all && git checkout v0.7.7`) (or latest released tag) and `make gen-contracts && make all`
+* Checkout `rosetta` tag `v0.7.8-beta` (`git fetch --all && git checkout v0.7.8-beta`) (or latest released tag) and `make gen-contracts && make all`
 * Run `make alfajores-env` to create an empty datadir with the genesis block (only needs to be run the first time, upon initializing the service). The output should look something like this:
 
   ```sh
