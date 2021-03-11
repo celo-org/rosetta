@@ -19,9 +19,9 @@ import (
 	"math/big"
 	"reflect"
 
+	"github.com/celo-org/celo-blockchain/common"
 	"github.com/celo-org/kliento/client/debug"
 	"github.com/celo-org/rosetta/internal/utils"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 type SubAccountType string

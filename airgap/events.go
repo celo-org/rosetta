@@ -17,8 +17,8 @@ package airgap
 import (
 	"fmt"
 
+	"github.com/celo-org/celo-blockchain/common"
 	"github.com/celo-org/kliento/registry"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 var (

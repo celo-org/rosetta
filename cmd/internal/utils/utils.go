@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/celo-org/celo-blockchain/log"
 	"github.com/coinbase/rosetta-sdk-go/fetcher"
-	"github.com/ethereum/go-ethereum/log"
 )
 
 func ExitOnError(err error) {

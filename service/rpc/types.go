@@ -15,8 +15,8 @@
 package rpc
 
 import (
+	gethTypes "github.com/celo-org/celo-blockchain/core/types"
 	"github.com/coinbase/rosetta-sdk-go/types"
-	gethTypes "github.com/ethereum/go-ethereum/core/types"
 )
 
 var (

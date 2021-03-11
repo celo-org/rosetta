@@ -17,7 +17,7 @@ package airgap
 import (
 	"encoding/json"
 
-	"github.com/ethereum/go-ethereum/common"
+	"github.com/celo-org/celo-blockchain/common"
 )
 
 type txArgsRawData struct {

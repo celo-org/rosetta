@@ -19,11 +19,11 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/celo-org/celo-blockchain/common"
 	"github.com/celo-org/rosetta/analyzer"
 	"github.com/celo-org/rosetta/internal/utils"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	rosettaTypes "github.com/coinbase/rosetta-sdk-go/types"
-	"github.com/ethereum/go-ethereum/common"
 	. "github.com/onsi/gomega"
 	gs "github.com/onsi/gomega/gstruct"
 	gtypes "github.com/onsi/gomega/types"
