@@ -4,10 +4,10 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/celo-org/celo-blockchain/common"
 	"github.com/celo-org/rosetta/airgap"
 	"github.com/celo-org/rosetta/analyzer"
 	"github.com/coinbase/rosetta-sdk-go/types"
-	"github.com/ethereum/go-ethereum/common"
 	. "github.com/onsi/gomega"
 )
 
