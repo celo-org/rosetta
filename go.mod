@@ -5,8 +5,9 @@ go 1.14
 require (
 	github.com/allegro/bigcache v1.2.1 // indirect
 	github.com/aristanetworks/goarista v0.0.0-20190912214011-b54698eaaca6 // indirect
-	github.com/celo-org/celo-blockchain v0.0.0-20210310231833-1918831df39d
-	github.com/celo-org/kliento v0.2.1-0.20210311112647-e151ebba2d7e
+	github.com/celo-org/bls-zexe/go v0.0.0-20200502082044-230d2f4866d5 // indirect
+	github.com/celo-org/celo-blockchain v0.0.0-20210222195803-7eb571bec79d
+	github.com/celo-org/kliento v0.2.1-0.20210312123259-520c9e1c807b
 	github.com/coinbase/rosetta-sdk-go v0.5.9
 	github.com/felixge/httpsnoop v1.0.1
 	github.com/google/addlicense v0.0.0-20200622132530-df58acafd6d5 // indirect
