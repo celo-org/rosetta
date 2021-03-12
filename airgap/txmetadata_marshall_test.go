@@ -51,15 +51,14 @@ func TestTxMetadataMarshalling(t *testing.T) {
 		{
 			name: "Nil Values",
 			sample: TxMetadata{
-				From:       common.HexToAddress("0x55555"),
-				Nonce:      70,
-				GasPrice:   big.NewInt(5000),
-				GatewayFee: big.NewInt(5000),
-				To:         common.HexToAddress("0x33333"),
-				Data:       []byte{},
-				Value:      big.NewInt(3000),
-				Gas:        98,
-				ChainId:    big.NewInt(2000),
+				From:     common.HexToAddress("0x55555"),
+				Nonce:    70,
+				GasPrice: big.NewInt(5000),
+				To:       common.HexToAddress("0x33333"),
+				Data:     []byte{},
+				Value:    big.NewInt(3000),
+				Gas:      98,
+				ChainId:  big.NewInt(2000),
 			},
 		},
 	}
