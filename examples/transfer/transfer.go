@@ -27,9 +27,9 @@ import (
 	"github.com/celo-org/celo-blockchain/common"
 	"github.com/celo-org/celo-blockchain/core/types"
 	"github.com/celo-org/celo-blockchain/log"
+	"github.com/celo-org/celo-blockchain/mycelo/hdwallet"
 	"github.com/celo-org/kliento/client"
 	"github.com/celo-org/rosetta/internal/config"
-	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
 )
 
 var beneficiary = common.HexToAddress("0x671d520ae3e89ea5383a5d7162bced79fd25cdee")
