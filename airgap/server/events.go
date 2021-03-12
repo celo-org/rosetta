@@ -56,7 +56,7 @@ func hydrateEvents(srvCtx ServerContext, events []*airgap.CeloEvent) (map[*airga
 
 func airgapEventFactory(srvCtx ServerContext, evt abi.Event, event *airgap.CeloEvent) airGapServerEvent {
 	return func(ctx context.Context, restTopics [][]common.Hash) [][]common.Hash {
-		topic0 := evt.ID()
+		topic0 := evt.ID
 		var topics [][]common.Hash
 		topics = append(topics, []common.Hash{topic0})
 		topics = append(topics, restTopics...)
