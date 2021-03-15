@@ -60,19 +60,10 @@ github.com/btcsuite/websocket v0.0.0-20150119174127-31079b680792/go.mod h1:ghJtE
 github.com/btcsuite/winsvc v1.0.0/go.mod h1:jsenWakMcC0zFBFurPLEAyrnc/teJEM1O46fmI40EZs=
 github.com/buraksezer/consistent v0.0.0-20191006190839-693edf70fd72 h1:fUmDBbSvv1uOzo/t8WaxZMVb7BxJ8JECo5lGoR9c5bA=
 github.com/buraksezer/consistent v0.0.0-20191006190839-693edf70fd72/go.mod h1:OEE5igu/CDjGegM1Jn6ZMo7R6LlV/JChAkjfQQIRLpg=
-github.com/celo-org/bls-zexe/go v0.0.0-20200502082044-230d2f4866d5/go.mod h1:CzbB0Yl65q4G1bsLEZGKW+wTLdIInCLLXyJSL7IZqnk=
-github.com/celo-org/celo-blockchain v0.0.0-20210222195803-7eb571bec79d h1:Hi5AFMIdBuxlHHIvGUkQYT59hntIGKyidT3efWAdvwE=
-github.com/celo-org/celo-blockchain v0.0.0-20210222195803-7eb571bec79d/go.mod h1:4tbv23s4i0AU7+KN5UP2RaB5c9OMXedtx9F7wJ+s0Jo=
-github.com/celo-org/celo-blockchain v0.0.0-20210310231833-1918831df39d h1:Dw/La8G6NtQRQTfoosD3MtgcRtSU9ZMwVTyA9vVk7i4=
-github.com/celo-org/celo-blockchain v0.0.0-20210310231833-1918831df39d/go.mod h1:4tbv23s4i0AU7+KN5UP2RaB5c9OMXedtx9F7wJ+s0Jo=
 github.com/celo-org/celo-blockchain v0.0.0-20210312174223-066a9752f2c2 h1:H8Uc+vonf3OapZsqC5gkRhx/XthW4ue7v+7/dcXM4ps=
 github.com/celo-org/celo-blockchain v0.0.0-20210312174223-066a9752f2c2/go.mod h1:4tbv23s4i0AU7+KN5UP2RaB5c9OMXedtx9F7wJ+s0Jo=
 github.com/celo-org/celo-bls-go v0.2.4 h1:V1y92kM5IRJWQZ6DCwqiKLW7swmUA5y/dPJ9YbU4HfA=
 github.com/celo-org/celo-bls-go v0.2.4/go.mod h1:eXUCLXu5F1yfd3M+3VaUk5ZUXaA0sLK2rWdLC1Cfaqo=
-github.com/celo-org/kliento v0.2.1-0.20210312123259-520c9e1c807b h1:UuoOGLg6luX4+4vKp/rITq3U+cArig2MIr4xw+EkpMk=
-github.com/celo-org/kliento v0.2.1-0.20210312123259-520c9e1c807b/go.mod h1:aBD3PFJMLwhHvUTrJq2KdMSnC387h/JL4Jv32DaAFmk=
-github.com/celo-org/kliento v0.2.1-0.20210315121149-d84490182035 h1:28FuScsj6R5LD0YMonmw9YlB4xjnqry7xymN0oqAJP0=
-github.com/celo-org/kliento v0.2.1-0.20210315121149-d84490182035/go.mod h1:VLmPPXViPJxkdelyyc1t49Kbps/C159K5ydjLSL+xz0=
 github.com/celo-org/kliento v0.2.1-0.20210315135015-d8610134da4d h1:RazqXGLcNM2Qb8AGofaLq7rbHCz1Pwrp+gGrwHv941M=
 github.com/celo-org/kliento v0.2.1-0.20210315135015-d8610134da4d/go.mod h1:SNanwzazM/kQHHM4xgC2wKCc+c4+rdxrBYM03q19w7g=
 github.com/cenkalti/backoff v2.2.1+incompatible h1:tNowT99t7UNflLxfYYSlKYsBpXdEet03Pg2g16Swow4=
@@ -170,6 +161,7 @@ github.com/golang/protobuf v1.4.2/go.mod h1:oDoupMAO8OvCJWAcko0GGGIgR6R6ocIYbsSw
 github.com/golang/snappy v0.0.1/go.mod h1:/XxbfmMg8lxefKM7IXC3fBNl/7bRcc72aCRzEWrmP2Q=
 github.com/golang/snappy v0.0.2-0.20200707131729-196ae77b8a26 h1:lMm2hD9Fy0ynom5+85/pbdkiYcBqM1JWmhpAXLmy0fw=
 github.com/golang/snappy v0.0.2-0.20200707131729-196ae77b8a26/go.mod h1:/XxbfmMg8lxefKM7IXC3fBNl/7bRcc72aCRzEWrmP2Q=
+github.com/google/addlicense v0.0.0-20200622132530-df58acafd6d5/go.mod h1:EMjYTRimagHs1FwlIqKyX3wAM0u3rA+McvlIIWmSamA=
 github.com/google/btree v1.0.0/go.mod h1:lNA+9X1NB3Zf8V7Ke586lFgjr2dZNuvo3lPJSGZ5JPQ=
 github.com/google/go-cmp v0.2.0/go.mod h1:oXzfMopK8JAjlY9xF4vHSVASa0yLyX7SntLO5aqRK0M=
 github.com/google/go-cmp v0.3.0/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
@@ -464,8 +456,8 @@ golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f/go.mod h1:RxMgew5VJxzue5/jJ
 golang.org/x/sync v0.0.0-20181108010431-42b317875d0f/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sync v0.0.0-20181221193216-37e7f081c4d4/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sync v0.0.0-20190423024810-112230192c58/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
-golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208 h1:qwRHBd0NqMbJxfbotnDhm2ByMI1Shq4Y6oRJo21SGJA=
 golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
+golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208 h1:qwRHBd0NqMbJxfbotnDhm2ByMI1Shq4Y6oRJo21SGJA=
 golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9 h1:SQFwaSi55rU7vdNs9Yr0Z324VNlrF+0wMqRXT4St8ck=
 golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
