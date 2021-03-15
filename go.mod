@@ -6,8 +6,8 @@ require (
 	github.com/allegro/bigcache v1.2.1 // indirect
 	github.com/aristanetworks/goarista v0.0.0-20190912214011-b54698eaaca6 // indirect
 	github.com/celo-org/bls-zexe/go v0.0.0-20200502082044-230d2f4866d5 // indirect
-	github.com/celo-org/celo-blockchain v0.0.0-20210222195803-7eb571bec79d
-	github.com/celo-org/kliento v0.2.1-0.20210315121149-d84490182035
+	github.com/celo-org/celo-blockchain v0.0.0-20210312174223-066a9752f2c2
+	github.com/celo-org/kliento v0.2.1-0.20210315135015-d8610134da4d
 	github.com/coinbase/rosetta-sdk-go v0.5.9
 	github.com/felixge/httpsnoop v1.0.1
 	github.com/google/addlicense v0.0.0-20200622132530-df58acafd6d5 // indirect
