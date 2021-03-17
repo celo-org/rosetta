@@ -79,6 +79,8 @@ github.com/celo-org/celo-blockchain v1.1.2 h1:cqMAJPe4ND8VE27Nin31O4yEvT/OHemZAh
 github.com/celo-org/celo-blockchain v1.1.2/go.mod h1:/3n/+Rf2pTN4j8qenJ2kAK/yCqKeMoMR2e+X2k42qsU=
 github.com/celo-org/celo-blockchain v1.2.2 h1:3gEgGjkUk6cdlpJg7qruoeONUMNvakQJSGDCIFRtE8A=
 github.com/celo-org/celo-blockchain v1.2.2/go.mod h1:SPXvHaURkjPybfqabXf159vDuo2SCHusO0lIImwqoHY=
+github.com/celo-org/celo-blockchain v1.2.4 h1:jOlNfk2FZzaPzYPOGQvmkRGa3UYMUue/mxp/CXC8vyU=
+github.com/celo-org/celo-blockchain v1.2.4/go.mod h1:SPXvHaURkjPybfqabXf159vDuo2SCHusO0lIImwqoHY=
 github.com/celo-org/celo-bls-go v0.1.4 h1:d99spabDiuyMJ4uYa/0MbpCsEhaWSYNIujIoZ5Bu38o=
 github.com/celo-org/celo-bls-go v0.1.4/go.mod h1:eXUCLXu5F1yfd3M+3VaUk5ZUXaA0sLK2rWdLC1Cfaqo=
 github.com/celo-org/celo-bls-go v0.1.6 h1:S9hfmKp02Wbd6k3GkCwc/1uCeg68ZP6JZ7qFGHIhCB8=
