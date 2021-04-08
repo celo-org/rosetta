@@ -281,8 +281,11 @@ func (tr *Tracer) TxOpsFromLogs(tx *types.Transaction, receipt *types.Receipt, t
 			case "GoldLocked":
 				// lock() [GoldLocked + transfer] => main->lockNonVoting
 				event := eventRaw.(*contracts.LockedGoldGoldLocked)
-				transfers = append(transfers, *NewLockGold(event.Account, lockedGoldAddr, event.Value))
-
+				// Edge case: locking 0 CELO means there isn't a matching transfer;
+				// Only store balance-changing (>0) GoldLocked logs.
+				if event.Value.Cmp(big.NewInt(0)) > 0 {
+					transfers = append(transfers, *NewLockGold(event.Account, lockedGoldAddr, event.Value))
+				}
 			case "GoldRelocked":
 				// relock() [GoldRelocked] => lockPending->lockNonVoting
 				event := eventRaw.(*contracts.LockedGoldGoldRelocked)
