@@ -95,7 +95,7 @@ You also need the following dependencies to be met:
 Prerequisites:
 
 * Checkout `celo-monorepo` branch `alfajores` and run `yarn && yarn build --ignore docs`
-* Checkout `celo-blockchain` tag `v1.1.2` (`git fetch --all && git checkout v1.1.2`) (NOTE: check that this matches the version specified in the `rosetta` `go.mod` file) and `make all`
+* Checkout `celo-blockchain` tag `v1.2.4` (`git fetch --all && git checkout v1.2.4`) (NOTE: check that this matches the version specified in the `rosetta` `go.mod` file) and `make all`
 * Set paths to `celo-monorepo` and `celo-blockchain` as `CELO_MONOREPO_PATH` and `CELO_BLOCKCHAIN_PATH` respectively (paths can be absolute or relative to the `rosetta` repo. If desired, add these lines to your bash profile:
 
   ```sh
