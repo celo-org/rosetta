@@ -85,20 +85,13 @@ You will need the following three repositories cloned locally:
 You also need the following dependencies to be met:
 
 * `go >= 1.14`
-* `rust >= 1.41.0` (`blockchain` dependency)
 * `golangci` ([installation instructions](https://golangci-lint.run/usage/install/#local-installation)) (linter dependency for the Makefile)
 
 #### Running on Alfajores (Testnet)
 
 Prerequisites:
 
-* Checkout `celo-blockchain` tag `v1.2.4` (`git fetch --all && git checkout v1.2.4`) (NOTE: check that this matches the version specified in the `rosetta` `go.mod` file) and `make all`
-* Set the path to `celo-blockchain` as a local environment variabl called `CELO_BLOCKCHAIN_PATH`. The path can be absolute or relative to the `rosetta` repo. If desired, add these lines to your bash profile:
-
-  ```sh
-  export CELO_BLOCKCHAIN_PATH=path/to/celo-blockchain
-  ```
-
+* Checkout `celo-blockchain` tag `v1.2.4` (`git fetch --all && git checkout v1.2.4`) (NOTE: check that this matches the version specified in `rosetta`'s `go.mod` file) and `make geth`
 * Checkout `rosetta` tag `v0.8.0` (`git fetch --all && git checkout v0.8.0`) (or latest released tag) and `make all`
 * Run `make alfajores-env` to create an empty datadir with the genesis block (only needs to be run the first time, upon initializing the service). The output should look something like this:
 
@@ -245,11 +238,10 @@ In addition to the dependencies listed above under the instructions for running 
 
 Important commands:
 
-* `make all`: Builds project (compiles go project, compiles bls-zexe)
+* `make all`: Builds project (compiles all modules), same as `go build ./...`
 * `make test` or `go test ./...` to run unit tests
-* `go build ./...` to build all modules (only compiles, doesn't generate or compile rust library)
 
-### Managing Generated Contracts
+### Interaction with Celo Core Contracts
 
 Rosetta uses [kliento](https://github.com/celo-org/kliento) to interact with the necessary Celo Core Contracts.
 
