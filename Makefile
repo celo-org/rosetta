@@ -77,7 +77,4 @@ add-license:
 check-license:
 	${LICENCE_SCRIPT} -check analyzer airgap cmd db examples internal service main.go
 
-gen-contracts:
-	go run ./scripts/gen-contracts.go -gcelo $(CELO_BLOCKCHAIN_PATH) -monorepo $(CELO_MONOREPO_PATH)
-
 .PHONY: gen-contracts lint fmt 
