@@ -61,10 +61,12 @@ func LogErrUnimplemented(rosettaEndpoint string) *types.Error {
 }
 
 func LogErrDetails(rosettaErr *types.Error, err error) *types.Error {
-	rosettaErr.Details = map[string]interface{}{
+	copyErr := &types.Error{}
+	*copyErr = *rosettaErr
+	copyErr.Details = map[string]interface{}{
 		"context": err.Error(),
 	}
-	return rosettaErr
+	return copyErr
 }
 
 func LogErrInternal(err error, params ...interface{}) *types.Error {
