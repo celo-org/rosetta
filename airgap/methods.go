@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/celo-org/celo-blockchain/common"
 	"github.com/celo-org/kliento/registry"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 var ReleaseGold = "ReleaseGold"

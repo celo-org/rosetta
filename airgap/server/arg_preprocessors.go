@@ -18,7 +18,7 @@ import (
 	"context"
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/common"
+	"github.com/celo-org/celo-blockchain/common"
 )
 
 func preprocessAuthorizeSigner(ctx context.Context, srvCtx ServerContext, args []interface{}) ([]interface{}, error) {

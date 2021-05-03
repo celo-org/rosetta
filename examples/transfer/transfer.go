@@ -22,14 +22,14 @@ import (
 	"strconv"
 	"time"
 
+	ethereum "github.com/celo-org/celo-blockchain"
+	"github.com/celo-org/celo-blockchain/accounts"
+	"github.com/celo-org/celo-blockchain/common"
+	"github.com/celo-org/celo-blockchain/core/types"
+	"github.com/celo-org/celo-blockchain/log"
+	"github.com/celo-org/celo-blockchain/mycelo/hdwallet"
 	"github.com/celo-org/kliento/client"
 	"github.com/celo-org/rosetta/internal/config"
-	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/log"
-	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
 )
 
 var beneficiary = common.HexToAddress("0x671d520ae3e89ea5383a5d7162bced79fd25cdee")

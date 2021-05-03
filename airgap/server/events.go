@@ -18,9 +18,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/celo-org/celo-blockchain/accounts/abi"
+	"github.com/celo-org/celo-blockchain/common"
 	"github.com/celo-org/rosetta/airgap"
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 var serverCallEventDefinitions = []*airgap.CeloEvent{
@@ -56,7 +56,7 @@ func hydrateEvents(srvCtx ServerContext, events []*airgap.CeloEvent) (map[*airga
 
 func airgapEventFactory(srvCtx ServerContext, evt abi.Event, event *airgap.CeloEvent) airGapServerEvent {
 	return func(ctx context.Context, restTopics [][]common.Hash) [][]common.Hash {
-		topic0 := evt.ID()
+		topic0 := evt.ID
 		var topics [][]common.Hash
 		topics = append(topics, []common.Hash{topic0})
 		topics = append(topics, restTopics...)

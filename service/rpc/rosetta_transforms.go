@@ -22,10 +22,10 @@ import (
 
 	rosettaTypes "github.com/coinbase/rosetta-sdk-go/types"
 
-	"github.com/ethereum/go-ethereum/common"
-	gethTypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/ethereum/go-ethereum/p2p"
+	"github.com/celo-org/celo-blockchain/common"
+	gethTypes "github.com/celo-org/celo-blockchain/core/types"
+	"github.com/celo-org/celo-blockchain/ethclient"
+	"github.com/celo-org/celo-blockchain/p2p"
 )
 
 func PeersFromInfo(peersInfo []p2p.PeerInfo) []*rosettaTypes.Peer {

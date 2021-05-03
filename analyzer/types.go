@@ -17,9 +17,9 @@ package analyzer
 import (
 	"math/big"
 
+	"github.com/celo-org/celo-blockchain/common"
+	"github.com/celo-org/celo-blockchain/consensus/istanbul"
 	"github.com/celo-org/rosetta/internal/utils"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/consensus/istanbul"
 )
 
 type ChainParameters struct {

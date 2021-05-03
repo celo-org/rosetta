@@ -18,9 +18,9 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/celo-org/celo-blockchain/log"
 	"github.com/celo-org/kliento/client"
 	"github.com/coinbase/rosetta-sdk-go/types"
-	"github.com/ethereum/go-ethereum/log"
 )
 
 var logger = log.Root().New("srv", "rpc")

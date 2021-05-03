@@ -19,14 +19,14 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/celo-org/celo-blockchain/common"
+	"github.com/celo-org/celo-blockchain/core/types"
+	"github.com/celo-org/celo-blockchain/log"
 	"github.com/celo-org/kliento/client"
 	"github.com/celo-org/kliento/contracts"
 	"github.com/celo-org/kliento/registry"
 	"github.com/celo-org/rosetta/db"
 	"github.com/celo-org/rosetta/internal/utils"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/log"
 )
 
 type Tracer struct {
@@ -73,6 +73,7 @@ func (tr *Tracer) TraceTransaction(blockHeader *types.Header, tx *types.Transact
 	ops := make([]Operation, 0)
 
 	if tx.FeeCurrency() == nil { // nil implies cGLD
+		// EN TODO: look into this regarding donut changes [CIP 0028 change?]
 		gasOp, err := tr.TxGasDetails(blockHeader.Coinbase, tx, receipt)
 		if err != nil {
 			return nil, err
