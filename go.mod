@@ -5,14 +5,13 @@ go 1.14
 require (
 	github.com/allegro/bigcache v1.2.1 // indirect
 	github.com/aristanetworks/goarista v0.0.0-20190912214011-b54698eaaca6 // indirect
-	github.com/celo-org/celo-blockchain v0.0.0-20210312174223-066a9752f2c2
+	github.com/celo-org/celo-blockchain v1.3.0
 	github.com/celo-org/kliento v0.2.1-0.20210315135015-d8610134da4d
 	github.com/coinbase/rosetta-sdk-go v0.5.9
 	github.com/felixge/httpsnoop v1.0.1
 	github.com/google/addlicense v0.0.0-20200622132530-df58acafd6d5 // indirect
 	github.com/gorilla/handlers v1.4.2
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
-	github.com/miguelmota/go-ethereum-hdwallet v0.0.0-20200123000308-a60dcd172b4c
 	github.com/onsi/gomega v1.10.1
 	github.com/pborman/uuid v1.2.0 // indirect
 	github.com/rjeczalik/notify v0.9.2 // indirect
