@@ -73,7 +73,6 @@ func (tr *Tracer) TraceTransaction(blockHeader *types.Header, tx *types.Transact
 	ops := make([]Operation, 0)
 
 	if tx.FeeCurrency() == nil { // nil implies cGLD
-		// EN TODO: look into this regarding donut changes [CIP 0028 change?]
 		gasOp, err := tr.TxGasDetails(blockHeader.Coinbase, tx, receipt)
 		if err != nil {
 			return nil, err
