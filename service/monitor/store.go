@@ -17,8 +17,8 @@ package monitor
 import (
 	"context"
 
+	"github.com/celo-org/celo-blockchain/log"
 	"github.com/celo-org/rosetta/db"
-	"github.com/ethereum/go-ethereum/log"
 )
 
 func ProcessChanges(ctx context.Context, changes <-chan *db.BlockChangeSet, dbWriter db.RosettaDBWriter, logger log.Logger) error {

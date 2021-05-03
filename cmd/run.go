@@ -23,6 +23,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/celo-org/celo-blockchain/log"
 	"github.com/celo-org/kliento/client"
 	"github.com/celo-org/rosetta/cmd/internal/utils"
 	"github.com/celo-org/rosetta/db"
@@ -32,7 +33,6 @@ import (
 	"github.com/celo-org/rosetta/service/geth"
 	"github.com/celo-org/rosetta/service/monitor"
 	"github.com/celo-org/rosetta/service/rpc"
-	"github.com/ethereum/go-ethereum/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

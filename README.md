@@ -9,32 +9,32 @@ A monitoring server for celo-blockchain
 
 Celo Rosetta is an RPC server that exposes an API to:
 
-* Query Celo's Blockchain
-* Obtain Balance Changing Operations
-* Construct Airgapped Transactions
+- Query Celo's Blockchain
+- Obtain Balance Changing Operations
+- Construct Airgapped Transactions
 
 With a special focus on getting balance change operations, Celo Rosetta provides an easy way to obtain changes that are not easily queryable using
 the celo-blockchain rpc; such as:
 
-* Gas Fee distribution
-* Gold transfers (internal & external). Taking in account Tobin Tax
-* Epoch Rewards Distribution
-* LockedGold & Election Operations
+- Gas Fee distribution
+- Gold transfers (internal & external). Taking in account Tobin Tax
+- Epoch Rewards Distribution
+- LockedGold & Election Operations
 
 ## RPC endpoints
 
 Rosetta exposes the following endpoints:
 
-* `POST /network/list`: Get List of Available Networks
-* `POST /network/status`: Get Network Status
-* `POST /network/options`: Get Network Options
-* `POST /block`: Get a Block
-* `POST /block/transaction`: Get a Block Transaction
-* `POST /mempool`: Get All Mempool Transactions
-* `POST /mempool/transaction`: Get a Mempool Transaction
-* `POST /account/balance`: Get an Account Balance
-* `POST /construction/metadata`: Get Transaction Construction Metadata
-* `POST /construction/submit`: Submit a Signed Transaction
+- `POST /network/list`: Get List of Available Networks
+- `POST /network/status`: Get Network Status
+- `POST /network/options`: Get Network Options
+- `POST /block`: Get a Block
+- `POST /block/transaction`: Get a Block Transaction
+- `POST /mempool`: Get All Mempool Transactions
+- `POST /mempool/transaction`: Get a Mempool Transaction
+- `POST /account/balance`: Get an Account Balance
+- `POST /construction/metadata`: Get Transaction Construction Metadata
+- `POST /construction/submit`: Submit a Signed Transaction
 
 For an understanding of inputs & outputs check [servicer.go](./service/rpc/servicer.go)
 
@@ -79,21 +79,21 @@ Running the Rosetta RPC Server from scratch will take some time to sync, since i
 
 You will need the following three repositories cloned locally:
 
-* `rosetta` (this repo)
-* [`celo-blockchain`](https://github.com/celo-org/celo-blockchain)
+- `rosetta` (this repo)
+- [`celo-blockchain`](https://github.com/celo-org/celo-blockchain)
 
 You also need the following dependencies to be met:
 
-* `go >= 1.14`
-* `golangci` ([installation instructions](https://golangci-lint.run/usage/install/#local-installation)) (linter dependency for the Makefile)
+- `go >= 1.14`
+- `golangci` ([installation instructions](https://golangci-lint.run/usage/install/#local-installation)) (linter dependency for the Makefile)
 
 #### Running on Alfajores (Testnet)
 
 Prerequisites:
 
-* Checkout `celo-blockchain` tag `v1.2.4` (`git fetch --all && git checkout v1.2.4`) (NOTE: check that this matches the version specified in `rosetta`'s `go.mod` file) and `make geth`
-* Checkout `rosetta` tag `v0.8.0` (`git fetch --all && git checkout v0.8.0`) (or latest released tag) and `make all`
-* Run `make alfajores-env` to create an empty datadir with the genesis block (only needs to be run the first time, upon initializing the service). The output should look something like this:
+- Checkout `celo-blockchain` tag `v1.3.0` (`git fetch --all && git checkout v1.3.0`) (NOTE: check that this matches the version specified in `rosetta`'s `go.mod` file) and `make geth`
+- Checkout `rosetta` tag `v0.8.2` (`git fetch --all && git checkout v0.8.2`) (or latest released tag) and `make all`
+- Run `make alfajores-env` to create an empty datadir with the genesis block (only needs to be run the first time, upon initializing the service). The output should look something like this:
 
   ```sh
   mkdir -p ./envs/alfajores
@@ -123,10 +123,10 @@ This is the same as above with a few differences (generally: specifying `rc1` vs
 
 Prerequisites:
 
-* `celo-blockchain`: same as above
-* Export paths: same as above
-* Checkout `rosetta`: same as above
-* Run `make rc1-env` to create an empty datadir with the genesis block. The output should look something like this:
+- `celo-blockchain`: same as above
+- Export paths: same as above
+- Checkout `rosetta`: same as above
+- Run `make rc1-env` to create an empty datadir with the genesis block. The output should look something like this:
 
   ```sh
   mkdir -p ./envs/rc1
@@ -169,7 +169,7 @@ INFO [01-28|14:09:25.731] Stored 1000 blocks                       srv=celo-moni
 
 Prerequisites:
 
-* [Install](https://docs.docker.com/engine/install/) and run `docker` (tested with version `19.03.12`)
+- [Install](https://docs.docker.com/engine/install/) and run `docker` (tested with version `19.03.12`)
 
 Rosetta is released as a docker image: `us.gcr.io/celo-testnet/rosetta`. All versions can be found on the [registry page](https://us.gcr.io/celo-testnet/rosetta). Within the docker image, we pack the `rosetta` binary and also the `geth` binary from `celo-blockchain`. Rosetta will run both.
 
@@ -195,9 +195,9 @@ docker run --name rosetta --rm \
 
 To run this for a different network, replace the genesis block generation and staticnode lines with values specific to the network, as detailed directly below:
 
-* `genesis.json` for the target network (can be found by running the following, selecting one of `alfajores`, `baklava`, `rc1` as `<NETWORK>` in `curl 'https://storage.googleapis.com/genesis_blocks/<NETWORK>' > genesis.json`).
-* `staticNodes` or `bootnodes`.
-  * With `staticNodes` Rosetta will directly peer to the list of staticNode provided. This node can be any you have access to. For a public list check `https://storage.cloud.google.com/static_nodes/<NETWORK>`
+- `genesis.json` for the target network (can be found by running the following, selecting one of `alfajores`, `baklava`, `rc1` as `<NETWORK>` in `curl 'https://storage.googleapis.com/genesis_blocks/<NETWORK>' > genesis.json`).
+- `staticNodes` or `bootnodes`.
+  - With `staticNodes` Rosetta will directly peer to the list of staticNode provided. This node can be any you have access to. For a public list check `https://storage.cloud.google.com/static_nodes/<NETWORK>`
 
 ## Airgap Client Guide
 
@@ -205,8 +205,8 @@ The Celo Rosetta Airgap module is designed to facilitate signing transactions, p
 
 Examples of this metadata include:
 
-* network wide state like "gas price minimum"
-* argument specific state like vote amount "effect on validator priority queue"
+- network wide state like "gas price minimum"
+- argument specific state like vote amount "effect on validator priority queue"
 
 ```js
 AirGapServer {
@@ -232,14 +232,14 @@ For a code resource, please see the [examples](./examples/airgap/main.go).
 
 In addition to the dependencies listed above under the instructions for running from `rosetta` source code, you also need:
 
-* `openapi-generator` To re-generate rpc scaffold ([install link](https://openapi-generator.tech))
+- `openapi-generator` To re-generate rpc scaffold ([install link](https://openapi-generator.tech))
 
 ### Build Commands
 
 Important commands:
 
-* `make all`: Builds project (compiles all modules), same as `go build ./...`
-* `make test` or `go test ./...` to run unit tests
+- `make all`: Builds project (compiles all modules), same as `go build ./...`
+- `make test` or `go test ./...` to run unit tests
 
 ### Interaction with Celo Core Contracts
 
@@ -247,16 +247,16 @@ Rosetta uses [kliento](https://github.com/celo-org/kliento) to interact with the
 
 ## How to run rosetta-cli-checks
 
-* Install the [`rosetta-cli`](https://github.com/coinbase/rosetta-cli) according to the instructions. (Note that on Mac, installing the `rosetta-cli` to `/usr/local/bin` or adding its location to you `$PATH` will allow you to call `rosetta-cli` directly on the command line rather than needing to provide the path to the executable). Current testing has been done with `v0.5.16` of the `rosetta-cli`.
-* Run the Rosetta service in the background for the respective network (currently only alfajores for both Data and Construction checks)
-* Run the CLI checks for alfajores as follows:
+- Install the [`rosetta-cli`](https://github.com/coinbase/rosetta-cli) according to the instructions. (Note that on Mac, installing the `rosetta-cli` to `/usr/local/bin` or adding its location to you `$PATH` will allow you to call `rosetta-cli` directly on the command line rather than needing to provide the path to the executable). Current testing has been done with `v0.5.16` of the `rosetta-cli`.
+- Run the Rosetta service in the background for the respective network (currently only alfajores for both Data and Construction checks)
+- Run the CLI checks for alfajores as follows:
 
 ```sh
 # alfajores; specify construction or data
 rosetta-cli check:construction --configuration-file PATH/TO/rosetta/rosetta-cli-conf/testnet/cli-config.json
 ```
 
-*Note that running the checks to completion will take a long time if this is the first time you are running Rosetta locally. Under the hood, the service is syncing a full archive node, which takes time (likely a couple of days on a normal laptop). The construction service needs to reach the tip before submitting transactions. The data checks will take a while to complete as well (likely a couple of days on a normal laptop with the current settings) as they reconcile balances for the entire chain.*
+_Note that running the checks to completion will take a long time if this is the first time you are running Rosetta locally. Under the hood, the service is syncing a full archive node, which takes time (likely a couple of days on a normal laptop). The construction service needs to reach the tip before submitting transactions. The data checks will take a while to complete as well (likely a couple of days on a normal laptop with the current settings) as they reconcile balances for the entire chain._
 
 ### How to generate `bootstrap_balances.json`
 

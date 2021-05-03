@@ -17,12 +17,12 @@ package monitor
 import (
 	"context"
 
+	"github.com/celo-org/celo-blockchain/core/types"
+	"github.com/celo-org/celo-blockchain/log"
 	"github.com/celo-org/kliento/client"
 	"github.com/celo-org/rosetta/db"
 	"github.com/celo-org/rosetta/internal/utils"
 	"github.com/celo-org/rosetta/service"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/log"
 	"golang.org/x/sync/errgroup"
 )
 

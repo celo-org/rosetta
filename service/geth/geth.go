@@ -26,10 +26,10 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/celo-org/celo-blockchain/log"
 	"github.com/celo-org/kliento/utils/chain"
 	"github.com/celo-org/rosetta/internal/fileutils"
 	"github.com/celo-org/rosetta/service"
-	"github.com/ethereum/go-ethereum/log"
 )
 
 type GethOpts struct {

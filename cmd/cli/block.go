@@ -22,9 +22,9 @@ import (
 	"os"
 	"text/tabwriter"
 
+	"github.com/celo-org/celo-blockchain/common"
 	"github.com/celo-org/rosetta/cmd/internal/utils"
 	"github.com/coinbase/rosetta-sdk-go/types"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
 )
 

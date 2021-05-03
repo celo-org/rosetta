@@ -19,14 +19,14 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/celo-org/celo-blockchain/common"
+	"github.com/celo-org/celo-blockchain/core/types"
+	"github.com/celo-org/celo-blockchain/log"
 	"github.com/celo-org/kliento/client"
 	"github.com/celo-org/kliento/contracts"
 	"github.com/celo-org/kliento/registry"
 	"github.com/celo-org/rosetta/db"
 	"github.com/celo-org/rosetta/internal/utils"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/log"
 )
 
 type Tracer struct {

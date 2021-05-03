@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/celo-org/celo-blockchain/log"
 	"github.com/celo-org/kliento/client"
 	"github.com/celo-org/kliento/utils/chain"
 	"github.com/celo-org/rosetta/analyzer"
@@ -28,7 +29,6 @@ import (
 	"github.com/coinbase/rosetta-sdk-go/asserter"
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
-	"github.com/ethereum/go-ethereum/log"
 	"github.com/felixge/httpsnoop"
 	"github.com/gorilla/handlers"
 )

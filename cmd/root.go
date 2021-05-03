@@ -19,8 +19,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/celo-org/celo-blockchain/log"
 	"github.com/celo-org/rosetta/cmd/cli"
-	"github.com/ethereum/go-ethereum/log"
 	"github.com/spf13/cobra"
 
 	"github.com/spf13/viper"
