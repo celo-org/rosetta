@@ -66,6 +66,8 @@ github.com/buraksezer/consistent v0.0.0-20191006190839-693edf70fd72/go.mod h1:OE
 github.com/celo-org/celo-blockchain v0.0.0-20210312174223-066a9752f2c2/go.mod h1:4tbv23s4i0AU7+KN5UP2RaB5c9OMXedtx9F7wJ+s0Jo=
 github.com/celo-org/celo-blockchain v1.3.0 h1:Hz0RdkrHZ8eN5ZWLf78Vh8V1ZNI75q8wLMCzk9b83EQ=
 github.com/celo-org/celo-blockchain v1.3.0/go.mod h1:S0Pgl1WuN23YXWXsz13mSAshIx/P02mrPHbR3nSETmA=
+github.com/celo-org/celo-blockchain v1.3.2 h1:9j2DVbChjZZn4/6b3pqlD8HACNuJNrxKJsMo/yw67HE=
+github.com/celo-org/celo-blockchain v1.3.2/go.mod h1:S0Pgl1WuN23YXWXsz13mSAshIx/P02mrPHbR3nSETmA=
 github.com/celo-org/celo-bls-go v0.2.4 h1:V1y92kM5IRJWQZ6DCwqiKLW7swmUA5y/dPJ9YbU4HfA=
 github.com/celo-org/celo-bls-go v0.2.4/go.mod h1:eXUCLXu5F1yfd3M+3VaUk5ZUXaA0sLK2rWdLC1Cfaqo=
 github.com/celo-org/kliento v0.2.1-0.20210315135015-d8610134da4d h1:RazqXGLcNM2Qb8AGofaLq7rbHCz1Pwrp+gGrwHv941M=
