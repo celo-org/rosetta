@@ -211,6 +211,7 @@ func (gs *gethService) startGeth(stdErr *os.File) error {
 		// "--consoleoutput", "split",
 	}
 
+	// Fix necessary flag for node to hardfork properly (temp fix)
 	switch gs.chainParams.ChainId.String() {
 	case params.AlfajoresChainConfig.ChainID.String():
 		gethArgs = append([]string{"--alfajores"}, gethArgs...)
@@ -219,9 +220,7 @@ func (gs *gethService) startGeth(stdErr *os.File) error {
 	case params.MainnetChainConfig.ChainID.String():
 		break
 	default:
-		chainErr := fmt.Errorf("unknown ChainID: %s", gs.chainParams.ChainId.String())
-		gs.logger.Error("Error configuring geth args", "err", chainErr)
-		return chainErr
+		gethArgs = append(gethArgs, "--networkid", gs.chainParams.ChainId.String())
 	}
 
 	if gs.opts.Verbosity != "" {
