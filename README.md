@@ -91,8 +91,8 @@ You also need the following dependencies to be met:
 
 Prerequisites:
 
-- Checkout `celo-blockchain` tag `v1.3.0` (`git fetch --all && git checkout v1.3.0`) (NOTE: check that this matches the version specified in `rosetta`'s `go.mod` file) and `make geth`
-- Checkout `rosetta` tag `v0.8.2` (`git fetch --all && git checkout v0.8.2`) (or latest released tag) and `make all`
+- Checkout `celo-blockchain` tag `v1.3.2` (`git fetch --all && git checkout v1.3.2`) (NOTE: check that this matches the version specified in `rosetta`'s `go.mod` file) and `make geth`
+- Checkout `rosetta` tag `v0.8.3` (`git fetch --all && git checkout v0.8.3`) (or latest released tag) and `make all`
 - Run `make alfajores-env` to create an empty datadir with the genesis block (only needs to be run the first time, upon initializing the service). The output should look something like this:
 
   ```sh
