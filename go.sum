@@ -72,6 +72,19 @@ github.com/celo-org/celo-bls-go v0.2.4/go.mod h1:eXUCLXu5F1yfd3M+3VaUk5ZUXaA0sLK
 github.com/celo-org/celo-bls-go v0.2.4/go.mod h1:eXUCLXu5F1yfd3M+3VaUk5ZUXaA0sLK2rWdLC1Cfaqo=
 github.com/celo-org/kliento v0.2.1-0.20210315135015-d8610134da4d h1:RazqXGLcNM2Qb8AGofaLq7rbHCz1Pwrp+gGrwHv941M=
 github.com/celo-org/kliento v0.2.1-0.20210315135015-d8610134da4d/go.mod h1:SNanwzazM/kQHHM4xgC2wKCc+c4+rdxrBYM03q19w7g=
+github.com/celo-org/bls-zexe/go v0.0.0-20200502082044-230d2f4866d5/go.mod h1:CzbB0Yl65q4G1bsLEZGKW+wTLdIInCLLXyJSL7IZqnk=
+github.com/celo-org/celo-blockchain v0.0.0-20210310231833-1918831df39d/go.mod h1:4tbv23s4i0AU7+KN5UP2RaB5c9OMXedtx9F7wJ+s0Jo=
+github.com/celo-org/celo-blockchain v0.0.0-20210312174223-066a9752f2c2/go.mod h1:4tbv23s4i0AU7+KN5UP2RaB5c9OMXedtx9F7wJ+s0Jo=
+github.com/celo-org/celo-blockchain v1.3.0 h1:Hz0RdkrHZ8eN5ZWLf78Vh8V1ZNI75q8wLMCzk9b83EQ=
+github.com/celo-org/celo-blockchain v1.3.0/go.mod h1:S0Pgl1WuN23YXWXsz13mSAshIx/P02mrPHbR3nSETmA=
+github.com/celo-org/celo-blockchain v1.3.2 h1:9j2DVbChjZZn4/6b3pqlD8HACNuJNrxKJsMo/yw67HE=
+github.com/celo-org/celo-blockchain v1.3.2/go.mod h1:S0Pgl1WuN23YXWXsz13mSAshIx/P02mrPHbR3nSETmA=
+github.com/celo-org/celo-bls-go v0.2.4 h1:V1y92kM5IRJWQZ6DCwqiKLW7swmUA5y/dPJ9YbU4HfA=
+github.com/celo-org/celo-bls-go v0.2.4/go.mod h1:eXUCLXu5F1yfd3M+3VaUk5ZUXaA0sLK2rWdLC1Cfaqo=
+github.com/celo-org/kliento v0.2.1-0.20210315135015-d8610134da4d h1:RazqXGLcNM2Qb8AGofaLq7rbHCz1Pwrp+gGrwHv941M=
+github.com/celo-org/kliento v0.2.1-0.20210315135015-d8610134da4d/go.mod h1:SNanwzazM/kQHHM4xgC2wKCc+c4+rdxrBYM03q19w7g=
+github.com/celo-org/kliento v0.2.1-0.20210510184328-accba0f45060 h1:N6BUoTXYC7uVQ1bJqkrjnaNrf7Gj5K8yHu+rq0miths=
+github.com/celo-org/kliento v0.2.1-0.20210510184328-accba0f45060/go.mod h1:M/HTJUVMSAdqynAJHQD3mwsE8lAl6vT/EXED6jqEKSo=
 github.com/cenkalti/backoff v2.2.1+incompatible h1:tNowT99t7UNflLxfYYSlKYsBpXdEet03Pg2g16Swow4=
 github.com/cenkalti/backoff v2.2.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
@@ -558,6 +571,7 @@ gopkg.in/jcmturner/rpc.v1 v1.1.0/go.mod h1:YIdkC4XfD6GXbzje11McwsDuOlZQSb9W4vfLv
 gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce h1:+JknDZhAj8YMt7GC73Ei8pv4MzjDUNPHgQWJdtMAaDU=
 gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce/go.mod h1:5AcXVHNjg+BDxry382+8OKon8SEWiKktQR07RKPsv1c=
 gopkg.in/olebedev/go-duktape.v3 v3.0.0-20200316214253-d7b0ff38cac9 h1:ITeyKbRetrVzqR3U1eY+ywgp7IBspGd1U/bkwd1gWu4=
+gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce/go.mod h1:5AcXVHNjg+BDxry382+8OKon8SEWiKktQR07RKPsv1c=
 gopkg.in/olebedev/go-duktape.v3 v3.0.0-20200316214253-d7b0ff38cac9/go.mod h1:uAJfkITjFhyEEuUfm7bsmCZRbW5WRq8s9EY8HZ6hCns=
 gopkg.in/olebedev/go-duktape.v3 v3.0.0-20200619000410-60c24ae608a6 h1:a6cXbcDDUkSBlpnkWV1bJ+vv3mOgQEltEJ2rPxroVu0=
 gopkg.in/olebedev/go-duktape.v3 v3.0.0-20200619000410-60c24ae608a6/go.mod h1:uAJfkITjFhyEEuUfm7bsmCZRbW5WRq8s9EY8HZ6hCns=
