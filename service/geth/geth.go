@@ -27,6 +27,7 @@ import (
 	"syscall"
 
 	"github.com/celo-org/celo-blockchain/log"
+	"github.com/celo-org/celo-blockchain/params"
 	"github.com/celo-org/kliento/utils/chain"
 	"github.com/celo-org/rosetta/internal/fileutils"
 	"github.com/celo-org/rosetta/service"
@@ -194,7 +195,6 @@ func (gs *gethService) ensureGethInit() error {
 
 func (gs *gethService) startGeth(stdErr *os.File) error {
 	gethArgs := []string{
-		"--networkid", gs.chainParams.ChainId.String(),
 		"--nousb",
 		"--rpc",
 		"--rpcaddr", gs.opts.RpcAddr,
@@ -209,6 +209,18 @@ func (gs *gethService) startGeth(stdErr *os.File) error {
 		"--maxpeers", "1100",
 		"--consoleformat", "term",
 		// "--consoleoutput", "split",
+	}
+
+	// Fix necessary flag for node to hardfork properly (temp fix)
+	switch gs.chainParams.ChainId.String() {
+	case params.AlfajoresChainConfig.ChainID.String():
+		gethArgs = append([]string{"--alfajores"}, gethArgs...)
+	case params.BaklavaChainConfig.ChainID.String():
+		gethArgs = append([]string{"--baklava"}, gethArgs...)
+	case params.MainnetChainConfig.ChainID.String():
+		break
+	default:
+		gethArgs = append(gethArgs, "--networkid", gs.chainParams.ChainId.String())
 	}
 
 	if gs.opts.Verbosity != "" {
