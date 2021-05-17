@@ -73,7 +73,7 @@ ROSETTA_DATADIR="/my/dir"
 ROSETTA_GETH_GENESIS="/path/to/genesis.json"
 ```
 
-Note that from Rosetta `v0.8.4` onwards, it is no longer necessary to pass in either `--geth.bootnodes` or `--geth.staticnodes`, as the geth `--alfajores`, `--baklava`, or no flag (for mainnet) will be set automatically, which sets the geth bootnodes appropriately. These flags may still optionally be used but are not recommended if there is not a specific reason to do so.
+Note that from Rosetta `v0.8.4` onwards, it is no longer necessary to pass in either `--geth.bootnodes` or `--geth.staticnodes`, as the geth flag `--alfajores`, `--baklava`, or no flag (for mainnet) will be set automatically, which sets the geth bootnodes appropriately. These flags may still optionally be used but are not recommended if there is not a specific reason to do so.
 
 ## Running the Rosetta RPC Server
 
