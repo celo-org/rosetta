@@ -53,10 +53,12 @@ Flags:
       --geth.genesis string       path to the genesis.json
       --geth.syncmode string      Geth blockchain sync mode (fast, full, light)
       --geth.gcmode string        Geth garbage collection mode (full, archive)
+      --geth.cache string         Memory (in MB) allocated to geth's internal caching
+      --geth.maxpeers string      Maximum number of network peers (network disabled if set to 0) (default: 1100)
       --geth.ipcpath string       Path to the geth ipc file
       --geth.logfile string       Path to logs file
       --geth.publicip string      Public Ip to configure geth (sometimes required for discovery)
-      --geth.staticnodes string   StaticNode to use (separated by ,)
+      --geth.staticnodes string   StaticNodes to use (separated by ,)
       --geth.verbosity string     Geth log verbosity (number between [1-5])
   -h, --help                      help for run
       --rpc.address string        Listening address for http server
@@ -70,6 +72,8 @@ Every argument can be defined using environment variables using `ROSETTA_` prefi
 ROSETTA_DATADIR="/my/dir"
 ROSETTA_GETH_GENESIS="/path/to/genesis.json"
 ```
+
+Note that from Rosetta `v0.8.4` onwards, it is no longer necessary to pass in either `--geth.bootnodes` or `--geth.staticnodes`, as the geth `--alfajores`, `--baklava`, or no flag (for mainnet) will be set automatically, which sets the geth bootnodes appropriately. These flags may still optionally be used but are not recommended if there is not a specific reason to do so.
 
 ## Running the Rosetta RPC Server
 
@@ -111,26 +115,25 @@ go run main.go run \
   --geth.binary ../celo-blockchain/build/bin/geth \
   --geth.syncmode full \
   --geth.gcmode archive \
-  --geth.staticnodes "enode://05977f6b7d3e16a99d27b714f8a029a006e41ec7732167d373dd920d31f72b3a1776650798d8763560854369d36867e9564dad13b4b60a90c347feeb491d83a9@34.83.42.50:30303" \
   --datadir "./envs/alfajores"
 ```
 
 You can stop the service and restart by re-running just the last command above (`go run main.go` ... )
 
-#### Running on RC1
+#### Running on Mainnet
 
-This is the same as above with a few differences (generally: specifying `rc1` vs. `alfajores`)
+This is the same as above with a few differences (generally: specifying `mainnet` vs. `alfajores`)
 
 Prerequisites:
 
 - `celo-blockchain`: same as above
 - Export paths: same as above
 - Checkout `rosetta`: same as above
-- Run `make rc1-env` to create an empty datadir with the genesis block. The output should look something like this:
+- Run `make mainnet-env` to create an empty datadir with the genesis block. The output should look something like this:
 
   ```sh
-  mkdir -p ./envs/rc1
-  curl 'https://storage.googleapis.com/genesis_blocks/rc1' > ./envs/rc1/genesis.json
+  mkdir -p ./envs/mainnet
+  curl 'https://storage.googleapis.com/genesis_blocks/mainnet' > ./envs/mainnet/genesis.json
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                   Dload  Upload   Total   Spent    Left  Speed
   100 25643  100 25643    0     0  56732      0 --:--:-- --:--:-- --:--:-- 56858
@@ -140,12 +143,11 @@ Then run:
 
 ```bash
 go run main.go run \
-  --geth.genesis ./envs/rc1/genesis.json \
+  --geth.genesis ./envs/mainnet/genesis.json \
   --geth.binary ../celo-blockchain/build/bin/geth \
   --geth.syncmode full \
   --geth.gcmode archive \
-  --geth.staticnodes "enode://5e0f4e3aaa096e2a2db76622b335cab4d3224d08d16cb11e8855a3a5f30c19d35d81a74b21271562e459495ab203c2f3a5a5747a83eb53ba046aeeb09aa240ff@34.83.110.24:30303" \
-  --datadir "./envs/rc1"
+  --datadir "./envs/mainnet"
 ```
 
 You should start to see continuous output looking similar to this:
@@ -154,7 +156,7 @@ You should start to see continuous output looking similar to this:
 INFO [01-28|14:09:03.434] Press CTRL-C to stop the process
 INFO [01-28|14:09:03.440] Running geth init                        service=geth
 INFO [01-28|14:09:04.104] Geth Already initialized... skipping init service=geth
-geth --networkid 44787 --nousb --rpc --rpcaddr 127.0.0.1 --rpcport 8545 --rpcvhosts localhost --syncmode full --gcmode archive --rpcapi eth,net,web3,debug,admin,personal --ipcpath <YourPathToRosetta>/rosetta/envs/alfajores/celo/geth.ipc --light.serve 0 --light.maxpeers 0 --maxpeers 1100 --consoleformat term
+--nousb --rpc --rpcaddr 127.0.0.1 --rpcport 8545 --rpcvhosts localhost --syncmode full --gcmode archive --rpcapi eth,net,web3,debug,admin,personal --ipcpath <YourPathToRosetta>/rosetta/envs/alfajores/celo/geth.ipc --light.serve 0 --light.maxpeers 0 --maxpeers 1100 --consoleformat term
 INFO [01-28|14:09:05.110] Detected Chain Parameters                chainId=44787 epochSize=17280
 INFO [01-28|14:09:05.120] Starting httpServer                      listen_address=:8080
 INFO [01-28|14:09:05.120] Resuming operation from last persisted  block srv=celo-monitor block=0
@@ -176,7 +178,6 @@ Rosetta is released as a docker image: `us.gcr.io/celo-testnet/rosetta`. All ver
 The command below runs the Celo Rosetta RPC server for `alfajores`:
 
 ```bash
-export STATICNODE="enode://e99a883d0b7d0bacb84cde98c4729933b49adbc94e718b77fdb31779c7ed9da6c49236330a9ae096f42bcbf6e803394229120201704b7a4a3ae8004993fa0876@34.83.92.243:30303"
 export RELEASE="latest"  # or specify a release version
 # folder for rosetta to use as data directory (saves rosetta.db & celo-blockchain datadir)
 export DATADIR="${PWD}/datadir"
@@ -187,17 +188,15 @@ docker run --name rosetta --rm \
   -v "${DATADIR}:/data" \
   -p 8080:8080 \
   us.gcr.io/celo-testnet/rosetta:$RELEASE \
-  run --geth.staticnodes $STATICNODE \
+  run \
   --geth.syncmode full \
   --geth.gcmode archive
 
 ```
 
-To run this for a different network, replace the genesis block generation and staticnode lines with values specific to the network, as detailed directly below:
+To run this for a different network, replace the `genesis.json` generation line (`curl ...`) above with values specific to the network:
 
-- `genesis.json` for the target network (can be found by running the following, selecting one of `alfajores`, `baklava`, `rc1` as `<NETWORK>` in `curl 'https://storage.googleapis.com/genesis_blocks/<NETWORK>' > genesis.json`).
-- `staticNodes` or `bootnodes`.
-  - With `staticNodes` Rosetta will directly peer to the list of staticNode provided. This node can be any you have access to. For a public list check `https://storage.cloud.google.com/static_nodes/<NETWORK>`
+- Replace `<NETWORK>` with one of `alfajores`, `baklava`, or `mainnet` and run `curl 'https://storage.googleapis.com/genesis_blocks/<NETWORK>' > genesis.json`.
 
 ## Airgap Client Guide
 
