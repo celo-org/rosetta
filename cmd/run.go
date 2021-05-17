@@ -83,6 +83,7 @@ func init() {
 	flagSet.String("geth.bootnodes", "", "Bootnodes to use (separated by ,)")
 	flagSet.String("geth.verbosity", "", "Geth log verbosity (number between [1-5])")
 	flagSet.String("geth.publicip", "", "Public Ip to configure geth (sometimes required for discovery)")
+	flagSet.String("geth.cache", "", "Memory (in MB) allocated to geth's internal caching")
 
 	flagSet.String("geth.rpcaddr", "127.0.0.1", "Geth HTTP-RPC server listening interface")
 	flagSet.String("geth.rpcport", "8545", "Geth HTTP-RPC server listening port")
@@ -90,7 +91,7 @@ func init() {
 
 	flagSet.String("geth.syncmode", "fast", "Geth blockchain sync mode (fast, full, light)")
 	flagSet.String("geth.gcmode", "full", "Geth garbage collection mode (full, archive)")
-
+	flagSet.String("geth.maxpeers", "1100", "Maximum number of network peers (network disabled if set to 0) (default: 1100)")
 }
 
 func getDatadir(cmd *cobra.Command) string {
@@ -122,22 +123,20 @@ func readGethOption(cmd *cobra.Command, datadir string) *geth.GethOpts {
 		Verbosity:   viper.GetString("geth.verbosity"),
 		StaticNodes: viper.GetString("geth.staticnodes"),
 		PublicIp:    viper.GetString("geth.publicip"),
+		Cache:       viper.GetString("geth.cache"),
 		RpcAddr:     viper.GetString("geth.rpcaddr"),
 		RpcPort:     viper.GetString("geth.rpcport"),
 		RpcVHosts:   viper.GetString("geth.rpcvhosts"),
 		SyncMode:    viper.GetString("geth.syncmode"),
 		GcMode:      viper.GetString("geth.gcmode"),
+		MaxPeers:    viper.GetString("geth.maxpeers"),
 	}
 
 	if opts.GethBinary == "" {
 		printUsageAndExit(cmd, "Missing config option for 'geth.binary'")
 	}
 	if opts.GenesisPath == "" {
-		printUsageAndExit(cmd, "Missing config option for 'geth.gensis'")
-	}
-
-	if opts.Bootnodes == "" && opts.StaticNodes == "" {
-		printUsageAndExit(cmd, "Either bootnodes or staticNodes are required to start geth")
+		printUsageAndExit(cmd, "Missing config option for 'geth.genesis'")
 	}
 
 	return opts
