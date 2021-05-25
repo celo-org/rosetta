@@ -58,6 +58,10 @@ rc1-env:
 	mkdir -p ./envs/rc1
 	curl 'https://storage.googleapis.com/genesis_blocks/rc1' > ./envs/rc1/genesis.json
 
+mainnet-env:
+	mkdir -p ./envs/mainnet
+	curl 'https://storage.googleapis.com/genesis_blocks/mainnet' > ./envs/mainnet/genesis.json
+
 alfajores-env:
 	mkdir -p ./envs/alfajores
 	curl 'https://storage.googleapis.com/genesis_blocks/alfajores' > ./envs/alfajores/genesis.json

@@ -43,11 +43,13 @@ type GethOpts struct {
 	Bootnodes   string
 	Verbosity   string
 	PublicIp    string
+	Cache       string
 	RpcAddr     string
 	RpcPort     string
 	RpcVHosts   string
 	SyncMode    string
 	GcMode      string
+	MaxPeers    string
 }
 
 type gethService struct {
@@ -206,7 +208,7 @@ func (gs *gethService) startGeth(stdErr *os.File) error {
 		"--ipcpath", gs.IpcFilePath(),
 		"--light.serve", "0",
 		"--light.maxpeers", "0",
-		"--maxpeers", "1100",
+		"--maxpeers", gs.opts.MaxPeers,
 		"--consoleformat", "term",
 		// "--consoleoutput", "split",
 	}
@@ -233,6 +235,10 @@ func (gs *gethService) startGeth(stdErr *os.File) error {
 
 	if gs.opts.PublicIp != "" {
 		gethArgs = append(gethArgs, "--nat", "extip:"+gs.opts.PublicIp)
+	}
+
+	if gs.opts.Cache != "" {
+		gethArgs = append(gethArgs, "--cache", gs.opts.Cache)
 	}
 
 	fmt.Println("geth", strings.Join(gethArgs, " "))
