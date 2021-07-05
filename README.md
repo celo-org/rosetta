@@ -50,7 +50,8 @@ Flags:
       --datadir string            datadir to use
       --geth.binary string        Path to the celo-blockchain binary
       --geth.bootnodes string     Bootnodes to use (separated by ,)
-      --geth.genesis string       path to the genesis.json
+      --geth.genesis string       path to the genesis.json (optional; useful for running Rosetta witha  custom chain)
+      --geth.network string       Network to use, either 'mainnet', 'alfajores', or 'baklava'
       --geth.syncmode string      Geth blockchain sync mode (fast, full, light)
       --geth.gcmode string        Geth garbage collection mode (full, archive)
       --geth.cache string         Memory (in MB) allocated to geth's internal caching
@@ -70,7 +71,7 @@ Every argument can be defined using environment variables using `ROSETTA_` prefi
 
 ```sh
 ROSETTA_DATADIR="/my/dir"
-ROSETTA_GETH_GENESIS="/path/to/genesis.json"
+ROSETTA_GETH_NETWORK="alfajores"
 ```
 
 Note that from Rosetta `v0.8.4` onwards, it is no longer necessary to pass in either `--geth.bootnodes` or `--geth.staticnodes`, as the geth flag `--alfajores`, `--baklava`, or no flag (for mainnet) will be set automatically, which sets the geth bootnodes appropriately. These flags may still optionally be used but are not recommended if there is not a specific reason to do so.
@@ -97,21 +98,13 @@ Prerequisites:
 
 - Checkout `celo-blockchain` tag `v1.3.2` (`git fetch --all && git checkout v1.3.2`) (NOTE: check that this matches the version specified in `rosetta`'s `go.mod` file) and `make geth`
 - Checkout `rosetta` tag `v0.8.5` (`git fetch --all && git checkout v0.8.5`) (or latest released tag) and `make all`
-- Run `make alfajores-env` to create an empty datadir with the genesis block (only needs to be run the first time, upon initializing the service). The output should look something like this:
-
-  ```sh
-  mkdir -p ./envs/alfajores
-  curl 'https://storage.googleapis.com/genesis_blocks/alfajores' > ./envs/alfajores/genesis.json
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                  Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:-100 12600  100 12600    0     0  36842      0 --:--:-- --:--:-- --:--:-- 36842
-  ```
+- Create an empty data directory for the alfajores data (running `make alfajores-env` is a shortcut for creating a `./envs/alfajores` directory)
 
 Then run:
 
 ```bash
 go run main.go run \
-  --geth.genesis ./envs/alfajores/genesis.json \
+  --geth.network alfajores \
   --geth.binary ../celo-blockchain/build/bin/geth \
   --geth.syncmode full \
   --geth.gcmode archive \
@@ -129,21 +122,13 @@ Prerequisites:
 - `celo-blockchain`: same as above
 - Export paths: same as above
 - Checkout `rosetta`: same as above
-- Run `make mainnet-env` to create an empty datadir with the genesis block. The output should look something like this:
-
-  ```sh
-  mkdir -p ./envs/mainnet
-  curl 'https://storage.googleapis.com/genesis_blocks/mainnet' > ./envs/mainnet/genesis.json
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                  Dload  Upload   Total   Spent    Left  Speed
-  100 25643  100 25643    0     0  56732      0 --:--:-- --:--:-- --:--:-- 56858
-  ```
+- Create an empty data directory for the mainnet data (running `make mainnet-env` is a shortcut for creating a `./envs/mainnet` directory)
 
 Then run:
 
 ```bash
 go run main.go run \
-  --geth.genesis ./envs/mainnet/genesis.json \
+  --geth.network mainnet \
   --geth.binary ../celo-blockchain/build/bin/geth \
   --geth.syncmode full \
   --geth.gcmode archive \
@@ -154,8 +139,6 @@ You should start to see continuous output looking similar to this:
 
 ```sh
 INFO [01-28|14:09:03.434] Press CTRL-C to stop the process
-INFO [01-28|14:09:03.440] Running geth init                        service=geth
-INFO [01-28|14:09:04.104] Geth Already initialized... skipping init service=geth
 --nousb --rpc --rpcaddr 127.0.0.1 --rpcport 8545 --rpcvhosts localhost --syncmode full --gcmode archive --rpcapi eth,net,web3,debug,admin,personal --ipcpath <YourPathToRosetta>/rosetta/envs/alfajores/celo/geth.ipc --light.serve 0 --light.maxpeers 0 --maxpeers 1100 --consoleformat term
 INFO [01-28|14:09:05.110] Detected Chain Parameters                chainId=44787 epochSize=17280
 INFO [01-28|14:09:05.120] Starting httpServer                      listen_address=:8080
@@ -182,21 +165,19 @@ export RELEASE="latest"  # or specify a release version
 # folder for rosetta to use as data directory (saves rosetta.db & celo-blockchain datadir)
 export DATADIR="${PWD}/datadir"
 mkdir $DATADIR
-curl 'https://storage.googleapis.com/genesis_blocks/alfajores' > "${DATADIR}/genesis.json"
 docker pull us.gcr.io/celo-testnet/rosetta:$RELEASE
 docker run --name rosetta --rm \
   -v "${DATADIR}:/data" \
   -p 8080:8080 \
   us.gcr.io/celo-testnet/rosetta:$RELEASE \
   run \
+  --geth.network alfajores \
   --geth.syncmode full \
   --geth.gcmode archive
 
 ```
 
-To run this for a different network, replace the `genesis.json` generation line (`curl ...`) above with values specific to the network:
-
-- Replace `<NETWORK>` with one of `alfajores`, `baklava`, or `mainnet` and run `curl 'https://storage.googleapis.com/genesis_blocks/<NETWORK>' > genesis.json`.
+To run this for a different network, change the `geth.network` flag from `alfajores` to `mainnet` or `baklava`.
 
 ## Airgap Client Guide
 

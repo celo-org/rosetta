@@ -76,8 +76,9 @@ func init() {
 	flagSet.String("geth.ipcpath", "", "Path to the geth ipc file")
 	utils.ExitOnError(serveCmd.MarkFlagFilename("geth.ipcpath"))
 
-	flagSet.String("geth.genesis", "", "path to the genesis.json")
+	flagSet.String("geth.genesis", "", "(Optional) path to the genesis.json, for use with custom chains")
 	utils.ExitOnError(serveCmd.MarkFlagFilename("geth.genesis", "json"))
+	flagSet.String("geth.network", "", "Network to use, either 'mainnet', 'alfajores', or 'baklava'")
 
 	flagSet.String("geth.staticnodes", "", "StaticNode to use (separated by ,)")
 	flagSet.String("geth.bootnodes", "", "Bootnodes to use (separated by ,)")
@@ -116,6 +117,7 @@ func readGethOption(cmd *cobra.Command, datadir string) *geth.GethOpts {
 	opts := &geth.GethOpts{
 		GethBinary:  viper.GetString("geth.binary"),
 		GenesisPath: viper.GetString("geth.genesis"),
+		Network:     viper.GetString("geth.network"),
 		Datadir:     filepath.Join(datadir, "celo"),
 		LogsPath:    viper.GetString("geth.logfile"),
 		IpcPath:     viper.GetString("geth.ipcpath"),
@@ -135,8 +137,10 @@ func readGethOption(cmd *cobra.Command, datadir string) *geth.GethOpts {
 	if opts.GethBinary == "" {
 		printUsageAndExit(cmd, "Missing config option for 'geth.binary'")
 	}
-	if opts.GenesisPath == "" {
-		printUsageAndExit(cmd, "Missing config option for 'geth.genesis'")
+	if opts.GenesisPath == "" && opts.Network == "" {
+		printUsageAndExit(cmd, "Missing config option for 'geth.genesis' or 'geth.network'")
+	} else if opts.GenesisPath != "" && opts.Network != "" {
+		printUsageAndExit(cmd, "Must provide exactly one of 'geth.genesis' or 'geth.network'")
 	}
 
 	return opts

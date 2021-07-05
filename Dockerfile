@@ -62,7 +62,6 @@ ENV ROSETTA_RPC_PORT="8080"
 ENV ROSETTA_GETH_LOGFILE="/logs/celo.log"
 ENV ROSETTA_GETH_IPCPATH="/var/geth.ipc"
 ENV ROSETTA_GETH_BINARY="/usr/local/bin/geth"
-ENV ROSETTA_GETH_GENESIS="/data/genesis.json"
 
 ENTRYPOINT ["/usr/local/bin/rosetta"]
 CMD ["run"]

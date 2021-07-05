@@ -36,6 +36,7 @@ import (
 type GethOpts struct {
 	GethBinary  string
 	GenesisPath string
+	Network     string
 	IpcPath     string
 	LogsPath    string
 	Datadir     string
@@ -96,11 +97,37 @@ func (gs *gethService) Setup() error {
 		}
 	}
 
-	// Read Genesis to get chain parameters
-	gs.chainParams = chainParamsFromGenesisFile(gs.opts.GenesisPath)
+	if gs.opts.GenesisPath != "" {
+		// Read Genesis to get chain parameters
+		gs.chainParams = chainParamsFromGenesisFile(gs.opts.GenesisPath)
 
-	if err := gs.ensureGethInit(); err != nil {
-		return err
+		if err := gs.ensureGethInit(); err != nil {
+			return err
+		}
+	} else {
+		// Get chain params from blockchain client
+		var chainId *big.Int
+		var epochSize uint64
+		switch gs.opts.Network {
+		case "mainnet":
+			chainId = params.MainnetChainConfig.ChainID
+			epochSize = params.MainnetChainConfig.Istanbul.Epoch
+			break
+		case "alfajores":
+			chainId = params.AlfajoresChainConfig.ChainID
+			epochSize = params.AlfajoresChainConfig.Istanbul.Epoch
+			break
+		case "baklava":
+			chainId = params.BaklavaChainConfig.ChainID
+			epochSize = params.BaklavaChainConfig.Istanbul.Epoch
+			break
+		default:
+			return fmt.Errorf("unknown network: %s", gs.opts.Network)
+		}
+		gs.chainParams = &chain.ChainParameters{
+			ChainId:   chainId,
+			EpochSize: epochSize,
+		}
 	}
 
 	return nil
@@ -174,6 +201,7 @@ func (gs *gethService) setupStaticNodes() error {
 
 func (gs *gethService) ensureGethInit() error {
 	// Check if geth is initialized already
+	// only needed for custom ChainID (i.e. not alfajores, baklava, or mainnet)
 	flagFile := gs.opts.GethInitializedFile()
 
 	if fileutils.FileExists(flagFile) {
