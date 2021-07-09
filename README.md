@@ -98,7 +98,7 @@ Prerequisites:
 
 - Checkout `celo-blockchain` tag `v1.3.2` (`git fetch --all && git checkout v1.3.2`) (NOTE: check that this matches the version specified in `rosetta`'s `go.mod` file) and `make geth`
 - Checkout `rosetta` tag `v0.8.5` (`git fetch --all && git checkout v0.8.5`) (or latest released tag) and `make all`
-- Create an empty data directory for the alfajores data (running `make alfajores-env` is a shortcut for creating a `./envs/alfajores` directory)
+- Replace `<PATH-TO-DATADIR>` below, which is the location for the alfajores data directory (the directory does not need to exist before passing it in)
 
 Then run:
 
@@ -108,7 +108,7 @@ go run main.go run \
   --geth.binary ../celo-blockchain/build/bin/geth \
   --geth.syncmode full \
   --geth.gcmode archive \
-  --datadir "./envs/alfajores"
+  --datadir <PATH-TO-DATADIR>
 ```
 
 You can stop the service and restart by re-running just the last command above (`go run main.go` ... )
@@ -122,7 +122,7 @@ Prerequisites:
 - `celo-blockchain`: same as above
 - Export paths: same as above
 - Checkout `rosetta`: same as above
-- Create an empty data directory for the mainnet data (running `make mainnet-env` is a shortcut for creating a `./envs/mainnet` directory)
+- Replace `<PATH-TO-DATADIR>` below, which is the location for the mainnet data directory (the directory does not need to exist before passing it in)
 
 Then run:
 
@@ -132,7 +132,7 @@ go run main.go run \
   --geth.binary ../celo-blockchain/build/bin/geth \
   --geth.syncmode full \
   --geth.gcmode archive \
-  --datadir "./envs/mainnet"
+  --datadir <PATH-TO-DATADIR>
 ```
 
 You should start to see continuous output looking similar to this:

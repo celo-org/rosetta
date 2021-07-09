@@ -54,12 +54,6 @@ endif
 clean:
 	go clean -cache
 
-mainnet-env:
-	mkdir -p ./envs/mainnet
-
-alfajores-env:
-	mkdir -p ./envs/alfajores
-
 add-license:
 	${LICENCE_SCRIPT} analyzer airgap cmd db examples internal service main.go
 

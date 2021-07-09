@@ -103,13 +103,6 @@ func getDatadir(cmd *cobra.Command) string {
 		printUsageAndExit(cmd, fmt.Sprintf("Can't resolve datadir path: %s, error: %s", absDatadir, err))
 	}
 
-	isDir, err := fileutils.IsDirectory(absDatadir)
-	if err != nil {
-		printUsageAndExit(cmd, fmt.Sprintf("Can't access datadir path: %s, error: %s", absDatadir, err))
-	} else if !isDir {
-		printUsageAndExit(cmd, fmt.Sprintf("Datadir is not a directory: %s, error: %s", absDatadir, err))
-	}
-
 	return absDatadir
 }
 
@@ -178,17 +171,17 @@ func runAllServices(ctx context.Context, sqlitePath string, gethOpts *geth.GethO
 	ctx, stopServices := context.WithCancel(ctx)
 	defer stopServices()
 
-	celoStore, err := db.NewSqliteDb(sqlitePath)
-	if err != nil {
-		return fmt.Errorf("can't open rosetta.db: %w", err)
-	}
-
 	sm := service.NewServiceManager(ctx)
 
 	gethSrv := geth.NewGethService(gethOpts)
 
 	if err := gethSrv.Setup(); err != nil {
 		return fmt.Errorf("error on geth setup: %w", err)
+	}
+
+	celoStore, err := db.NewSqliteDb(sqlitePath)
+	if err != nil {
+		return fmt.Errorf("can't open rosetta.db: %w", err)
 	}
 
 	sm.Add(gethSrv)
