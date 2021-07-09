@@ -50,8 +50,8 @@ Flags:
       --datadir string            datadir to use
       --geth.binary string        Path to the celo-blockchain binary
       --geth.bootnodes string     Bootnodes to use (separated by ,)
-      --geth.genesis string       path to the genesis.json (optional; useful for running Rosetta witha  custom chain)
-      --geth.network string       Network to use, either 'mainnet', 'alfajores', or 'baklava'
+      --geth.genesis string       Path to the genesis.json (optional; useful for running Rosetta with a custom chain)
+      --geth.network string       Network to use, either 'mainnet', 'alfajores', or 'baklava' (optional; recommended when not using a custom chain)
       --geth.syncmode string      Geth blockchain sync mode (fast, full, light)
       --geth.gcmode string        Geth garbage collection mode (full, archive)
       --geth.cache string         Memory (in MB) allocated to geth's internal caching
