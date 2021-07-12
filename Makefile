@@ -54,26 +54,6 @@ endif
 clean:
 	go clean -cache
 
-rc1-env:
-	mkdir -p ./envs/rc1
-	curl 'https://storage.googleapis.com/genesis_blocks/rc1' > ./envs/rc1/genesis.json
-
-mainnet-env:
-	mkdir -p ./envs/mainnet
-	curl 'https://storage.googleapis.com/genesis_blocks/mainnet' > ./envs/mainnet/genesis.json
-
-alfajores-env:
-	mkdir -p ./envs/alfajores
-	curl 'https://storage.googleapis.com/genesis_blocks/alfajores' > ./envs/alfajores/genesis.json
-
-alfajoresstaging-env:
-	mkdir -p ./envs/alfajoresstaging
-	curl 'https://storage.googleapis.com/genesis_blocks/alfajoresstaging' > ./envs/alfajoresstaging/genesis.json
-
-rc0-env:
-	mkdir -p ./envs/rc0
-	curl 'https://storage.googleapis.com/genesis_blocks/rc0' > ./envs/rc0/genesis.json
-
 add-license:
 	${LICENCE_SCRIPT} analyzer airgap cmd db examples internal service main.go
 

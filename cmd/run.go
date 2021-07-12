@@ -76,8 +76,9 @@ func init() {
 	flagSet.String("geth.ipcpath", "", "Path to the geth ipc file")
 	utils.ExitOnError(serveCmd.MarkFlagFilename("geth.ipcpath"))
 
-	flagSet.String("geth.genesis", "", "path to the genesis.json")
+	flagSet.String("geth.genesis", "", "(Optional) path to the genesis.json, for use with custom chains")
 	utils.ExitOnError(serveCmd.MarkFlagFilename("geth.genesis", "json"))
+	flagSet.String("geth.network", "", "Network to use, either 'mainnet', 'alfajores', or 'baklava'")
 
 	flagSet.String("geth.staticnodes", "", "StaticNode to use (separated by ,)")
 	flagSet.String("geth.bootnodes", "", "Bootnodes to use (separated by ,)")
@@ -102,13 +103,6 @@ func getDatadir(cmd *cobra.Command) string {
 		printUsageAndExit(cmd, fmt.Sprintf("Can't resolve datadir path: %s, error: %s", absDatadir, err))
 	}
 
-	isDir, err := fileutils.IsDirectory(absDatadir)
-	if err != nil {
-		printUsageAndExit(cmd, fmt.Sprintf("Can't access datadir path: %s, error: %s", absDatadir, err))
-	} else if !isDir {
-		printUsageAndExit(cmd, fmt.Sprintf("Datadir is not a directory: %s, error: %s", absDatadir, err))
-	}
-
 	return absDatadir
 }
 
@@ -116,6 +110,7 @@ func readGethOption(cmd *cobra.Command, datadir string) *geth.GethOpts {
 	opts := &geth.GethOpts{
 		GethBinary:  viper.GetString("geth.binary"),
 		GenesisPath: viper.GetString("geth.genesis"),
+		Network:     viper.GetString("geth.network"),
 		Datadir:     filepath.Join(datadir, "celo"),
 		LogsPath:    viper.GetString("geth.logfile"),
 		IpcPath:     viper.GetString("geth.ipcpath"),
@@ -135,8 +130,10 @@ func readGethOption(cmd *cobra.Command, datadir string) *geth.GethOpts {
 	if opts.GethBinary == "" {
 		printUsageAndExit(cmd, "Missing config option for 'geth.binary'")
 	}
-	if opts.GenesisPath == "" {
-		printUsageAndExit(cmd, "Missing config option for 'geth.genesis'")
+	if opts.GenesisPath == "" && opts.Network == "" {
+		printUsageAndExit(cmd, "Missing config option for 'geth.genesis' or 'geth.network'")
+	} else if opts.GenesisPath != "" && opts.Network != "" {
+		printUsageAndExit(cmd, "Must provide exactly one of 'geth.genesis' or 'geth.network'")
 	}
 
 	return opts
@@ -174,17 +171,17 @@ func runAllServices(ctx context.Context, sqlitePath string, gethOpts *geth.GethO
 	ctx, stopServices := context.WithCancel(ctx)
 	defer stopServices()
 
-	celoStore, err := db.NewSqliteDb(sqlitePath)
-	if err != nil {
-		return fmt.Errorf("can't open rosetta.db: %w", err)
-	}
-
 	sm := service.NewServiceManager(ctx)
 
 	gethSrv := geth.NewGethService(gethOpts)
 
 	if err := gethSrv.Setup(); err != nil {
 		return fmt.Errorf("error on geth setup: %w", err)
+	}
+
+	celoStore, err := db.NewSqliteDb(sqlitePath)
+	if err != nil {
+		return fmt.Errorf("can't open rosetta.db: %w", err)
 	}
 
 	sm.Add(gethSrv)
