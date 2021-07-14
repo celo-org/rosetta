@@ -79,6 +79,8 @@ var (
 	ReleaseGoldRemainingTotalBalance      = registerMethod(ReleaseGold, "getRemainingTotalBalance", nil)
 	ReleaseGoldRemainingUnlockedBalance   = registerMethod(ReleaseGold, "getRemainingUnlockedBalance", nil)
 	ReleaseGoldRemainingLockedBalance     = registerMethod(ReleaseGold, "getRemainingLockedBalance", nil)
+	ReleaseGoldSetBeneficiary             = registerMethod(ReleaseGold, "setBeneficiary", []argParser{addressParser})
+	ReleaseGoldTransferOwnership          = registerMethod(ReleaseGold, "transferOwnership", []argParser{addressParser})
 
 	// StableToken
 	StableTokenBalanceOf = registerMethod(registry.StableTokenContractID.String(), "balanceOf", []argParser{addressParser})
