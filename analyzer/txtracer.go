@@ -285,17 +285,15 @@ func (tr *Tracer) TxOpsFromLogs(tx *types.Transaction, receipt *types.Receipt, t
 				// Only store balance-changing (>0) GoldLocked logs.
 				if event.Value.Cmp(big.NewInt(0)) > 0 {
 					transfers = append(transfers, *NewLockGold(event.Account, lockedGoldAddr, event.Value))
-				}
+				} 
 			case "GoldRelocked":
 				// relock() [GoldRelocked] => lockPending->lockNonVoting
 				event := eventRaw.(*contracts.LockedGoldGoldRelocked)
 				transfers = append(transfers, *NewRelockGold(event.Account, event.Value))
-
 			case "GoldUnlocked":
 				// unlock() [GoldUnlocked] => lockNonVoting->lockPending
 				event := eventRaw.(*contracts.LockedGoldGoldUnlocked)
 				transfers = append(transfers, *NewUnlockGold(event.Account, event.Value))
-
 			case "GoldWithdrawn":
 				// withdraw() [GoldWithdrawn + transfer] => lockPending->main
 				event := eventRaw.(*contracts.LockedGoldGoldWithdrawn)
@@ -308,8 +306,10 @@ func (tr *Tracer) TxOpsFromLogs(tx *types.Transaction, receipt *types.Receipt, t
 			case "AccountSlashed":
 				// slash() [AccountSlashed + transfer] => account:lockNonVoting -> beneficiary:lockNonVoting + governance:main
 				event := eventRaw.(*contracts.LockedGoldAccountSlashed)
-				transfers = append(transfers, *NewSlash(event.Slashed, event.Reporter, governanceAddr, lockedGoldAddr, event.Penalty, event.Reward, tobinTax))
-
+				t := new(big.Int)
+				if t.Sub(event.Penalty, event.Reward).Cmp(big.NewInt(0)) > 0 {
+					transfers = append(transfers, *NewSlash(event.Slashed, event.Reporter, governanceAddr, lockedGoldAddr, event.Penalty, event.Reward, tobinTax))
+				}
 			}
 		}
 
