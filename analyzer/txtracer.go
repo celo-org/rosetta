@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"strings"
 
 	"github.com/celo-org/celo-blockchain/common"
 	"github.com/celo-org/celo-blockchain/core/types"
@@ -213,7 +214,12 @@ func (tr *Tracer) TxOpsFromLogs(tx *types.Transaction, receipt *types.Receipt, t
 		if eventLog.Address == electionAddr {
 			eventName, eventRaw, ok, err := election.TryParseLog(*eventLog)
 			if err != nil {
-				return nil, fmt.Errorf("can't parse Election event: %w", err)
+				if strings.HasPrefix(err.Error(), "no event with id") {
+					tr.logger.Warn("Ignoring unknown Election event: %w", err)
+					continue
+				} else {
+					return nil, fmt.Errorf("can't parse Election event: %w", err)
+				}
 			}
 			if !ok {
 				continue
@@ -243,7 +249,12 @@ func (tr *Tracer) TxOpsFromLogs(tx *types.Transaction, receipt *types.Receipt, t
 		} else if eventLog.Address == accountsAddr {
 			eventName, eventRaw, ok, err := accounts.TryParseLog(*eventLog)
 			if err != nil {
-				return nil, fmt.Errorf("can't parse Accounts event: %w", err)
+				if strings.HasPrefix(err.Error(), "no event with id") {
+					tr.logger.Warn("Ignoring unknown Accounts event: %w", err)
+					continue
+				} else {
+					return nil, fmt.Errorf("can't parse Accounts event: %w", err)
+				}
 			}
 			if !ok {
 				continue
@@ -269,7 +280,12 @@ func (tr *Tracer) TxOpsFromLogs(tx *types.Transaction, receipt *types.Receipt, t
 		} else if eventLog.Address == lockedGoldAddr {
 			eventName, eventRaw, ok, err := lockedGold.TryParseLog(*eventLog)
 			if err != nil {
-				return nil, fmt.Errorf("can't parse LockedGold event: %w", err)
+				if strings.HasPrefix(err.Error(), "no event with id") {
+					tr.logger.Warn("Ignoring unknown LockedGold event: %w", err)
+					continue
+				} else {
+					return nil, fmt.Errorf("can't parse LockedGold event: %w", err)
+				}
 			}
 			if !ok {
 				continue
