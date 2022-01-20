@@ -24,6 +24,6 @@ const (
 )
 
 var (
-	MiddlewareVersion = "0.8.5"
+	MiddlewareVersion = "0.8.6"
 	NodeVersion       = params.Version
 )
