@@ -71,9 +71,8 @@ func (sc *serverContextStub) CallContract(ctx context.Context, msg ethereum.Call
 func (sc *serverContextStub) NonceAt(ctx context.Context, account common.Address, blockNumber *big.Int) (uint64, error) {
 	return 7, nil
 }
-func (sc *serverContextStub) SendRawTransaction(ctx context.Context, data []byte) (*common.Hash, error) {
-	hash := common.HexToHash("0x666777888")
-	return &hash, nil
+func (sc *serverContextStub) SendTransaction(ctx context.Context, tx *types.Transaction) error {
+	return nil
 }
 
 func (sc *serverContextStub) FilterLogs(ctx context.Context, q ethereum.FilterQuery) ([]types.Log, error) {

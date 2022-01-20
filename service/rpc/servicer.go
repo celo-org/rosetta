@@ -570,7 +570,7 @@ func (s *Servicer) ConstructionSubmit(ctx context.Context, request *types.Constr
 
 	txhash, err := s.airgap.SubmitTx(ctx, rawTx)
 	if err != nil {
-		return nil, LogErrCeloClient("SendRawTx", err)
+		return nil, LogErrCeloClient("SendTransaction", err)
 	}
 
 	response := types.TransactionIdentifierResponse{
