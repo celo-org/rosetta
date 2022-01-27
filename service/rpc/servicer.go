@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"time"
 
 	"github.com/celo-org/celo-blockchain/accounts/abi/bind"
 	"github.com/celo-org/celo-blockchain/common"
@@ -43,10 +44,12 @@ type Servicer struct {
 	db          db.RosettaDBReader
 	chainParams *chain.ChainParameters
 	airgap      airgap.Server
+	// The timeout to use when performing transaction traces.
+	txTraceTimeout time.Duration
 }
 
 // NewServicer creates a default api service
-func NewServicer(celoClient *client.CeloClient, db db.RosettaDBReader, cp *chain.ChainParameters) (*Servicer, error) {
+func NewServicer(celoClient *client.CeloClient, db db.RosettaDBReader, cfg *RosettaServerConfig, cp *chain.ChainParameters) (*Servicer, error) {
 	srvCtx, err := server.NewServerContext(celoClient)
 	if err != nil {
 		return nil, err
@@ -58,10 +61,11 @@ func NewServicer(celoClient *client.CeloClient, db db.RosettaDBReader, cp *chain
 	}
 
 	return &Servicer{
-		cc:          celoClient,
-		db:          db,
-		chainParams: cp,
-		airgap:      airgap,
+		cc:             celoClient,
+		db:             db,
+		chainParams:    cp,
+		airgap:         airgap,
+		txTraceTimeout: cfg.RequestTimeout,
 	}, nil
 }
 
@@ -364,9 +368,9 @@ func (s *Servicer) Block(ctx context.Context, request *types.BlockRequest) (*typ
 }
 
 // BlockTransaction - Get a Block Transaction
-func (s *Servicer) BlockTransaction(ctx context.Context, request *types.BlockTransactionRequest) (*types.BlockTransactionResponse, *types.Error) {
+func (S *Servicer) BlockTransaction(ctx context.Context, request *types.BlockTransactionRequest) (*types.BlockTransactionResponse, *types.Error) {
 
-	blockHeader, err := s.blockHeader(ctx, FullToPartialBlockIdentifier(request.BlockIdentifier))
+	blockHeader, err := S.blockHeader(ctx, FullToPartialBlockIdentifier(request.BlockIdentifier))
 	if err != nil {
 		return nil, err
 	}
@@ -375,8 +379,8 @@ func (s *Servicer) BlockTransaction(ctx context.Context, request *types.BlockTra
 
 	var operations []*types.Operation
 	// Check If it's block transaction (imaginary transaction)
-	if s.chainParams.IsLastBlockOfEpoch(blockHeader.Number.Uint64()) && txHash == blockHeader.Hash() {
-		rewards, err := analyzer.ComputeEpochRewards(ctx, s.cc, s.db, &blockHeader.Header)
+	if S.chainParams.IsLastBlockOfEpoch(blockHeader.Number.Uint64()) && txHash == blockHeader.Hash() {
+		rewards, err := analyzer.ComputeEpochRewards(ctx, S.cc, S.db, &blockHeader.Header)
 		if err != nil {
 			return nil, LogErrCeloClient("ComputeEpochRewards", err)
 		}
@@ -388,17 +392,17 @@ func (s *Servicer) BlockTransaction(ctx context.Context, request *types.BlockTra
 			return nil, LogErrInternal(ErrMissingTxInBlock, "blockNumber", blockHeader.Number, "txHash", txHash.Hex())
 		}
 
-		tx, _, err := s.cc.Eth.TransactionByHash(ctx, txHash)
+		tx, _, err := S.cc.Eth.TransactionByHash(ctx, txHash)
 		if err != nil {
 			return nil, LogErrCeloClient("TransactionByHash", err)
 		}
 
-		receipt, err := s.cc.Eth.TransactionReceipt(ctx, tx.Hash())
+		receipt, err := S.cc.Eth.TransactionReceipt(ctx, tx.Hash())
 		if err != nil {
 			return nil, LogErrCeloClient("TransactionReceipt", err)
 		}
 
-		tracer := analyzer.NewTracer(ctx, s.cc, s.db)
+		tracer := analyzer.NewTracer(ctx, S.cc, S.db, S.txTraceTimeout)
 
 		ops, err := tracer.TraceTransaction(&blockHeader.Header, tx, receipt)
 		if err != nil {

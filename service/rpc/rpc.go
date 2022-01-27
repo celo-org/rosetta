@@ -56,7 +56,7 @@ func NewRosettaServer(cc *client.CeloClient, db db.RosettaDBReader, cfg *Rosetta
 	var mainHandler http.Handler
 	var err error
 
-	mainHandler, err = createRouter(cc, db, chainParams)
+	mainHandler, err = createRouter(cc, db, cfg, chainParams)
 	if err != nil {
 		return nil, err
 	}
@@ -117,8 +117,8 @@ func requestLogHandler(handler http.Handler) http.Handler {
 	})
 }
 
-func createRouter(celoClient *client.CeloClient, db db.RosettaDBReader, chainParams *chain.ChainParameters) (http.Handler, error) {
-	servicer, err := NewServicer(celoClient, db, chainParams)
+func createRouter(celoClient *client.CeloClient, db db.RosettaDBReader, cfg *RosettaServerConfig, chainParams *chain.ChainParameters) (http.Handler, error) {
+	servicer, err := NewServicer(celoClient, db, cfg, chainParams)
 	if err != nil {
 		return nil, err
 	}

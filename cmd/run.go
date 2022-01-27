@@ -64,7 +64,7 @@ func init() {
 	// RPC Service Flags
 	flagSet.Uint("rpc.port", 8080, "Listening port for http server")
 	flagSet.String("rpc.address", "", "Listening address for http server")
-	flagSet.Duration("rpc.reqTimeout", 25*time.Second, "Timeout when serving a request")
+	flagSet.Duration("rpc.reqTimeout", 25*time.Second, "Timeout for requests to this service, this also controls the timeout sent to the blockchain node for trace transaction requests")
 
 	// Geth Service Flags
 	flagSet.String("geth.binary", "", "Path to the celo-blockchain binary")
