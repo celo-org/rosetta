@@ -92,14 +92,14 @@ You will need the following three repositories cloned locally:
 
 You also need the following dependencies to be met:
 
-- `go >= 1.14`
+- `go >= 1.15`
 - `golangci` ([installation instructions](https://golangci-lint.run/usage/install/#local-installation)) (linter dependency for the Makefile)
 
 #### Running on Alfajores (Testnet)
 
 Prerequisites:
 
-- Checkout `celo-blockchain` tag `v1.3.2` (`git fetch --all && git checkout v1.3.2`) (NOTE: check that this matches the version specified in `rosetta`'s `go.mod` file) and `make geth`
+- Checkout `celo-blockchain` tag `v1.5.1` (`git fetch --all && git checkout v1.5.1`) (NOTE: check that this matches the version specified in `rosetta`'s `go.mod` file) and `make geth`
 - Checkout `rosetta` tag `v0.8.5` (`git fetch --all && git checkout v0.8.5`) (or latest released tag) and `make all`
 - Replace `<PATH-TO-DATADIR>` below, which is the location for the alfajores data directory (the directory does not need to exist before passing it in)
 

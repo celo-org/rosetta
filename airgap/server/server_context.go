@@ -35,14 +35,13 @@ type ServerContext interface {
 	voteMetadata(ctx context.Context, group common.Address, value *big.Int) (*helpers.AddressLesserGreater, error)
 	revokeMetadata(ctx context.Context, signerOrAccount common.Address, group common.Address, value *big.Int) (*helpers.RevokeMetadata, error)
 
-	// From EthClient
-
+	// From ethclient.Client
 	SuggestGasPrice(ctx context.Context) (*big.Int, error)
 	EstimateGas(ctx context.Context, msg ethereum.CallMsg) (uint64, error)
 	CallContract(ctx context.Context, msg ethereum.CallMsg, blockNumber *big.Int) ([]byte, error)
 	FilterLogs(ctx context.Context, q ethereum.FilterQuery) ([]types.Log, error)
 	NonceAt(ctx context.Context, account common.Address, blockNumber *big.Int) (uint64, error)
-	SendRawTransaction(ctx context.Context, data []byte) (*common.Hash, error)
+	SendTransaction(ctx context.Context, tx *types.Transaction) error
 }
 
 type serverContextImpl struct {

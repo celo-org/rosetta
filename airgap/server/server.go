@@ -67,7 +67,13 @@ func NewAirgapServer(chainId *big.Int, srvCtx ServerContext) (airgap.Server, err
 }
 
 func (b *airGapServerImpl) SubmitTx(ctx context.Context, rawTx []byte) (*common.Hash, error) {
-	return b.srvCtx.SendRawTransaction(ctx, rawTx)
+	tx := new(types.Transaction)
+	if err := tx.UnmarshalBinary(rawTx); err != nil {
+		return nil, err
+	}
+
+	hash := tx.Hash()
+	return &hash, b.srvCtx.SendTransaction(ctx, tx)
 }
 
 func (b *airGapServerImpl) CallData(ctx context.Context, options *airgap.CallParams) ([]byte, error) {
