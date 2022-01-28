@@ -96,7 +96,7 @@ You also need the following dependencies to be met:
 
 Prerequisites:
 
-- Checkout `celo-blockchain` tag `v1.5.0` (`git fetch --all && git checkout v1.5.0`) (NOTE: check that this matches the version specified in `rosetta`'s `go.mod` file) and `make geth`
+- Checkout `celo-blockchain` tag `v1.5.1` (`git fetch --all && git checkout v1.5.1`) (NOTE: check that this matches the version specified in `rosetta`'s `go.mod` file) and `make geth`
 - Checkout `rosetta` tag `v0.8.6` (`git fetch --all && git checkout v0.8.6`) (or latest released tag) and `make all`
 - Replace `<PATH-TO-DATADIR>` below, which is the location for the alfajores data directory (the directory does not need to exist before passing it in)
 

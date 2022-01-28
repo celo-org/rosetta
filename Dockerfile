@@ -22,7 +22,7 @@
 # Stage 1: Build Rosetta
 # Outputs: binary @ /rosetta/rosetta 
 #---------------------------------------------------------------------
-FROM golang:1.14.12-alpine as builder
+FROM golang:1.17-alpine as builder
 WORKDIR /rosetta
 RUN apk add --no-cache make gcc musl-dev linux-headers git
 
@@ -42,8 +42,8 @@ RUN go build --tags musl -o rosetta .
 # Integrates celo-blockchain & rosetta builds into a single container
 # Outputs: rosetta & geth binaries on /usr/loca/bin
 #---------------------------------------------------------------------
-# geth mainnet (1.5.0)
-FROM us.gcr.io/celo-org/geth:1.5.0
+# geth mainnet (1.5.1)
+FROM us.gcr.io/celo-org/geth:1.5.1
 ARG COMMIT_SHA
 
 RUN apk add --no-cache ca-certificates
