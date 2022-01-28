@@ -22,7 +22,7 @@ import (
 
 	"github.com/celo-org/celo-blockchain/common"
 	"github.com/celo-org/celo-blockchain/core/types"
-	"github.com/celo-org/celo-blockchain/eth"
+	"github.com/celo-org/celo-blockchain/eth/tracers"
 	"github.com/celo-org/celo-blockchain/log"
 	"github.com/celo-org/kliento/client"
 	"github.com/celo-org/kliento/client/debug"
@@ -167,7 +167,7 @@ func (tr *Tracer) TxTransfers(tx *types.Transaction, receipt *types.Receipt, tob
 
 	res := debug.TransferTracerResponse{}
 	timeout := tr.traceTimeout.String()
-	cfg := &eth.TraceConfig{Tracer: &debug.TransferTracer, Timeout: &timeout}
+	cfg := &tracers.TraceConfig{Tracer: &debug.TransferTracer, Timeout: &timeout}
 	err := tr.cc.Debug.TraceTransaction(tr.ctx, &res, tx.Hash(), cfg)
 	if err != nil {
 		return nil, fmt.Errorf("can't run celo-rpc tx-tracer: %w", err)
