@@ -50,21 +50,24 @@ Flags:
       --datadir string            datadir to use
       --geth.binary string        Path to the celo-blockchain binary
       --geth.bootnodes string     Bootnodes to use (separated by ,)
-      --geth.genesis string       Path to the genesis.json (optional; useful for running Rosetta with a custom chain)
-      --geth.network string       Network to use, either 'mainnet', 'alfajores', or 'baklava' (optional; recommended when not using a custom chain)
-      --geth.syncmode string      Geth blockchain sync mode (fast, full, light)
-      --geth.gcmode string        Geth garbage collection mode (full, archive)
       --geth.cache string         Memory (in MB) allocated to geth's internal caching
-      --geth.maxpeers string      Maximum number of network peers (network disabled if set to 0) (default: 1100)
+      --geth.gcmode string        Geth garbage collection mode (full, archive) (default "full")
+      --geth.genesis string       (Optional) path to the genesis.json, for use with custom chains
       --geth.ipcpath string       Path to the geth ipc file
       --geth.logfile string       Path to logs file
+      --geth.maxpeers string      Maximum number of network peers (network disabled if set to 0) (default: 1100) (default "1100")
+      --geth.network string       Network to use, either 'mainnet', 'alfajores', or 'baklava'
       --geth.publicip string      Public Ip to configure geth (sometimes required for discovery)
-      --geth.staticnodes string   StaticNodes to use (separated by ,)
+      --geth.rpcaddr string       Geth HTTP-RPC server listening interface (default "127.0.0.1")
+      --geth.rpcport string       Geth HTTP-RPC server listening port (default "8545")
+      --geth.rpcvhosts string     Geth comma separated list of virtual hostnames from which to accept requests (default "localhost")
+      --geth.staticnodes string   StaticNode to use (separated by ,)
+      --geth.syncmode string      Geth blockchain sync mode (fast, full, light) (default "fast")
       --geth.verbosity string     Geth log verbosity (number between [1-5])
   -h, --help                      help for run
       --rpc.address string        Listening address for http server
       --rpc.port uint             Listening port for http server (default 8080)
-      --rpc.reqTimeout duration   Timeout when serving a request (default 25s)
+      --rpc.reqTimeout duration   Timeout for requests to this service, this also controls the timeout sent to the blockchain node for trace transaction requests (default 25s)
 ```
 
 Every argument can be defined using environment variables using `ROSETTA_` prefix; and replacing `.` for `_`; for example:
@@ -89,14 +92,14 @@ You will need the following three repositories cloned locally:
 
 You also need the following dependencies to be met:
 
-- `go >= 1.14`
+- `go >= 1.15`
 - `golangci` ([installation instructions](https://golangci-lint.run/usage/install/#local-installation)) (linter dependency for the Makefile)
 
 #### Running on Alfajores (Testnet)
 
 Prerequisites:
 
-- Checkout `celo-blockchain` tag `v1.3.2` (`git fetch --all && git checkout v1.3.2`) (NOTE: check that this matches the version specified in `rosetta`'s `go.mod` file) and `make geth`
+- Checkout `celo-blockchain` tag `v1.5.1` (`git fetch --all && git checkout v1.5.1`) (NOTE: check that this matches the version specified in `rosetta`'s `go.mod` file) and `make geth`
 - Checkout `rosetta` tag `v0.8.5` (`git fetch --all && git checkout v0.8.5`) (or latest released tag) and `make all`
 - Replace `<PATH-TO-DATADIR>` below, which is the location for the alfajores data directory (the directory does not need to exist before passing it in)
 

@@ -19,11 +19,14 @@ import (
 	"fmt"
 	"math/big"
 	"strings"
+	"time"
 
 	"github.com/celo-org/celo-blockchain/common"
 	"github.com/celo-org/celo-blockchain/core/types"
+	"github.com/celo-org/celo-blockchain/eth/tracers"
 	"github.com/celo-org/celo-blockchain/log"
 	"github.com/celo-org/kliento/client"
+	"github.com/celo-org/kliento/client/debug"
 	"github.com/celo-org/kliento/contracts"
 	"github.com/celo-org/kliento/registry"
 	"github.com/celo-org/rosetta/db"
@@ -31,19 +34,21 @@ import (
 )
 
 type Tracer struct {
-	ctx    context.Context
-	cc     *client.CeloClient
-	db     db.RosettaDBReader
-	logger log.Logger
+	ctx          context.Context
+	cc           *client.CeloClient
+	db           db.RosettaDBReader
+	logger       log.Logger
+	traceTimeout time.Duration
 }
 
-func NewTracer(ctx context.Context, cc *client.CeloClient, db db.RosettaDBReader) *Tracer {
+func NewTracer(ctx context.Context, cc *client.CeloClient, db db.RosettaDBReader, traceTimeout time.Duration) *Tracer {
 	logger := log.New("module", "tracer")
 	return &Tracer{
-		ctx:    ctx,
-		cc:     cc,
-		db:     db,
-		logger: logger,
+		ctx:          ctx,
+		cc:           cc,
+		db:           db,
+		logger:       logger,
+		traceTimeout: traceTimeout,
 	}
 }
 
@@ -161,12 +166,14 @@ func (tr *Tracer) TxTransfers(tx *types.Transaction, receipt *types.Receipt, tob
 		return nil, nil
 	}
 
-	internalTransfers, err := tr.cc.Debug.TransactionTransfers(tr.ctx, tx.Hash())
+	res := debug.TransferTracerResponse{}
+	timeout := tr.traceTimeout.String()
+	cfg := &tracers.TraceConfig{Tracer: &debug.TransferTracer, Timeout: &timeout}
+	err := tr.cc.Debug.TraceTransaction(tr.ctx, &res, tx.Hash(), cfg)
 	if err != nil {
 		return nil, fmt.Errorf("can't run celo-rpc tx-tracer: %w", err)
 	}
-
-	return InternalTransfersToOperations(internalTransfers, tobinTax), nil
+	return InternalTransfersToOperations(res.Transfers, tobinTax), nil
 }
 
 func (tr *Tracer) TxOpsFromLogs(tx *types.Transaction, receipt *types.Receipt, tobinTax *TobinTax, contractMap map[string]common.Address) ([]Operation, error) {
