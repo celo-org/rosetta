@@ -95,50 +95,29 @@ You also need the following dependencies to be met:
 - `go >= 1.15`
 - `golangci` ([installation instructions](https://golangci-lint.run/usage/install/#local-installation)) (linter dependency for the Makefile)
 
-#### Running on Alfajores (Testnet)
+#### Running Rosetta
 
 Prerequisites:
 
-- Checkout `celo-blockchain` tag `v1.5.1` (`git fetch --all && git checkout v1.5.1`) (NOTE: check that this matches the version specified in `rosetta`'s `go.mod` file) and `make geth`
-- Checkout `rosetta` tag `v0.8.5` (`git fetch --all && git checkout v0.8.5`) (or latest released tag) and `make all`
-- Replace `<PATH-TO-DATADIR>` below, which is the location for the alfajores data directory (the directory does not need to exist before passing it in)
+- Checkout the rosetta version that you want and run `make all`.
+- Find the `celo-blockchain` version in the rosetta `go.mod` file. Look for a line containing `github.com/celo-org/celo-blockchain` the version comes after separated by a space.
+- Checkout `celo-blockchain` at the version specified in rosetta's `go.mod` and run `make geth`
+- Replace `<NETWORK>` with one of `alfajores` (developer testnet), `baklava` (validator testnet) or `mainnet`.
+- Replace `<PATH-TO-DATADIR>` below, which is the location for the celo-blockchain data directory (the directory does not need to exist before passing it in).
+The data directory is network specific so when switching networks you will also need to change the data directory.
 
 Then run:
 
 ```bash
 go run main.go run \
-  --geth.network alfajores \
+  --geth.network <NETWORK> \
   --geth.binary ../celo-blockchain/build/bin/geth \
   --geth.syncmode full \
   --geth.gcmode archive \
   --datadir <PATH-TO-DATADIR>
 ```
 
-You can stop the service and restart by re-running just the last command above (`go run main.go` ... )
-
-#### Running on Mainnet
-
-This is the same as above with a few differences (generally: specifying `mainnet` vs. `alfajores`)
-
-Prerequisites:
-
-- `celo-blockchain`: same as above
-- Export paths: same as above
-- Checkout `rosetta`: same as above
-- Replace `<PATH-TO-DATADIR>` below, which is the location for the mainnet data directory (the directory does not need to exist before passing it in)
-
-Then run:
-
-```bash
-go run main.go run \
-  --geth.network mainnet \
-  --geth.binary ../celo-blockchain/build/bin/geth \
-  --geth.syncmode full \
-  --geth.gcmode archive \
-  --datadir <PATH-TO-DATADIR>
-```
-
-You should start to see continuous output looking similar to this:
+You should start to see continuous output looking something like this:
 
 ```sh
 INFO [01-28|14:09:03.434] Press CTRL-C to stop the process
@@ -152,6 +131,8 @@ INFO [01-28|14:09:05.121] SubscriptionFetchMode:Start              srv=celo-moni
 
 INFO [01-28|14:09:25.731] Stored 1000 blocks                       srv=celo-monitor pipe=persister       block=1000 registryUpdates=0
 ```
+
+You can stop the service and restart by re-running just the last command above (`go run main.go` ... )
 
 ### Version 2: Running Rosetta Docker Image
 
