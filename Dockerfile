@@ -43,7 +43,7 @@ RUN go build --tags musl -o rosetta .
 # Outputs: rosetta & geth binaries on /usr/loca/bin
 #---------------------------------------------------------------------
 # geth mainnet (1.5.1)
-FROM us.gcr.io/celo-org/geth:1.5.1
+FROM us.gcr.io/celo-org/geth:1.5.4
 ARG COMMIT_SHA
 
 RUN apk add --no-cache ca-certificates
