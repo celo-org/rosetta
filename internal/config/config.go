@@ -46,7 +46,7 @@ var Node NodeConfig
 
 func configureDefaults() {
 	// httpServer
-	viper.SetDefault("httpServer.requestTimeout", "25s")
+	viper.SetDefault("httpServer.requestTimeout", "120s")
 	viper.SetDefault("httpServer.port", "8080")
 	viper.SetDefault("httpServer.interface", "")
 

@@ -67,7 +67,7 @@ Flags:
   -h, --help                      help for run
       --rpc.address string        Listening address for http server
       --rpc.port uint             Listening port for http server (default 8080)
-      --rpc.reqTimeout duration   Timeout for requests to this service, this also controls the timeout sent to the blockchain node for trace transaction requests (default 25s)
+      --rpc.reqTimeout duration   Timeout for requests to this service, this also controls the timeout sent to the blockchain node for trace transaction requests (default 2m0s)
 ```
 
 Every argument can be defined using environment variables using `ROSETTA_` prefix; and replacing `.` for `_`; for example:
