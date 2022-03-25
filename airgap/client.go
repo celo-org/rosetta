@@ -50,37 +50,22 @@ func (c *clientImpl) Derive(privateKey *ecdsa.PrivateKey) (*ecdsa.PublicKey, *co
 	return publicKeyECDSA, &address, nil
 }
 
-// Sign an arbitrary message with the private key
+// Sign signs an arbitrary message with the private key the returned signature
+// as 64 bytes long and in the [R || S] format.
 func (c *clientImpl) Sign(message []byte, privateKey *ecdsa.PrivateKey) ([]byte, error) {
-	return c.signHash(crypto.Keccak256(message), privateKey)
-}
-
-func (c *clientImpl) signHash(digest []byte, privateKey *ecdsa.PrivateKey) ([]byte, error) {
-	sig, err := crypto.Sign(digest, privateKey)
+	// crypto.Sigh produces signatures in the [ R || S || V ] format, but the
+	// signatures returned by this method are not used for recovery and so the
+	// recovery byte is removed.
+	sig, err := crypto.Sign(crypto.Keccak256(message), privateKey)
 	if err != nil {
-		// see https://github.com/celo-org/celo-blockchain/blob/0792a7189b531e22b97b81b6d6aa29301c3ebb8e/internal/ethapi/api.go#L1613
-		sig[crypto.RecoveryIDOffset] += 27
+		return nil, err
 	}
-	return sig, err
+	return sig[:64], nil
 }
 
-// Verify the signature of an arbitrary message
+// Verify verifies the signature of an arbitrary message, it expects a 64 byte signature in the [ R || S ] format.
 func (c *clientImpl) Verify(message []byte, publicKey *ecdsa.PublicKey, signature []byte) bool {
-	return c.verifyHash(crypto.Keccak256(message), publicKey, signature)
-}
-
-func (c *clientImpl) verifyHash(digest []byte, publicKey *ecdsa.PublicKey, signature []byte) bool {
-	if signature[crypto.RecoveryIDOffset] != 27 && signature[crypto.RecoveryIDOffset] != 28 {
-		return false
-	}
-	signature[crypto.RecoveryIDOffset] -= 27
-
-	publicKeyBytes := crypto.FromECDSAPub(publicKey)
-	return crypto.VerifySignature(publicKeyBytes, digest, signature)
-}
-
-func (c *clientImpl) VerifyWithPrefix(message []byte, publicKey *ecdsa.PublicKey, signature []byte) bool {
-	return c.verifyHash(accounts.TextHash(message), publicKey, signature)
+	return crypto.VerifySignature(crypto.FromECDSAPub(publicKey), crypto.Keccak256(message), signature)
 }
 
 // ConstructTxFromMetadata creates a new transaction using given Metadata
@@ -90,7 +75,7 @@ func (c *clientImpl) ConstructTxFromMetadata(tm *TxMetadata) (*Transaction, erro
 	}, nil
 }
 
-// SignTx signs an unsignedTx using the private seed and return a signedTx that can be submitted to the node
+// SignTx signs an unsignedTx using the private key and returns a signedTx that can be submitted to the node.
 func (c *clientImpl) SignTx(tx *Transaction, privateKey *ecdsa.PrivateKey) (*Transaction, error) {
 	signer := types.NewEIP155Signer(tx.ChainId)
 	gethTx, err := tx.AsGethTransaction()
@@ -108,8 +93,23 @@ func (c *clientImpl) SignTx(tx *Transaction, privateKey *ecdsa.PrivateKey) (*Tra
 	return tx, nil
 }
 
+// GenerateProofOfPossessionSignature generates a recoverable (65 byte) ecdsa
+// signature over the given address using the given privateKey. The signature
+// is used to authorize release gold operrations on chain. The signature
+// returned is in the [ R || S || V ] format where V is 27 or 28. This is a
+// stange hangover from Bitcoin and is required becuase the precompiled
+// ecrecover contract in the evm expects this format.
+//
+// See explanation for this format here:
+// https://github.com/ethereum/go-ethereum/issues/19751#issuecomment-504900739
 func (c *clientImpl) GenerateProofOfPossessionSignature(privateKey *ecdsa.PrivateKey, address *common.Address) ([]byte, error) {
-	return c.signHash(accounts.TextHash(address.Bytes()), privateKey)
+
+	sig, err := crypto.Sign(accounts.TextHash(address.Bytes()), privateKey)
+	// if there was no error then adjust the recovery byte.
+	if err == nil {
+		sig[crypto.RecoveryIDOffset] += 27
+	}
+	return sig, err
 }
 
 var abiParsers = map[string]func() (*abi.ABI, error){
