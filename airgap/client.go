@@ -53,7 +53,7 @@ func (c *clientImpl) Derive(privateKey *ecdsa.PrivateKey) (*ecdsa.PublicKey, *co
 // Sign signs an arbitrary message with the private key the returned signature
 // as 64 bytes long and in the [R || S] format.
 func (c *clientImpl) Sign(message []byte, privateKey *ecdsa.PrivateKey) ([]byte, error) {
-	// crypto.Sigh produces signatures in the [ R || S || V ] format, but the
+	// crypto.Sign produces signatures in the [ R || S || V ] format, but the
 	// signatures returned by this method are not used for recovery and so the
 	// recovery byte is removed.
 	sig, err := crypto.Sign(crypto.Keccak256(message), privateKey)
@@ -68,7 +68,7 @@ func (c *clientImpl) Verify(message []byte, publicKey *ecdsa.PublicKey, signatur
 	return crypto.VerifySignature(crypto.FromECDSAPub(publicKey), crypto.Keccak256(message), signature)
 }
 
-// ConstructTxFromMetadata creates a new transaction using given Metadata
+// ConstructTxFromMetadata creates a new transaction using given metadata.
 func (c *clientImpl) ConstructTxFromMetadata(tm *TxMetadata) (*Transaction, error) {
 	return &Transaction{
 		TxMetadata: tm,
@@ -93,12 +93,12 @@ func (c *clientImpl) SignTx(tx *Transaction, privateKey *ecdsa.PrivateKey) (*Tra
 	return tx, nil
 }
 
-// GenerateProofOfPossessionSignature generates a recoverable (65 byte) ecdsa
+// GenerateProofOfPossessionSignature generates a recoverable (65 byte) ECDSA
 // signature over the given address using the given privateKey. The signature
-// is used to authorize release gold operrations on chain. The signature
+// is used to authorize release gold operations on chain. The signature
 // returned is in the [ R || S || V ] format where V is 27 or 28. This is a
-// stange hangover from Bitcoin and is required becuase the precompiled
-// ecrecover contract in the evm expects this format.
+// strange hangover from Bitcoin and is required because the precompiled
+// ecrecover contract in the EVM expects this format.
 //
 // See explanation for this format here:
 // https://github.com/ethereum/go-ethereum/issues/19751#issuecomment-504900739
