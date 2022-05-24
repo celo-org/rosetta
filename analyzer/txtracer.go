@@ -326,7 +326,7 @@ func (tr *Tracer) TxOpsFromLogs(tx *types.Transaction, receipt *types.Receipt, t
 				if event.Value.Cmp(big.NewInt(0)) > 0{
 				transfers = append(transfers, *NewUnlockGold(event.Account, event.Value))
 				}
-				
+
 			case "GoldWithdrawn":
 				// withdraw() [GoldWithdrawn + transfer] => lockPending->main
 				event := eventRaw.(*contracts.LockedGoldGoldWithdrawn)
@@ -339,11 +339,8 @@ func (tr *Tracer) TxOpsFromLogs(tx *types.Transaction, receipt *types.Receipt, t
 			case "AccountSlashed":
 				// slash() [AccountSlashed + transfer] => account:lockNonVoting -> beneficiary:lockNonVoting + governance:main
 				event := eventRaw.(*contracts.LockedGoldAccountSlashed)
-				// Edge case: withdrawing 0 CELO means there isn't a matching transfer;
-				// Only store balance-changing (>0) GoldLocked logs.
-				if event.Value.Cmp(big.NewInt(0)) > 0{
 				transfers = append(transfers, *NewSlash(event.Slashed, event.Reporter, governanceAddr, lockedGoldAddr, event.Penalty, event.Reward, tobinTax))
-			}
+			
 			}
 		}
 
