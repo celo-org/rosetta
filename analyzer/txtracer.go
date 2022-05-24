@@ -315,7 +315,7 @@ func (tr *Tracer) TxOpsFromLogs(tx *types.Transaction, receipt *types.Receipt, t
 				// Edge case: locking 0 CELO means there isn't a matching transfer;
 				// Only store balance-changing (>0) GoldLocked logs.
 				if event.Value.Cmp(big.NewInt(0)) > 0{
-				transfers = append(transfers, *NewRelockGold(event.Account, event.Value))
+					transfers = append(transfers, *NewRelockGold(event.Account, event.Value))
 				}
 
 			case "GoldUnlocked":
@@ -324,7 +324,7 @@ func (tr *Tracer) TxOpsFromLogs(tx *types.Transaction, receipt *types.Receipt, t
 				// Edge case: locking 0 CELO means there isn't a matching transfer;
 				// Only store balance-changing (>0) GoldLocked logs.
 				if event.Value.Cmp(big.NewInt(0)) > 0{
-				transfers = append(transfers, *NewUnlockGold(event.Account, event.Value))
+					transfers = append(transfers, *NewUnlockGold(event.Account, event.Value))
 				}
 
 			case "GoldWithdrawn":
