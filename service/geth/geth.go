@@ -226,13 +226,13 @@ func (gs *gethService) ensureGethInit() error {
 func (gs *gethService) startGeth(stdErr *os.File) error {
 	gethArgs := []string{
 		"--nousb",
-		"--rpc",
-		"--rpcaddr", gs.opts.RpcAddr,
-		"--rpcport", gs.opts.RpcPort,
-		"--rpcvhosts", gs.opts.RpcVHosts,
+		"--http",
+		"--http.addr", gs.opts.RpcAddr,
+		"--http.port", gs.opts.RpcPort,
+		"--http.vhosts", gs.opts.RpcVHosts,
 		"--syncmode", gs.opts.SyncMode,
 		"--gcmode", gs.opts.GcMode,
-		"--rpcapi", "eth,net,web3,debug,admin,personal",
+		"--http.api", "eth,net,web3,debug,admin,personal",
 		"--ipcpath", gs.IpcFilePath(),
 		"--light.serve", "0",
 		"--light.maxpeers", "0",
