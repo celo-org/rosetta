@@ -10,7 +10,7 @@ GO ?= latest
 GITHUB_ORG?=celo-org
 GITHUB_REPO?=rosetta
 
-GOLANGCI_VERSION=1.32.2
+GOLANGCI_VERSION=1.50.0
 GOLANGCI_exists := $(shell command -v golangci-lint 2> /dev/null)
 GOLANGCI_v_installed := $(shell echo $(shell golangci-lint --version) | cut -d " " -f 4)
 
