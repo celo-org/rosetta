@@ -198,17 +198,20 @@ func NewAuthorizeSigner(from common.Address, signer common.Address, authorizeOp 
 
 // Ex. Slash(penalty=110, reward=100 cGlD), tobinTax == 10%
 // Transfer Operation:
-// 	lockedGoldContractAccMain        -9
-// 	communityFundAccMain              9
-// 	lockedGoldContractAccMain        -1
-// 	tobinRecipientAccMain             1
+//
+//	lockedGoldContractAccMain        -9
+//	communityFundAccMain              9
+//	lockedGoldContractAccMain        -1
+//	tobinRecipientAccMain             1
+//
 // LockedGold Operation (created from `AccountSlashed(slashed, -100, reporter, 110)` event):
-// 	slashedAccLockedGoldNonVoting    -110
-// 	reporterAccLockedGoldNonVoting    100
-// 	lockedGoldContractAccMain        -9
-// 	communityFundAccMain              9
-// 	lockedGoldContractAccMain        -1
-// 	tobinRecipientAccMain             1
+//
+//	slashedAccLockedGoldNonVoting    -110
+//	reporterAccLockedGoldNonVoting    100
+//	lockedGoldContractAccMain        -9
+//	communityFundAccMain              9
+//	lockedGoldContractAccMain        -1
+//	tobinRecipientAccMain             1
 func NewSlash(slashed, slasher, communityFund, lockedGoldAddr common.Address, penalty, reward *big.Int, tobinTax *TobinTax) *Operation {
 	communityFundReward := new(big.Int).Sub(penalty, reward)
 	return &Operation{
@@ -223,20 +226,25 @@ func NewSlash(slashed, slasher, communityFund, lockedGoldAddr common.Address, pe
 
 // Ex. lock(100 cGlD), tobinTax == 10%
 // Transfer Operation:
-// 	fromAccMain         	 	-90
-// 	lockedGoldContractAccMain    90
-// 	fromAccMain			    	-10
-// 	tobinRecipientAccMain        10
+//
+//	fromAccMain         	 	-90
+//	lockedGoldContractAccMain    90
+//	fromAccMain			    	-10
+//	tobinRecipientAccMain        10
+//
 // LockedGold Operation (created from `GoldLocked(fromAccount, 90)` event):
-// 	fromAccMain                 -90
-// 	lockedGoldContractAccMain    90
-//  fromAccLockedNonVoting       90
+//
+//		fromAccMain                 -90
+//		lockedGoldContractAccMain    90
+//	 fromAccLockedNonVoting       90
+//
 // Reconciled Operation:
-// 	fromAccMain         	 	-90
-// 	lockedGoldContractAccMain    90
-// 	fromAccMain			    	-10
-// 	tobinRecipientAccMain        10
-//  fromAccLockedNonVoting       90
+//
+//		fromAccMain         	 	-90
+//		lockedGoldContractAccMain    90
+//		fromAccMain			    	-10
+//		tobinRecipientAccMain        10
+//	 fromAccLockedNonVoting       90
 func NewLockGold(addr, lockedGoldAddr common.Address, value *big.Int) *Operation {
 	return &Operation{
 		Type:       OpLockGold,
@@ -251,16 +259,19 @@ func NewLockGold(addr, lockedGoldAddr common.Address, value *big.Int) *Operation
 
 // Ex. Withdraw(100 cGlD), tobinTax == 10%
 // Transfer Operation:
-// 	lockedGoldContractAccMain   -90
-// 	toAccMain         	 	     90
-// 	lockedGoldContractAccMain   -10
-// 	tobinRecipientAccMain        10
+//
+//	lockedGoldContractAccMain   -90
+//	toAccMain         	 	     90
+//	lockedGoldContractAccMain   -10
+//	tobinRecipientAccMain        10
+//
 // LockedGold Operation (created from `GoldWithdraw(toAccount, 100)` event):
-// 	lockedGoldContractAccMain   -90
-// 	toAccMain         	 	     90
-// 	lockedGoldContractAccMain   -10
-// 	tobinRecipientAccMain        10
-//  AccLockedPending            -100
+//
+//		lockedGoldContractAccMain   -90
+//		toAccMain         	 	     90
+//		lockedGoldContractAccMain   -10
+//		tobinRecipientAccMain        10
+//	 AccLockedPending            -100
 func NewWithdrawGold(addr, lockedGoldAddr common.Address, value *big.Int, tobinTax *TobinTax) *Operation {
 	return &Operation{
 		Type:       OpWithdrawGold,
@@ -435,26 +446,32 @@ func ReconcileLogOpsWithTransfers(logOps, transferOps []Operation, tobinTax *Tob
 // by combining their balance changes
 //
 // operations match with tobin tax iff
-// 		logOp.Type == OpLockGold &&
-// 		logOp.lockedGoldContractAccMain.diff == trOp.lockedGoldContractAccMain.diff &&
-// 		logOp.fromAccMain.diff - trOp.fromAccMain.diff == trOp.tobinRecipientAccMain.diff
+//
+//	logOp.Type == OpLockGold &&
+//	logOp.lockedGoldContractAccMain.diff == trOp.lockedGoldContractAccMain.diff &&
+//	logOp.fromAccMain.diff - trOp.fromAccMain.diff == trOp.tobinRecipientAccMain.diff
 //
 // Ex. lock(100 cGlD), tobinTax == 10%
 // Transfer Operation:
-// 	fromAccMain         	 	-90
-// 	lockedGoldContractAccMain    90
-// 	fromAccMain			    	-10 // diff == -100
-// 	tobinRecipientAccMain        10
+//
+//	fromAccMain         	 	-90
+//	lockedGoldContractAccMain    90
+//	fromAccMain			    	-10 // diff == -100
+//	tobinRecipientAccMain        10
+//
 // LockedGold Operation (created from `GoldLocked(fromAccount, 90)` event):
-// 	fromAccMain                 -90 // diff == -90
-// 	lockedGoldContractAccMain    90
-//  fromAccLockedNonVoting       90
+//
+//		fromAccMain                 -90 // diff == -90
+//		lockedGoldContractAccMain    90
+//	 fromAccLockedNonVoting       90
+//
 // Reconciled Operation:
-// 	fromAccMain         	 	-90
-// 	lockedGoldContractAccMain    90
-// 	fromAccMain			    	-10
-// 	tobinRecipientAccMain        10
-//  fromAccLockedNonVoting       90
+//
+//		fromAccMain         	 	-90
+//		lockedGoldContractAccMain    90
+//		fromAccMain			    	-10
+//		tobinRecipientAccMain        10
+//	 fromAccLockedNonVoting       90
 func MatchAndReconcileLogOpWithTransfer(logOp, trOp *Operation, tobinTax *TobinTax, lockedGold common.Address) bool {
 
 	// If the operations match as is then we can just return true
