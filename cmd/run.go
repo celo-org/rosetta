@@ -70,29 +70,29 @@ func init() {
 	flagSet.String("geth.binary", "", "Path to the celo-blockchain binary")
 	utils.ExitOnError(serveCmd.MarkFlagFilename("geth.binary"))
 
-	flagSet.String("geth.logfile", "", "Path to logs file")
+	flagSet.String("geth.logfile", "", "Path to logs file (default <datadir>/celo.log)")
 	utils.ExitOnError(serveCmd.MarkFlagDirname("geth.logfile"))
 
-	flagSet.String("geth.ipcpath", "", "Path to the geth ipc file")
+	flagSet.String("geth.ipcpath", "geth.ipc", "Path to the geth ipc file. Under <datadir> if path is relative")
 	utils.ExitOnError(serveCmd.MarkFlagFilename("geth.ipcpath"))
 
 	flagSet.String("geth.genesis", "", "(Optional) path to the genesis.json, for use with custom chains")
 	utils.ExitOnError(serveCmd.MarkFlagFilename("geth.genesis", "json"))
-	flagSet.String("geth.network", "", "Network to use, either 'mainnet', 'alfajores', or 'baklava'")
+	flagSet.String("geth.network", "mainnet", "Network to use, either 'mainnet', 'alfajores', or 'baklava'")
 
-	flagSet.String("geth.staticnodes", "", "StaticNode to use (separated by ,)")
-	flagSet.String("geth.bootnodes", "", "Bootnodes to use (separated by ,)")
-	flagSet.String("geth.verbosity", "", "Geth log verbosity (number between [1-5])")
+	flagSet.String("geth.staticnodes", "", "List of nodes to remain permanently connected to (separated by ,) (default empty)")
+	flagSet.String("geth.bootnodes", "", "Bootnodes to use (separated by ,) (default, hardcoded based on geth.network flag)")
+	flagSet.String("geth.verbosity", "3", "Geth log verbosity (number between [1-5])")
 	flagSet.String("geth.publicip", "", "Public Ip to configure geth (sometimes required for discovery)")
-	flagSet.String("geth.cache", "", "Memory (in MB) allocated to geth's internal caching")
+	flagSet.String("geth.cache", "1024", "Memory (in MB) allocated to geth's internal caching")
 
-	flagSet.String("geth.rpcaddr", "127.0.0.1", "Geth HTTP-RPC server listening interface")
+	flagSet.String("geth.rpcaddr", "localhost", "Geth HTTP-RPC server listening interface")
 	flagSet.String("geth.rpcport", "8545", "Geth HTTP-RPC server listening port")
 	flagSet.String("geth.rpcvhosts", "localhost", "Geth comma separated list of virtual hostnames from which to accept requests")
 
 	flagSet.String("geth.syncmode", "fast", "Geth blockchain sync mode (fast, full, light)")
 	flagSet.String("geth.gcmode", "full", "Geth garbage collection mode (full, archive)")
-	flagSet.String("geth.maxpeers", "1100", "Maximum number of network peers (network disabled if set to 0) (default: 1100)")
+	flagSet.String("geth.maxpeers", "1100", "Maximum number of network peers (network disabled if set to 0)")
 }
 
 func getDatadir(cmd *cobra.Command) string {
