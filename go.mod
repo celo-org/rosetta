@@ -12,7 +12,7 @@ require (
 	github.com/celo-org/celo-bls-go-macos v0.6.4 // indirect
 	github.com/celo-org/celo-bls-go-other v0.6.4 // indirect
 	github.com/celo-org/celo-bls-go-windows v0.6.4 // indirect
-	github.com/celo-org/kliento v0.2.1-0.20220301112806-fb1968d272c2
+	github.com/celo-org/kliento v0.2.1-0.20221024130050-896466f9e8df
 	github.com/coinbase/rosetta-sdk-go v0.5.9
 	github.com/felixge/httpsnoop v1.0.1
 	github.com/go-stack/stack v1.8.1 // indirect

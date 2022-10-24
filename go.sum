@@ -114,6 +114,8 @@ github.com/celo-org/celo-bls-go-windows v0.6.4 h1:4w+NllEORQbsQnqpXO7UC+xDUbZQgi
 github.com/celo-org/celo-bls-go-windows v0.6.4/go.mod h1:8bRJbLcHREIAWn+5iZM3u8rGPBsWepp9BdF3SexisuM=
 github.com/celo-org/kliento v0.2.1-0.20220301112806-fb1968d272c2 h1:eVkrAvceM07Th1n1drLwZYeRdL+xkPUXVRz+dekcbuA=
 github.com/celo-org/kliento v0.2.1-0.20220301112806-fb1968d272c2/go.mod h1:H/MBXntXRVilGnGuBb197O1epsMe/Im9xYGMFNZIxoU=
+github.com/celo-org/kliento v0.2.1-0.20221024130050-896466f9e8df h1:Th3X69EV3bYVtGDq+oJXV1LHi3vFSOGBDHe1n8K2fP8=
+github.com/celo-org/kliento v0.2.1-0.20221024130050-896466f9e8df/go.mod h1:E5olI06v1Ax1O6Ad8vKU4TYkWNxxki7CSpO2EHK79Qc=
 github.com/cenkalti/backoff v2.2.1+incompatible h1:tNowT99t7UNflLxfYYSlKYsBpXdEet03Pg2g16Swow4=
 github.com/cenkalti/backoff v2.2.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
