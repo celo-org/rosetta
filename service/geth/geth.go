@@ -296,8 +296,10 @@ func (gopts GethOpts) LogFile() string {
 }
 
 func (gopts GethOpts) IpcFile() string {
-	if gopts.IpcPath == "" {
-		return filepath.Join(gopts.Datadir, "geth.ipc")
+	// If the ipc file is just a file name then place it in the datadir,
+	// otherwise use the exact path.
+	if filepath.Base(gopts.IpcPath) == gopts.IpcPath {
+		return filepath.Join(gopts.Datadir, gopts.IpcPath)
 	}
 	return gopts.IpcPath
 }
