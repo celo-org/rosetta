@@ -181,6 +181,14 @@ Rosetta uses [kliento](https://github.com/celo-org/kliento) to interact with the
 
 ## How to run rosetta-cli-checks
 
+_Note that running these checks is most likely infeasible for most people on
+mainnet because you will need at least 1.5 terrabytes of space and several days
+to be able to sync the chain. Under the hood, the service is syncing a full
+archive node, which takes a long time. The construction service needs to reach
+the tip before submitting transactions. The data checks will take a while to
+complete as well (likely a couple of days on a normal laptop with the current
+settings) as they reconcile balances for the entire chain._
+
 - Install the [`rosetta-cli`](https://github.com/coinbase/rosetta-cli) according to the instructions. (Note that on Mac, installing the `rosetta-cli` to `/usr/local/bin` or adding its location to you `$PATH` will allow you to call `rosetta-cli` directly on the command line rather than needing to provide the path to the executable). Current testing has been done with `v0.5.16` of the `rosetta-cli`.
 - Run the Rosetta service in the background for the respective network (currently only alfajores for both Data and Construction checks)
 - Run the CLI checks for alfajores as follows:
@@ -190,7 +198,6 @@ Rosetta uses [kliento](https://github.com/celo-org/kliento) to interact with the
 rosetta-cli check:construction --configuration-file PATH/TO/rosetta/rosetta-cli-conf/testnet/cli-config.json
 ```
 
-_Note that running the checks to completion will take a long time if this is the first time you are running Rosetta locally. Under the hood, the service is syncing a full archive node, which takes time (likely a couple of days on a normal laptop). The construction service needs to reach the tip before submitting transactions. The data checks will take a while to complete as well (likely a couple of days on a normal laptop with the current settings) as they reconcile balances for the entire chain._
 
 ### How to generate `bootstrap_balances.json`
 
