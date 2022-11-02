@@ -86,32 +86,51 @@ func (tr *Tracer) TraceTransaction(blockHeader *types.Header, tx *types.Transact
 		ops = append(ops, *gasOp)
 	}
 
-	contractMap, err := tr.GetRegistryAddresses(receipt, registry.ReserveContractID.String(), registry.LockedGoldContractID.String(), registry.ElectionContractID.String(), registry.GovernanceContractID.String(), registry.AccountsContractID.String())
-	if err != nil {
-		return nil, err
-	}
+	if receipt.Status == types.ReceiptStatusSuccessful {
+		contractMap, err := tr.GetRegistryAddresses(receipt, registry.ReserveContractID.String(), registry.LockedGoldContractID.String(), registry.ElectionContractID.String(), registry.GovernanceContractID.String(), registry.AccountsContractID.String())
+		if err != nil {
+			return nil, err
+		}
 
-	tobinTax, err := tr.GetTobinTax(receipt.BlockNumber, contractMap[registry.ReserveContractID.String()])
-	if err != nil {
-		return nil, err
-	}
+		tobinTax, err := tr.GetTobinTax(receipt.BlockNumber, contractMap[registry.ReserveContractID.String()])
+		if err != nil {
+			return nil, err
+		}
 
-	logOps, err := tr.TxOpsFromLogs(tx, receipt, tobinTax, contractMap)
-	if err != nil {
-		return nil, err
-	}
+		logOps, err := tr.TxOpsFromLogs(tx, receipt, tobinTax, contractMap)
+		if err != nil {
+			return nil, err
+		}
 
-	transferOps, err := tr.TxTransfers(tx, receipt, tobinTax)
-	if err != nil {
-		return nil, err
-	}
+		transferOps, err := tr.TxTransfers(tx, receipt, tobinTax)
+		if err != nil {
+			return nil, err
+		}
 
-	reconciledOps, err := ReconcileLogOpsWithTransfers(logOps, transferOps, tobinTax, contractMap[registry.LockedGoldContractID.String()])
-	if err != nil {
-		return nil, err
-	}
+		reconciledOps, err := ReconcileLogOpsWithTransfers(logOps, transferOps, tobinTax, contractMap[registry.LockedGoldContractID.String()])
+		if err != nil {
+			return nil, err
+		}
 
-	ops = append(ops, reconciledOps...)
+		ops = append(ops, reconciledOps...)
+	} else if receipt.Status == types.ReceiptStatusFailed {
+		contractMap, err := tr.GetRegistryAddresses(receipt, registry.ReserveContractID.String(), registry.LockedGoldContractID.String(), registry.ElectionContractID.String(), registry.GovernanceContractID.String(), registry.AccountsContractID.String())
+		if err != nil {
+			return nil, err
+		}
+
+		tobinTax, err := tr.GetTobinTax(receipt.BlockNumber, contractMap[registry.ReserveContractID.String()])
+		if err != nil {
+			return nil, err
+		}
+
+		transferOps, err := tr.TxTransfers(tx, receipt, tobinTax)
+		if err != nil {
+			return nil, err
+		}
+
+		ops = append(ops, transferOps...)
+	}
 
 	return ops, nil
 }
