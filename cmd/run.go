@@ -78,7 +78,8 @@ func init() {
 
 	flagSet.String("geth.genesis", "", "(Optional) path to the genesis.json, for use with custom chains")
 	utils.ExitOnError(serveCmd.MarkFlagFilename("geth.genesis", "json"))
-	flagSet.String("geth.network", "mainnet", "Network to use, either 'mainnet', 'alfajores', or 'baklava'")
+	// Note that we do not set any default here because it would clash with geth.genesis if that was defined.
+	flagSet.String("geth.network", "", "Network to use, either 'mainnet', 'alfajores', or 'baklava'")
 
 	flagSet.String("geth.staticnodes", "", "List of nodes to remain permanently connected to (separated by ,) (default empty)")
 	flagSet.String("geth.bootnodes", "", "Bootnodes to use (separated by ,) (default, hardcoded based on geth.network flag)")
