@@ -80,5 +80,9 @@ func (ms *monitorService) Start(ctx context.Context) error {
 	group.Go(func() error { return HeaderListener(ctx, headerCh, ms.cc, ms.logger, startBlock) })
 	group.Go(func() error { return BlockProcessor(ctx, headerCh, changeSetsCh, ms.cc, ms.db, ms.logger) })
 	group.Go(func() error { return ProcessChanges(ctx, changeSetsCh, ms.db, ms.logger) })
-	return group.Wait()
+	err = group.Wait()
+	if err == context.Canceled {
+		return nil
+	}
+	return err
 }

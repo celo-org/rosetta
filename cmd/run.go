@@ -35,6 +35,7 @@ import (
 	"github.com/celo-org/rosetta/service/rpc"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"golang.org/x/sync/errgroup"
 )
 
 // serveCmd represents the serve command
@@ -169,10 +170,6 @@ func runRunCmd(cmd *cobra.Command, args []string) {
 }
 
 func runAllServices(ctx context.Context, sqlitePath string, gethOpts *geth.GethOpts, rpcConfig *rpc.RosettaServerConfig) error {
-	ctx, stopServices := context.WithCancel(ctx)
-	defer stopServices()
-
-	sm := service.NewServiceManager(ctx)
 
 	gethSrv := geth.NewGethService(gethOpts)
 
@@ -185,14 +182,36 @@ func runAllServices(ctx context.Context, sqlitePath string, gethOpts *geth.GethO
 		return fmt.Errorf("can't open rosetta.db: %w", err)
 	}
 
-	sm.Add(gethSrv)
-
-	gethStarted := utils.WaitUntil(500*time.Millisecond, 5*time.Minute, func() bool {
-		return fileutils.FileExists(gethSrv.IpcFilePath())
+	ec := service.NewErrorCollector()
+	grp, ctx := errgroup.WithContext(ctx)
+	grp.Go(func() error {
+		err := gethSrv.Start(ctx)
+		if err != nil {
+			fmt.Println("error running geth serrvice")
+			ec.Add(fmt.Errorf("error running geth service: %w", err))
+			return err
+		}
+		return nil
 	})
 
-	if !gethStarted {
-		return fmt.Errorf("geth service failed to start before timeout: %d", time.Millisecond)
+	ctxWithTimeout, stop := context.WithTimeout(ctx, 5*time.Minute)
+	defer stop()
+loop:
+	for {
+		select {
+		case <-time.After(500 * time.Millisecond):
+			if fileutils.FileExists(gethSrv.IpcFilePath()) {
+				break loop // break out of the for loop
+			}
+		case <-ctxWithTimeout.Done():
+			err := ctxWithTimeout.Err()
+			switch {
+			case err == context.Canceled:
+				return fmt.Errorf("Geth service died before deadline, check the log %s", gethOpts.LogFile())
+			case err == context.DeadlineExceeded:
+				return fmt.Errorf("Geth service did not create ipc file within deadline, check the log: %s", gethOpts.LogFile())
+			}
+		}
 	}
 
 	chainParams := gethSrv.ChainParameters()
@@ -208,7 +227,26 @@ func runAllServices(ctx context.Context, sqlitePath string, gethOpts *geth.GethO
 		return fmt.Errorf("can't create rpc server: %w", err)
 	}
 
-	sm.Add(rpcService)
-	sm.Add(monitor.NewMonitorService(cc, celoStore))
-	return sm.Wait()
+	grp.Go(func() error {
+		err := rpcService.Start(ctx)
+		if err != nil {
+			fmt.Println("error running rpc serrvice")
+			ec.Add(fmt.Errorf("error running rpc service : %w", err))
+			return err
+		}
+		return nil
+	})
+	grp.Go(func() error {
+		err = monitor.NewMonitorService(cc, celoStore).Start(ctx)
+		if err != nil {
+			fmt.Println("error running mon serrvice")
+			ec.Add(fmt.Errorf("error running monitor service : %w", err))
+			return err
+		}
+		return nil
+	})
+	// We gather errors in the error collector, so no need to check the error group error.
+	//nolint:errcheck
+	grp.Wait()
+	return ec.Error()
 }

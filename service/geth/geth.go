@@ -130,6 +130,12 @@ func (gs *gethService) Setup() error {
 		}
 	}
 
+	if gs.opts.StaticNodes != "" {
+		if err := gs.setupStaticNodes(); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -138,16 +144,6 @@ func (gs *gethService) Start(ctx context.Context) error {
 		return err
 	}
 	defer gs.running.Disable()
-
-	if err := gs.Setup(); err != nil {
-		return err
-	}
-
-	if gs.opts.StaticNodes != "" {
-		if err := gs.setupStaticNodes(); err != nil {
-			return err
-		}
-	}
 
 	gethStderr, err := os.OpenFile(gs.opts.LogFile(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -165,16 +161,11 @@ func (gs *gethService) Start(ctx context.Context) error {
 		<-ctx.Done()
 		if err := gs.cmd.Process.Signal(os.Interrupt); err != nil {
 			// Not much else to do. Failed to send a signal
-			panic(fmt.Errorf("Error sending signal: %w ", err))
+			fmt.Printf("Error sending close signal to geth: %v\n", err)
 		}
 	}()
 
-	if err := gs.cmd.Wait(); err != nil {
-		return err
-	}
-
-	return nil
-
+	return gs.cmd.Wait()
 }
 
 func (gs *gethService) gethCmd(args ...string) *exec.Cmd {
@@ -269,12 +260,11 @@ func (gs *gethService) startGeth(stdErr *os.File) error {
 		gethArgs = append(gethArgs, "--cache", gs.opts.Cache)
 	}
 
-	fmt.Println("geth", strings.Join(gethArgs, " "))
-
 	cmd := gs.gethCmd(gethArgs...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
 	cmd.Stderr = stdErr
 
+	fmt.Println("Executing:", strings.Join(cmd.Args, " "))
 	if err := cmd.Start(); err != nil {
 		gs.logger.Error("Error starting geth", "err", err)
 		return err
