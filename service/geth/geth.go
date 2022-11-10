@@ -295,7 +295,7 @@ func (gopts GethOpts) IpcFile() string {
 }
 
 func (gopts GethOpts) StaticNodesFile() string {
-	return filepath.Join(gopts.Datadir, "/celo/static-nodes.json")
+	return filepath.Join(gopts.Datadir, "/static-nodes.json")
 }
 
 func chainParamsFromGenesisFile(genesisPath string) *chain.ChainParameters {
