@@ -229,6 +229,7 @@ func (gs *gethService) startGeth(stdErr *os.File) error {
 		"--light.maxpeers", "0",
 		"--maxpeers", gs.opts.MaxPeers,
 		"--consoleformat", "term",
+		"--txlookuplimit", "0",
 		// "--consoleoutput", "split",
 	}
 
