@@ -40,35 +40,7 @@ For an understanding of inputs & outputs check [servicer.go](./service/rpc/servi
 
 ## Command line arguments
 
-The main command is `rosetta run`, whose arguments are:
-
-```txt
-Usage:
-  rosetta run [flags]
-
-Flags:
-      --datadir string            datadir to use
-      --geth.binary string        Path to the celo-blockchain binary
-      --geth.bootnodes string     Bootnodes to use (separated by ,)
-      --geth.cache string         Memory (in MB) allocated to geth's internal caching
-      --geth.gcmode string        Geth garbage collection mode (full, archive) (default "full")
-      --geth.genesis string       (Optional) path to the genesis.json, for use with custom chains
-      --geth.ipcpath string       Path to the geth ipc file
-      --geth.logfile string       Path to logs file
-      --geth.maxpeers string      Maximum number of network peers (network disabled if set to 0) (default: 1100) (default "1100")
-      --geth.network string       Network to use, either 'mainnet', 'alfajores', or 'baklava'
-      --geth.publicip string      Public Ip to configure geth (sometimes required for discovery)
-      --geth.rpcaddr string       Geth HTTP-RPC server listening interface (default "127.0.0.1")
-      --geth.rpcport string       Geth HTTP-RPC server listening port (default "8545")
-      --geth.rpcvhosts string     Geth comma separated list of virtual hostnames from which to accept requests (default "localhost")
-      --geth.staticnodes string   StaticNode to use (separated by ,)
-      --geth.syncmode string      Geth blockchain sync mode (fast, full, light) (default "fast")
-      --geth.verbosity string     Geth log verbosity (number between [1-5])
-  -h, --help                      help for run
-      --rpc.address string        Listening address for http server
-      --rpc.port uint             Listening port for http server (default 8080)
-      --rpc.reqTimeout duration   Timeout for requests to this service, this also controls the timeout sent to the blockchain node for trace transaction requests (default 2m0s)
-```
+Arguments are described in the help output of the CLI.
 
 Every argument can be defined using environment variables using `ROSETTA_` prefix; and replacing `.` for `_`; for example:
 
@@ -77,11 +49,9 @@ ROSETTA_DATADIR="/my/dir"
 ROSETTA_GETH_NETWORK="alfajores"
 ```
 
-Note that from Rosetta `v0.8.4` onwards, it is no longer necessary to pass in either `--geth.bootnodes` or `--geth.staticnodes`, as the geth flag `--alfajores`, `--baklava`, or no flag (for mainnet) will be set automatically, which sets the geth bootnodes appropriately. These flags may still optionally be used but are not recommended if there is not a specific reason to do so.
-
 ## Running the Rosetta RPC Server
 
-Running the Rosetta RPC Server from scratch will take some time to sync, since it runs a full archive node in the background. While it may be possible to run the Construction API in the future with a non-archive node, this is still required by the Rosetta spec for the Data API implementation in order to perform balance reconciliation.
+Running the Rosetta RPC Server from scratch will take a very long time to sync and require at least 1.5TB of storage space, since it runs a full archive node in the background. While it may be possible to run the Construction API in the future with a non-archive node, this is still required by the Rosetta spec for the Data API implementation in order to perform balance reconciliation.
 
 ### Version 1: Running from `rosetta` source code
 
@@ -211,6 +181,14 @@ Rosetta uses [kliento](https://github.com/celo-org/kliento) to interact with the
 
 ## How to run rosetta-cli-checks
 
+_Note that running these checks is most likely infeasible for most people on
+mainnet because you will need at least 1.5 terrabytes of space and several days
+to be able to sync the chain. Under the hood, the service is syncing a full
+archive node, which takes a long time. The construction service needs to reach
+the tip before submitting transactions. The data checks will take a while to
+complete as well (likely a couple of days on a normal laptop with the current
+settings) as they reconcile balances for the entire chain._
+
 - Install the [`rosetta-cli`](https://github.com/coinbase/rosetta-cli) according to the instructions. (Note that on Mac, installing the `rosetta-cli` to `/usr/local/bin` or adding its location to you `$PATH` will allow you to call `rosetta-cli` directly on the command line rather than needing to provide the path to the executable). Current testing has been done with `v0.5.16` of the `rosetta-cli`.
 - Run the Rosetta service in the background for the respective network (currently only alfajores for both Data and Construction checks)
 - Run the CLI checks for alfajores as follows:
@@ -220,7 +198,6 @@ Rosetta uses [kliento](https://github.com/celo-org/kliento) to interact with the
 rosetta-cli check:construction --configuration-file PATH/TO/rosetta/rosetta-cli-conf/testnet/cli-config.json
 ```
 
-_Note that running the checks to completion will take a long time if this is the first time you are running Rosetta locally. Under the hood, the service is syncing a full archive node, which takes time (likely a couple of days on a normal laptop). The construction service needs to reach the tip before submitting transactions. The data checks will take a while to complete as well (likely a couple of days on a normal laptop with the current settings) as they reconcile balances for the entire chain._
 
 ### How to generate `bootstrap_balances.json`
 

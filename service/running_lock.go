@@ -14,7 +14,12 @@
 
 package service
 
-import "sync"
+import (
+	"errors"
+	"sync"
+)
+
+var ErrAlreadyRunning = errors.New("Service already running")
 
 type RunningLock struct {
 	running bool

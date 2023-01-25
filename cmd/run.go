@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,6 +35,7 @@ import (
 	"github.com/celo-org/rosetta/service/rpc"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"golang.org/x/sync/errgroup"
 )
 
 // serveCmd represents the serve command
@@ -70,29 +71,30 @@ func init() {
 	flagSet.String("geth.binary", "", "Path to the celo-blockchain binary")
 	utils.ExitOnError(serveCmd.MarkFlagFilename("geth.binary"))
 
-	flagSet.String("geth.logfile", "", "Path to logs file")
+	flagSet.String("geth.logfile", "", "Path to logs file (default <datadir>/celo.log)")
 	utils.ExitOnError(serveCmd.MarkFlagDirname("geth.logfile"))
 
-	flagSet.String("geth.ipcpath", "", "Path to the geth ipc file")
+	flagSet.String("geth.ipcpath", "geth.ipc", "Path to the geth ipc file. Under <datadir> if path is relative")
 	utils.ExitOnError(serveCmd.MarkFlagFilename("geth.ipcpath"))
 
 	flagSet.String("geth.genesis", "", "(Optional) path to the genesis.json, for use with custom chains")
 	utils.ExitOnError(serveCmd.MarkFlagFilename("geth.genesis", "json"))
+	// Note that we do not set any default here because it would clash with geth.genesis if that was defined.
 	flagSet.String("geth.network", "", "Network to use, either 'mainnet', 'alfajores', or 'baklava'")
 
-	flagSet.String("geth.staticnodes", "", "StaticNode to use (separated by ,)")
-	flagSet.String("geth.bootnodes", "", "Bootnodes to use (separated by ,)")
-	flagSet.String("geth.verbosity", "", "Geth log verbosity (number between [1-5])")
+	flagSet.String("geth.staticnodes", "", "List of nodes to remain permanently connected to (separated by ,) (default empty)")
+	flagSet.String("geth.bootnodes", "", "Bootnodes to use (separated by ,) (default, hardcoded based on geth.network flag)")
+	flagSet.String("geth.verbosity", "3", "Geth log verbosity (number between [1-5])")
 	flagSet.String("geth.publicip", "", "Public Ip to configure geth (sometimes required for discovery)")
-	flagSet.String("geth.cache", "", "Memory (in MB) allocated to geth's internal caching")
+	flagSet.String("geth.cache", "1024", "Memory (in MB) allocated to geth's internal caching")
 
-	flagSet.String("geth.rpcaddr", "127.0.0.1", "Geth HTTP-RPC server listening interface")
+	flagSet.String("geth.rpcaddr", "localhost", "Geth HTTP-RPC server listening interface")
 	flagSet.String("geth.rpcport", "8545", "Geth HTTP-RPC server listening port")
 	flagSet.String("geth.rpcvhosts", "localhost", "Geth comma separated list of virtual hostnames from which to accept requests")
 
 	flagSet.String("geth.syncmode", "fast", "Geth blockchain sync mode (fast, full, light)")
 	flagSet.String("geth.gcmode", "full", "Geth garbage collection mode (full, archive)")
-	flagSet.String("geth.maxpeers", "1100", "Maximum number of network peers (network disabled if set to 0) (default: 1100)")
+	flagSet.String("geth.maxpeers", "1100", "Maximum number of network peers (network disabled if set to 0)")
 }
 
 func getDatadir(cmd *cobra.Command) string {
@@ -168,10 +170,6 @@ func runRunCmd(cmd *cobra.Command, args []string) {
 }
 
 func runAllServices(ctx context.Context, sqlitePath string, gethOpts *geth.GethOpts, rpcConfig *rpc.RosettaServerConfig) error {
-	ctx, stopServices := context.WithCancel(ctx)
-	defer stopServices()
-
-	sm := service.NewServiceManager(ctx)
 
 	gethSrv := geth.NewGethService(gethOpts)
 
@@ -184,14 +182,36 @@ func runAllServices(ctx context.Context, sqlitePath string, gethOpts *geth.GethO
 		return fmt.Errorf("can't open rosetta.db: %w", err)
 	}
 
-	sm.Add(gethSrv)
-
-	gethStarted := utils.WaitUntil(500*time.Millisecond, 5*time.Minute, func() bool {
-		return fileutils.FileExists(gethSrv.IpcFilePath())
+	ec := service.NewErrorCollector()
+	grp, ctx := errgroup.WithContext(ctx)
+	grp.Go(func() error {
+		err := gethSrv.Start(ctx)
+		if err != nil {
+			fmt.Println("error running geth serrvice")
+			ec.Add(fmt.Errorf("error running geth service: %w", err))
+			return err
+		}
+		return nil
 	})
 
-	if !gethStarted {
-		return fmt.Errorf("geth service failed to start before timeout: %d", time.Millisecond)
+	ctxWithTimeout, stop := context.WithTimeout(ctx, 5*time.Minute)
+	defer stop()
+loop:
+	for {
+		select {
+		case <-time.After(500 * time.Millisecond):
+			if fileutils.FileExists(gethSrv.IpcFilePath()) {
+				break loop // break out of the for loop
+			}
+		case <-ctxWithTimeout.Done():
+			err := ctxWithTimeout.Err()
+			switch {
+			case err == context.Canceled:
+				return fmt.Errorf("Geth service died before deadline, check the log %s", gethOpts.LogFile())
+			case err == context.DeadlineExceeded:
+				return fmt.Errorf("Geth service did not create ipc file within deadline, check the log: %s", gethOpts.LogFile())
+			}
+		}
 	}
 
 	chainParams := gethSrv.ChainParameters()
@@ -207,7 +227,26 @@ func runAllServices(ctx context.Context, sqlitePath string, gethOpts *geth.GethO
 		return fmt.Errorf("can't create rpc server: %w", err)
 	}
 
-	sm.Add(rpcService)
-	sm.Add(monitor.NewMonitorService(cc, celoStore))
-	return sm.Wait()
+	grp.Go(func() error {
+		err := rpcService.Start(ctx)
+		if err != nil {
+			fmt.Println("error running rpc serrvice")
+			ec.Add(fmt.Errorf("error running rpc service : %w", err))
+			return err
+		}
+		return nil
+	})
+	grp.Go(func() error {
+		err = monitor.NewMonitorService(cc, celoStore).Start(ctx)
+		if err != nil {
+			fmt.Println("error running mon serrvice")
+			ec.Add(fmt.Errorf("error running monitor service : %w", err))
+			return err
+		}
+		return nil
+	})
+	// We gather errors in the error collector, so no need to check the error group error.
+	//nolint:errcheck
+	grp.Wait()
+	return ec.Error()
 }

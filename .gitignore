@@ -6,3 +6,4 @@ main
 bin/
 celo/
 *.tar.gz
+.vscode

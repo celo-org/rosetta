@@ -130,6 +130,12 @@ func (gs *gethService) Setup() error {
 		}
 	}
 
+	if gs.opts.StaticNodes != "" {
+		if err := gs.setupStaticNodes(); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -138,16 +144,6 @@ func (gs *gethService) Start(ctx context.Context) error {
 		return err
 	}
 	defer gs.running.Disable()
-
-	if err := gs.Setup(); err != nil {
-		return err
-	}
-
-	if gs.opts.StaticNodes != "" {
-		if err := gs.setupStaticNodes(); err != nil {
-			return err
-		}
-	}
 
 	gethStderr, err := os.OpenFile(gs.opts.LogFile(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -165,16 +161,11 @@ func (gs *gethService) Start(ctx context.Context) error {
 		<-ctx.Done()
 		if err := gs.cmd.Process.Signal(os.Interrupt); err != nil {
 			// Not much else to do. Failed to send a signal
-			panic(fmt.Errorf("Error sending signal: %w ", err))
+			fmt.Printf("Error sending close signal to geth: %v\n", err)
 		}
 	}()
 
-	if err := gs.cmd.Wait(); err != nil {
-		return err
-	}
-
-	return nil
-
+	return gs.cmd.Wait()
 }
 
 func (gs *gethService) gethCmd(args ...string) *exec.Cmd {
@@ -226,18 +217,19 @@ func (gs *gethService) ensureGethInit() error {
 func (gs *gethService) startGeth(stdErr *os.File) error {
 	gethArgs := []string{
 		"--nousb",
-		"--rpc",
-		"--rpcaddr", gs.opts.RpcAddr,
-		"--rpcport", gs.opts.RpcPort,
-		"--rpcvhosts", gs.opts.RpcVHosts,
+		"--http",
+		"--http.addr", gs.opts.RpcAddr,
+		"--http.port", gs.opts.RpcPort,
+		"--http.vhosts", gs.opts.RpcVHosts,
 		"--syncmode", gs.opts.SyncMode,
 		"--gcmode", gs.opts.GcMode,
-		"--rpcapi", "eth,net,web3,debug,admin,personal",
+		"--http.api", "eth,net,web3,debug,admin,personal",
 		"--ipcpath", gs.IpcFilePath(),
 		"--light.serve", "0",
 		"--light.maxpeers", "0",
 		"--maxpeers", gs.opts.MaxPeers,
 		"--consoleformat", "term",
+		"--txlookuplimit", "0",
 		// "--consoleoutput", "split",
 	}
 
@@ -269,12 +261,11 @@ func (gs *gethService) startGeth(stdErr *os.File) error {
 		gethArgs = append(gethArgs, "--cache", gs.opts.Cache)
 	}
 
-	fmt.Println("geth", strings.Join(gethArgs, " "))
-
 	cmd := gs.gethCmd(gethArgs...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
 	cmd.Stderr = stdErr
 
+	fmt.Println("Executing:", strings.Join(cmd.Args, " "))
 	if err := cmd.Start(); err != nil {
 		gs.logger.Error("Error starting geth", "err", err)
 		return err
@@ -296,14 +287,16 @@ func (gopts GethOpts) LogFile() string {
 }
 
 func (gopts GethOpts) IpcFile() string {
-	if gopts.IpcPath == "" {
-		return filepath.Join(gopts.Datadir, "geth.ipc")
+	// If the ipc file is just a file name then place it in the datadir,
+	// otherwise use the exact path.
+	if filepath.Base(gopts.IpcPath) == gopts.IpcPath {
+		return filepath.Join(gopts.Datadir, gopts.IpcPath)
 	}
 	return gopts.IpcPath
 }
 
 func (gopts GethOpts) StaticNodesFile() string {
-	return filepath.Join(gopts.Datadir, "/celo/static-nodes.json")
+	return filepath.Join(gopts.Datadir, "/static-nodes.json")
 }
 
 func chainParamsFromGenesisFile(genesisPath string) *chain.ChainParameters {

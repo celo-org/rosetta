@@ -15,11 +15,9 @@
 package service
 
 import (
-	"context"
 	"errors"
 	"strings"
 	"sync"
-	"time"
 )
 
 type ErrorCollector struct {
@@ -56,80 +54,4 @@ func (ec *ErrorCollector) Error() error {
 	}
 
 	return errors.New(errStr.String())
-}
-
-type delayedService struct {
-	srv     Service
-	delay   time.Duration
-	running RunningLock
-}
-
-func WithDelay(srv Service, delay time.Duration) Service {
-	return &delayedService{
-		srv:   srv,
-		delay: delay,
-	}
-}
-
-func (ds *delayedService) Name() string {
-	return ds.srv.Name()
-}
-
-func (ds *delayedService) Running() bool {
-	return ds.running.Running()
-}
-
-func (ds *delayedService) Start(ctx context.Context) error {
-	select {
-	case <-time.After(ds.delay):
-	case <-ctx.Done():
-		return nil
-	}
-
-	return ds.srv.Start(ctx)
-}
-
-type ServieFactory func() (Service, error)
-
-type lazyService struct {
-	factory ServieFactory
-	srv     Service
-	name    string
-}
-
-func LazyService(name string, factory func() (Service, error)) *lazyService {
-	return &lazyService{
-		name:    name,
-		factory: factory,
-	}
-}
-
-func (ls *lazyService) Name() string {
-	if ls.srv == nil {
-		return ls.name
-	}
-	return ls.srv.Name()
-}
-
-func (ls *lazyService) Running() bool {
-	if ls.srv == nil {
-		return false
-	}
-	return ls.srv.Running()
-}
-
-func (ls *lazyService) Start(ctx context.Context) error {
-	// TODO improve
-	if ls.srv != nil {
-		return ErrAlreadyRunning
-	}
-
-	srv, err := ls.factory()
-	if err != nil {
-		return err
-	}
-
-	ls.srv = srv
-
-	return ls.srv.Start(ctx)
 }
