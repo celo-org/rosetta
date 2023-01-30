@@ -208,3 +208,56 @@ go run examples/generate_balances/main.go \
   https://storage.googleapis.com/genesis_blocks/alfajores \
   rosetta-cli-conf/testnet/bootstrap_balances.json
 ```
+
+## Releasing rosetta
+
+### Versioning
+
+Rosetta uses [semantic versioning](https://semver.org/) and contains 3 distinct
+interfaces that should be taken into account when setting the version. Having
+so many interfaces exported from this repo makes it likely that most changes
+will constitute a breaking change in at least one interface.
+
+* The rosetta HTTP API exposed by the services in this repo.
+* The CLI exposed by the rosetta binary.
+* All exported code in the repo, since this repo is imported as a module by Coinbase projects.
+
+Breaking changes constitute any change that could cause a downstream consumer's
+code to break. E.g:
+
+* Any change that for a given API request results in different response bytes.
+  (This seems quite strict, but in the absence of any framework for classifying
+  breaking changes (_that would need to be communicated to and agreed upon by
+  downstream consumers_) we have to assume that any change in the bytes of a
+  response for a given request could break downstream consumers.)
+* Any changes in CLI flags or default values, except if a new flag has been
+  added which has no effect unless explicitly set.
+* Any changes to exported code in this repo or changes that would change the
+  value returned by code exported in this repo.
+* Bear in mind that breaking changes in the API of celo-blockchain can imply
+  breaking changes for this repo, for example changing the value returned by gas
+  estimation, or adding a field to a response. Also note that celo-blockchain
+  does not follow semantic versioning, so when updating it you will need to
+  investigate all changes included in an update and understand how they affect
+  rosetta to see if any are breaking.
+
+Changes that are not breaking and are not bug fixes are considered minor
+versions, there will likely be very few of these.
+
+Changes that are not breaking and are bug fixes are considered patch versions,
+it seems quite likely bug fixes could also be breaking.
+
+### Making a release
+
+* Ensure all required changes are merged to master.
+* Create a PR to update the `MiddlewareVersion` in `./service/rpc/versions.go`
+  set the version to the version of the release and merge to master.
+* Update the master branch on your local repo and run
+  `./scripts/set_tag_and_build_docker_images.sh` this will tag the current
+  commit with the `MiddlewareVersion` and build and push docker images for this
+  version and print out the tags of the docker images.
+* In github create a release for the aforementioned git tag, describe all
+  changes and breaking changes and add the tags for the docker images built by
+  the script.
+
+
