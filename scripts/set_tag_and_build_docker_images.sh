@@ -22,18 +22,7 @@ if [[ $(git rev-parse origin/master) != $(git rev-parse HEAD) ]]; then
   exit 3
 fi
 
-LAST_VERSION=$(grep "MiddlewareVersion" $VERSION_FILE | sed -e 's/.*\= "//' -e 's/\".*//')
-
-echo "Current version: $LAST_VERSION"
-echo "What's the next version?"
-read NEW_VERSION
-
-sed -i -e "s/$LAST_VERSION/$NEW_VERSION/" $VERSION_FILE
-
-git checkout -b "release/${NEW_VERSION}"
-git add $VERSION_FILE
-git commit -m "Release ${NEW_VERSION}"
-git tag "v${NEW_VERSION}"
+VERSION=$(grep "MiddlewareVersion" $VERSION_FILE | sed -e 's/.*\= "//' -e 's/\".*//')
 
 COMMIT_SHA=$(git rev-parse HEAD)
 
@@ -41,15 +30,24 @@ echo "Building Docker images"
 docker build \
   --build-arg COMMIT_SHA=${COMMIT_SHA} \
   -t us.gcr.io/celo-testnet/rosetta:${COMMIT_SHA} \
-  -t us.gcr.io/celo-testnet/rosetta:${NEW_VERSION} \
+  -t us.gcr.io/celo-testnet/rosetta:${VERSION} \
   -t us.gcr.io/celo-testnet/rosetta:latest \
   .
 
+# We tag the version after building, so that we don't get stuck due to existing
+# tags, if the build fails and we need to re-run this script.
+echo "Tagging commit with v${VERSION}"
+git tag "v${VERSION}"
+git push origin "v${VERSION}"
+
 echo "Pushing Docker images"
 docker push us.gcr.io/celo-testnet/rosetta:${COMMIT_SHA} 
-docker push us.gcr.io/celo-testnet/rosetta:${NEW_VERSION} 
+docker push us.gcr.io/celo-testnet/rosetta:${VERSION} 
 docker push us.gcr.io/celo-testnet/rosetta:latest 
 
-echo "Pushing to git"
-git push origin "release/${NEW_VERSION}"
-git push origin "v${NEW_VERSION}"
+
+echo "Tagged commit ${COMMIT_SHA} with v${VERSION}"
+echo "Pushed the following docker images:"
+echo "push us.gcr.io/celo-testnet/rosetta:${COMMIT_SHA}"
+echo "push us.gcr.io/celo-testnet/rosetta:${VERSION}"
+echo "push us.gcr.io/celo-testnet/rosetta:latest"
