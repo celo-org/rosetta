@@ -18,8 +18,15 @@ import (
 	"context"
 	"log"
 
+	// "math/big"
+
 	"github.com/celo-org/celo-blockchain/common"
+	// "github.com/celo-org/celo-blockchain/common/hexutil"
+	// "github.com/celo-org/celo-blockchain/crypto"
 	"github.com/celo-org/rosetta/airgap"
+
+	// celoClient "github.com/celo-org/kliento/client"
+	// "github.com/celo-org/kliento/registry"
 
 	"github.com/coinbase/rosetta-sdk-go/fetcher"
 )
@@ -34,6 +41,7 @@ func main() {
 	}
 
 	// (or use an existing key)
+	// recommended for testing, since the account will need to have funds for gas fees
 	// privKeyBytes, err := hexutil.Decode("0x8e14643e23a3a6aa027e6e01fad86f54e63c5186636ce4be01ea9042907b1ff5")
 	// privKey, err := crypto.ToECDSA(privKeyBytes)
 
@@ -107,6 +115,7 @@ func main() {
 	}
 
 	// lockValue := big.NewInt(10000000000)
+
 	// txArgs, err = argBuilder.LockGold(*addr, lockValue)
 	// if err != nil {
 	// 	log.Fatalf("Error build txArgs: %s", err)
@@ -116,11 +125,40 @@ func main() {
 	// }
 
 	// cc, err := celoClient.Dial("http://localhost:8545")
-	// registry, err := wrapper.NewRegistry(cc)
-	// election, err := registry.GetElection(ctx, nil)
+	// registry, err := registry.New(cc)
+	// if err != nil {
+	// 	log.Fatalf("Error creating Registry: %s", err)
+	// }
+	// election, err := registry.GetElectionContract(ctx, nil)
+	// if err != nil {
+	// 	log.Fatalf("Error getting Election Contract: %s", err)
+	// }
 	// groups, err := election.GetEligibleValidatorGroups(nil)
+	// if err != nil {
+	// 	log.Fatalf("Error getting eligible validator groups: %s", err)
+	// }
 
 	// txArgs, err = argBuilder.Vote(*addr, groups[0], lockValue)
+	// if err != nil {
+	// 	log.Fatalf("Error build txArgs: %s", err)
+	// }
+	// if err = submitSigned(txArgs); err != nil {
+	// 	log.Fatalf("Error on submit Tx: %s", err)
+	// }
+
+	// votedForGroups, err := election.GetGroupsVotedForByAccount(nil, *addr)
+	// log.Printf("votedForGroups %s:", votedForGroups)
+
+	// // eligible
+	// txArgs, err = argBuilder.RevokePendingVotes(*addr, groups[0], lockValue)
+	// if err != nil {
+	// 	log.Fatalf("Error build txArgs: %s", err)
+	// }
+	// if err = submitSigned(txArgs); err != nil {
+	// 	log.Fatalf("Error on submit Tx: %s", err)
+	// }
+	// // not eligible
+	// txArgs, err = argBuilder.RevokePendingVotes(*addr, *addr, lockValue)
 	// if err != nil {
 	// 	log.Fatalf("Error build txArgs: %s", err)
 	// }
