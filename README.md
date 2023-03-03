@@ -252,12 +252,8 @@ it seems quite likely bug fixes could also be breaking.
 * Ensure all required changes are merged to master.
 * Create a PR to update the `MiddlewareVersion` in `./service/rpc/versions.go`
   set the version to the version of the release and merge to master.
-* Update the master branch on your local repo and run
-  `./scripts/set_tag_and_build_docker_images.sh` this will tag the current
-  commit with the `MiddlewareVersion` and build and push docker images for this
-  version and print out the tags of the docker images.
-* In github create a release for the aforementioned git tag, describe all
+* Tag the release in GitHub, which will trigger cloudbuild to automatically build the docker image from tagged commit and tag the image as: `us.gcr.io/celo-testnet/rosetta:<TAG>`, `us.gcr.io/celo-testnet/rosetta:<COMMIT_SHA>`, `us.gcr.io/celo-testnet/rosetta:latest`. (Note: this can be done by creating a new tag while creating a release in GitHub.)
+  * If there are any build issues, update the master branch on your local repo and run `./scripts/set_tag_and_build_docker_images.sh`, which will attempt to manually tag the commit and build the docker image, which may be helpful for debugging the build.
+* In GitHub create a release for the aforementioned git tag, describe all
   changes and breaking changes and add the tags for the docker images built by
   the script.
-
-
