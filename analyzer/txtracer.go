@@ -312,12 +312,20 @@ func (tr *Tracer) TxOpsFromLogs(tx *types.Transaction, receipt *types.Receipt, t
 			case "GoldRelocked":
 				// relock() [GoldRelocked] => lockPending->lockNonVoting
 				event := eventRaw.(*contracts.LockedGoldGoldRelocked)
-				transfers = append(transfers, *NewRelockGold(event.Account, event.Value))
+				// Edge case: locking 0 CELO means there isn't a matching transfer;
+				// Only store balance-changing (>0) GoldLocked logs.
+				if event.Value.Cmp(big.NewInt(0)) > 0{
+					transfers = append(transfers, *NewRelockGold(event.Account, event.Value))
+				}
 
 			case "GoldUnlocked":
 				// unlock() [GoldUnlocked] => lockNonVoting->lockPending
 				event := eventRaw.(*contracts.LockedGoldGoldUnlocked)
-				transfers = append(transfers, *NewUnlockGold(event.Account, event.Value))
+				// Edge case: locking 0 CELO means there isn't a matching transfer;
+				// Only store balance-changing (>0) GoldLocked logs.
+				if event.Value.Cmp(big.NewInt(0)) > 0{
+					transfers = append(transfers, *NewUnlockGold(event.Account, event.Value))
+				}
 
 			case "GoldWithdrawn":
 				// withdraw() [GoldWithdrawn + transfer] => lockPending->main
@@ -332,7 +340,7 @@ func (tr *Tracer) TxOpsFromLogs(tx *types.Transaction, receipt *types.Receipt, t
 				// slash() [AccountSlashed + transfer] => account:lockNonVoting -> beneficiary:lockNonVoting + governance:main
 				event := eventRaw.(*contracts.LockedGoldAccountSlashed)
 				transfers = append(transfers, *NewSlash(event.Slashed, event.Reporter, governanceAddr, lockedGoldAddr, event.Penalty, event.Reward, tobinTax))
-
+			
 			}
 		}
 
