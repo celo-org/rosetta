@@ -79,7 +79,7 @@ func GoldTransferTx(cc *client.CeloClient, from common.Address, to common.Addres
 	}
 	log.Info("Got gasLimit", "gasLimit", gasLimit)
 
-	return types.NewTransaction(nonce, to, value, gasLimit, gasPrice, nil, nil, big.NewInt(0), nil)
+	return types.NewTransaction(nonce, to, value, gasLimit, gasPrice, nil)
 }
 
 func CeloClient() *client.CeloClient {

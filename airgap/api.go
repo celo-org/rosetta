@@ -147,7 +147,7 @@ func (tx *Transaction) Signed() bool {
 }
 
 func (tx *Transaction) AsGethTransaction() (*types.Transaction, error) {
-	gethTx := types.NewTransaction(
+	gethTx := types.NewCeloTransaction(
 		tx.Nonce,
 		tx.To,
 		tx.Value,
