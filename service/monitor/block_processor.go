@@ -46,7 +46,7 @@ type processor struct {
 
 var ErrMultipleGasPriceMinimumUpdates = errors.New("Error multiple GasPriceMinimumUpdated events emitted in same block")
 
-func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes chan<- *db.BlockChangeSet, cc *client.CeloClient, db_ db.RosettaDBReader, logger log.Logger) error {
+func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes chan<- *db.BlockChangeSet, cc *client.CeloClient, db_ db.RosettaDBReader, isGingerbread func(*big.Int) bool, logger log.Logger) error {
 	bp, err := newProcessor(ctx, headers, changes, cc, db_, logger)
 	if err != nil {
 		return err
@@ -64,8 +64,12 @@ func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes c
 			return err
 		}
 
-		if err := bp.gasPriceMinimum(bcs); err != nil {
-			return err
+		// After Gingerbread HF, GPM must be fetched directly from the block header
+		// (changes at the start of the block as opposed to at the end)
+		if !isGingerbread(bcs.BlockNumber) {
+			if err := bp.gasPriceMinimum(bcs); err != nil {
+				return err
+			}
 		}
 
 		if err := bp.carbonOffsetPartner(bcs); err != nil {
