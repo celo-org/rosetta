@@ -120,12 +120,7 @@ func TestInternalTransfersToOperations(t *testing.T) {
 	}
 
 	t.Run("Without tobinTax", func(t *testing.T) {
-		Ω(InternalTransfersToOperations(transfers, emptyTobinTax)).Should(MatchTransferOps(transfers, emptyTobinTax))
-	})
-
-	t.Run("With tobinTax", func(t *testing.T) {
-		tobinTax := NewTestTobinTax(10, address3)
-		Ω(InternalTransfersToOperations(transfers, tobinTax)).Should(MatchTransferOps(transfers, tobinTax))
+		Ω(InternalTransfersToOperations(transfers)).Should(MatchTransferOps(transfers, emptyTobinTax))
 	})
 }
 
@@ -142,8 +137,8 @@ func TestReconcileLogOpWithTransfers(t *testing.T) {
 		_, afterTaxAmount1 := tobinTax.Apply(amount1)
 		return []Operation{
 			*NewLockGold(address1, lockedGoldAdrr, afterTaxAmount1),
-			*NewWithdrawGold(address1, lockedGoldAdrr, amount1, tobinTax),
-			*NewSlash(address1, address2, slashRewardTo, slashRewardFrom, slashPenalty, slashReward, tobinTax),
+			*NewWithdrawGold(address1, lockedGoldAdrr, amount1),
+			*NewSlash(address1, address2, slashRewardTo, slashRewardFrom, slashPenalty, slashReward),
 			*NewUnlockGold(address1, amount1),                                   // does not require transfer
 			*NewAuthorizeSigner(address1, address2, OpAuthorizeValidatorSigner), // does not require transfer
 		}
@@ -151,10 +146,10 @@ func TestReconcileLogOpWithTransfers(t *testing.T) {
 
 	getTestTransferOps := func(tobinTax *TobinTax) []Operation {
 		return []Operation{
-			*NewTransfer(address1, lockedGoldAdrr, amount1, tobinTax, true),                                           // matches LockGoldOp
-			*NewTransfer(lockedGoldAdrr, address1, amount1, tobinTax, false),                                          // matches WithdrawGoldOp
-			*NewTransfer(slashRewardFrom, slashRewardTo, new(big.Int).Sub(slashPenalty, slashReward), tobinTax, true), // matches SlashOp
-			*NewTransfer(address1, address3, amount1, tobinTax, true),                                                 // does not match a logOp
+			*NewTransfer(address1, lockedGoldAdrr, amount1, true),                                           // matches LockGoldOp
+			*NewTransfer(lockedGoldAdrr, address1, amount1, false),                                          // matches WithdrawGoldOp
+			*NewTransfer(slashRewardFrom, slashRewardTo, new(big.Int).Sub(slashPenalty, slashReward), true), // matches SlashOp
+			*NewTransfer(address1, address3, amount1, true),                                                 // does not match a logOp
 		}
 	}
 
@@ -204,7 +199,7 @@ func TestReconcileLogOpWithTransfers(t *testing.T) {
 			}
 		}
 		return append(logOps,
-			*NewTransfer(address1, address3, amount1, tobinTax, true), // does not match a logOp
+			*NewTransfer(address1, address3, amount1, true), // does not match a logOp
 		)
 	}
 
