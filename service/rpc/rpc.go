@@ -22,7 +22,6 @@ import (
 
 	"github.com/celo-org/celo-blockchain/log"
 	"github.com/celo-org/kliento/client"
-	"github.com/celo-org/kliento/utils/chain"
 	"github.com/celo-org/rosetta/analyzer"
 	"github.com/celo-org/rosetta/db"
 	"github.com/celo-org/rosetta/service"
@@ -46,13 +45,13 @@ func (hs *RosettaServerConfig) ListenAddress() string {
 type rosettaServer struct {
 	cc          *client.CeloClient
 	cfg         *RosettaServerConfig
-	chainParams *chain.ChainParameters
+	chainParams *service.ChainParameters
 
 	running service.RunningLock
 	server  *http.Server
 }
 
-func NewRosettaServer(cc *client.CeloClient, db db.RosettaDBReader, cfg *RosettaServerConfig, chainParams *chain.ChainParameters) (*rosettaServer, error) {
+func NewRosettaServer(cc *client.CeloClient, db db.RosettaDBReader, cfg *RosettaServerConfig, chainParams *service.ChainParameters) (*rosettaServer, error) {
 	var mainHandler http.Handler
 	var err error
 
@@ -117,7 +116,7 @@ func requestLogHandler(handler http.Handler) http.Handler {
 	})
 }
 
-func createRouter(celoClient *client.CeloClient, db db.RosettaDBReader, cfg *RosettaServerConfig, chainParams *chain.ChainParameters) (http.Handler, error) {
+func createRouter(celoClient *client.CeloClient, db db.RosettaDBReader, cfg *RosettaServerConfig, chainParams *service.ChainParameters) (http.Handler, error) {
 	servicer, err := NewServicer(celoClient, db, cfg, chainParams)
 	if err != nil {
 		return nil, err

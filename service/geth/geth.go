@@ -19,16 +19,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"math/big"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"syscall"
 
+	"github.com/celo-org/celo-blockchain/core"
 	"github.com/celo-org/celo-blockchain/log"
 	"github.com/celo-org/celo-blockchain/params"
-	"github.com/celo-org/kliento/utils/chain"
 	"github.com/celo-org/rosetta/internal/fileutils"
 	"github.com/celo-org/rosetta/service"
 )
@@ -56,7 +55,7 @@ type GethOpts struct {
 type gethService struct {
 	opts *GethOpts
 
-	chainParams *chain.ChainParameters
+	chainParams *service.ChainParameters
 
 	cmd     *exec.Cmd
 	running service.RunningLock
@@ -74,7 +73,7 @@ func (gs *gethService) IpcFilePath() string {
 	return gs.opts.IpcFile()
 }
 
-func (gs *gethService) ChainParameters() *chain.ChainParameters {
+func (gs *gethService) ChainParameters() *service.ChainParameters {
 	return gs.chainParams
 }
 
@@ -97,38 +96,31 @@ func (gs *gethService) Setup() error {
 		}
 	}
 
+	var config *params.ChainConfig
 	if gs.opts.GenesisPath != "" {
 		// Read Genesis to get chain parameters
-		gs.chainParams = chainParamsFromGenesisFile(gs.opts.GenesisPath)
+		config = chainConfigFromGenesisFile(gs.opts.GenesisPath)
 
 		if err := gs.ensureGethInit(); err != nil {
 			return err
 		}
 	} else {
 		// Get chain params from blockchain client
-		var chainId *big.Int
-		var epochSize uint64
 		switch gs.opts.Network {
 		case "mainnet":
-			chainId = params.MainnetChainConfig.ChainID
-			epochSize = params.MainnetChainConfig.Istanbul.Epoch
+			config = params.MainnetChainConfig
 			break
 		case "alfajores":
-			chainId = params.AlfajoresChainConfig.ChainID
-			epochSize = params.AlfajoresChainConfig.Istanbul.Epoch
+			config = params.AlfajoresChainConfig
 			break
 		case "baklava":
-			chainId = params.BaklavaChainConfig.ChainID
-			epochSize = params.BaklavaChainConfig.Istanbul.Epoch
+			config = params.BaklavaChainConfig
 			break
 		default:
 			return fmt.Errorf("unknown network: %s", gs.opts.Network)
 		}
-		gs.chainParams = &chain.ChainParameters{
-			ChainId:   chainId,
-			EpochSize: epochSize,
-		}
 	}
+	gs.chainParams = service.NewChainParametersFromConfig(config)
 
 	if gs.opts.StaticNodes != "" {
 		if err := gs.setupStaticNodes(); err != nil {
@@ -299,28 +291,16 @@ func (gopts GethOpts) StaticNodesFile() string {
 	return filepath.Join(gopts.Datadir, "/static-nodes.json")
 }
 
-func chainParamsFromGenesisFile(genesisPath string) *chain.ChainParameters {
+func chainConfigFromGenesisFile(genesisPath string) *params.ChainConfig {
 	data, err := ioutil.ReadFile(genesisPath)
 	if err != nil {
 		log.Crit("Can't read genesis.json on DataDir", "genesisPath", genesisPath, "err", err)
 	}
 
-	// We only map the fields we need
-	var genesis struct {
-		Config struct {
-			ChainId  uint64 `json:"chainId"`
-			Isntabul struct {
-				Epoch uint64 `json:"epoch"`
-			} `json:"istanbul"`
-		} `json:"config"`
-	}
+	var genesis core.Genesis
 
 	if err = json.Unmarshal(data, &genesis); err != nil {
 		log.Crit("Can't parse genesis.json on DataDir", "genesisPath", genesisPath, "err", err)
 	}
-
-	return &chain.ChainParameters{
-		ChainId:   new(big.Int).SetUint64(genesis.Config.ChainId),
-		EpochSize: genesis.Config.Isntabul.Epoch,
-	}
+	return genesis.Config
 }

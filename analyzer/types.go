@@ -18,18 +18,8 @@ import (
 	"math/big"
 
 	"github.com/celo-org/celo-blockchain/common"
-	"github.com/celo-org/celo-blockchain/consensus/istanbul"
 	"github.com/celo-org/rosetta/internal/utils"
 )
-
-type ChainParameters struct {
-	ChainId   *big.Int
-	EpochSize uint64
-}
-
-func (cp *ChainParameters) IsLastBlockOfEpoch(blockNumber uint64) bool {
-	return istanbul.IsLastBlockOfEpoch(blockNumber, cp.EpochSize)
-}
 
 type Transfer struct {
 	From   Account

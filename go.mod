@@ -15,7 +15,7 @@ require (
 	github.com/celo-org/celo-bls-go-windows v0.6.4 // indirect
 	// TODO EN: update once kliento is fully updated
 	// points to head of eelanagaraj/gingerbread-updates
-	github.com/celo-org/kliento v0.2.1-0.20230719154442-54f3f19facdc
+	github.com/celo-org/kliento v0.2.1-0.20230720131413-ac950c44e5a9
 	github.com/coinbase/rosetta-sdk-go v0.5.9
 	github.com/felixge/httpsnoop v1.0.1
 	github.com/go-stack/stack v1.8.1 // indirect
@@ -31,5 +31,5 @@ require (
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
 )
 
-// TODO EN: undo once kliento dep is published
+// TODO EN: undo once final kliento dep is published
 // replace github.com/celo-org/kliento => ../kliento
