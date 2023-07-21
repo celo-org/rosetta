@@ -208,19 +208,10 @@ func TestReconcileLogOpWithTransfers(t *testing.T) {
 		)
 	}
 
-	tobinTax := NewTestTobinTax(10, address3)
-
 	logOps := getTestLogOps(emptyTobinTax)
-	logOpsWithTobinTax := getTestLogOps(tobinTax)
-
 	transferOps := getTestTransferOps(emptyTobinTax)
-	transferOpsWithTobinTax := getTestTransferOps(tobinTax)
 
 	t.Run("Without tobinTax", func(t *testing.T) {
-		Ω(ReconcileLogOpsWithTransfers(logOps, transferOps, emptyTobinTax, lockedGoldAdrr)).Should(ConsistOf(getReconciledOps(logOps, emptyTobinTax)))
-	})
-
-	t.Run("With tobinTax", func(t *testing.T) {
-		Ω(ReconcileLogOpsWithTransfers(logOpsWithTobinTax, transferOpsWithTobinTax, tobinTax, lockedGoldAdrr)).Should(ConsistOf(getReconciledOps(logOpsWithTobinTax, tobinTax)))
+		Ω(ReconcileLogOpsWithTransfers(logOps, transferOps)).Should(ConsistOf(getReconciledOps(logOps, emptyTobinTax)))
 	})
 }
