@@ -44,8 +44,6 @@ var blockCmd = &cobra.Command{
 		block, fetcherErr := fetcher.BlockRetry(ctx, network, blockIdentifier)
 		utils.ExitOnFetcherError(fetcherErr)
 
-		// printBlockContext(block)
-
 		printBlockContext(block)
 	},
 }
@@ -64,7 +62,6 @@ func printBlockContext(rosettabBlock *types.Block) {
 	gpm, err := db.GasPriceMinimumFor(ctx, blockNumber)
 	utils.ExitOnError(err)
 
-	tobinTax, err := db.TobinTaxFor(ctx, blockNumber)
 	utils.ExitOnError(err)
 
 	contractNames := []string{
@@ -88,7 +85,6 @@ func printBlockContext(rosettabBlock *types.Block) {
 	printTitle("Block Context")
 	w := tabwriter.NewWriter(os.Stdout, 20, 5, 3, ' ', tabwriter.TabIndent)
 	fmt.Fprintf(w, "GasPriceMinimum:\t%s\n", gpm)
-	fmt.Fprintf(w, "TobinTax:\t%s\n", tobinTax)
 	fmt.Fprintf(w, "Coinbase:\t%s\n", block.Coinbase().Hex())
 	if carbonOffsetPartner != common.ZeroAddress {
 		fmt.Fprintf(w, "CarbonOffsetPartner:\t%s\n", carbonOffsetPartner.Hex())
