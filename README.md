@@ -17,7 +17,7 @@ With a special focus on getting balance change operations, Celo Rosetta provides
 the celo-blockchain rpc; such as:
 
 - Gas Fee distribution
-- Gold transfers (internal & external). Taking in account Tobin Tax
+- CELO transfers (internal & external)
 - Epoch Rewards Distribution
 - LockedGold & Election Operations
 
