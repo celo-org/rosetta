@@ -109,7 +109,7 @@ func (tr *Tracer) TraceTransaction(blockHeader *types.Header, tx *types.Transact
 			return nil, err
 		}
 
-		reconciledOps, err := ReconcileLogOpsWithTransfers(logOps, transferOps, tobinTax, contractMap[registry.LockedGoldContractID.String()])
+		reconciledOps, err := ReconcileLogOpsWithTransfers(logOps, transferOps)
 		if err != nil {
 			return nil, err
 		}
