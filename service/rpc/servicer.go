@@ -28,11 +28,11 @@ import (
 	"github.com/celo-org/kliento/contracts"
 	"github.com/celo-org/kliento/contracts/helpers"
 	"github.com/celo-org/kliento/registry"
-	"github.com/celo-org/kliento/utils/chain"
 	"github.com/celo-org/rosetta/airgap"
 	"github.com/celo-org/rosetta/airgap/server"
 	"github.com/celo-org/rosetta/analyzer"
 	"github.com/celo-org/rosetta/db"
+	"github.com/celo-org/rosetta/service"
 	"github.com/coinbase/rosetta-sdk-go/types"
 )
 
@@ -42,14 +42,14 @@ import (
 type Servicer struct {
 	cc          *client.CeloClient
 	db          db.RosettaDBReader
-	chainParams *chain.ChainParameters
+	chainParams *service.ChainParameters
 	airgap      airgap.Server
 	// The timeout to use when performing transaction traces.
 	txTraceTimeout time.Duration
 }
 
 // NewServicer creates a default api service
-func NewServicer(celoClient *client.CeloClient, db db.RosettaDBReader, cfg *RosettaServerConfig, cp *chain.ChainParameters) (*Servicer, error) {
+func NewServicer(celoClient *client.CeloClient, db db.RosettaDBReader, cfg *RosettaServerConfig, cp *service.ChainParameters) (*Servicer, error) {
 	srvCtx, err := server.NewServerContext(celoClient)
 	if err != nil {
 		return nil, err
