@@ -402,7 +402,13 @@ func (S *Servicer) BlockTransaction(ctx context.Context, request *types.BlockTra
 			return nil, LogErrCeloClient("TransactionReceipt", err)
 		}
 
-		tracer := analyzer.NewTracer(ctx, S.cc, S.db, S.txTraceTimeout)
+		tracer := analyzer.NewTracer(
+			ctx,
+			S.cc,
+			S.db,
+			S.txTraceTimeout,
+			S.chainParams.IsGingerbread(blockHeader.Number),
+		)
 
 		ops, err := tracer.TraceTransaction(&blockHeader.Header, tx, receipt)
 		if err != nil {
