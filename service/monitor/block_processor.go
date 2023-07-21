@@ -40,7 +40,6 @@ type processor struct {
 	gpmAddress          common.Address
 	reserveAddress      common.Address
 	gpm                 *big.Int
-	tobinTax            *big.Int
 	logger              log.Logger
 }
 
@@ -73,10 +72,6 @@ func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes c
 		}
 
 		if err := bp.carbonOffsetPartner(bcs); err != nil {
-			return err
-		}
-
-		if err := bp.tobinTaxChange(bcs); err != nil {
 			return err
 		}
 
@@ -115,11 +110,6 @@ func newProcessor(ctx context.Context, headers <-chan *types.Header, changes cha
 		return nil, err
 	}
 
-	tobinTax, err := db_.TobinTaxFor(ctx, lastProcessedBlock)
-	if err != nil {
-		return nil, err
-	}
-
 	return &processor{
 		ctx:                 ctx,
 		headers:             headers,
@@ -129,7 +119,6 @@ func newProcessor(ctx context.Context, headers <-chan *types.Header, changes cha
 		epochRewardsAddress: epochRewardsAddress,
 		gpmAddress:          gpmAddress,
 		gpm:                 gpm,
-		tobinTax:            tobinTax,
 		logger:              logger.New("pipe", "processor"),
 	}, nil
 }
@@ -275,42 +264,6 @@ func (bp *processor) carbonOffsetPartner(bcs *db.BlockChangeSet) error {
 
 	if err := iter.Error(); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (bp *processor) tobinTaxChange(bcs *db.BlockChangeSet) error {
-	if bp.reserveAddress == common.ZeroAddress {
-		return nil
-	}
-
-	reserve, err := contracts.NewReserve(bp.reserveAddress, bp.cc.Eth)
-	if err != nil {
-		return err
-	}
-
-	// We get the tobinTax at the END of the block
-	// which is actually the value that was valid during the block
-	// since the first tx doing a transfer would have update it
-	// and it can only be updated once a block
-	tobinTaxCache, err := reserve.TobinTaxCache(&bind.CallOpts{
-		Pending:     false,
-		BlockNumber: bcs.BlockNumber,
-		Context:     bp.ctx,
-	})
-	if err != nil {
-		return err
-	}
-
-	// TODO: Add event for tobinTaxCache update to monorepo and use that instead of eth call.
-
-	tobinTaxNew := tobinTaxCache.Numerator
-
-	if bp.tobinTax.Cmp(tobinTaxNew) != 0 {
-		bp.logger.Info("Tobin Tax Updated", "from", bp.tobinTax, "to", tobinTaxNew, "block", bcs.BlockNumber)
-		bcs.TobinTax = new(big.Int).Set(tobinTaxNew)
-		bp.tobinTax = new(big.Int).Set(tobinTaxNew)
 	}
 
 	return nil
