@@ -237,7 +237,7 @@ loop:
 		return nil
 	})
 	grp.Go(func() error {
-		err = monitor.NewMonitorService(cc, celoStore).Start(ctx)
+		err = monitor.NewMonitorService(cc, celoStore, chainParams.IsGingerbread).Start(ctx)
 		if err != nil {
 			fmt.Println("error running mon serrvice")
 			ec.Add(fmt.Errorf("error running monitor service : %w", err))

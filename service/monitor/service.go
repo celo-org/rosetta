@@ -16,6 +16,7 @@ package monitor
 
 import (
 	"context"
+	"math/big"
 
 	"github.com/celo-org/celo-blockchain/core/types"
 	"github.com/celo-org/celo-blockchain/log"
@@ -27,19 +28,21 @@ import (
 )
 
 type monitorService struct {
-	running service.RunningLock
-	cc      *client.CeloClient
-	db      db.RosettaDB
-	logger  log.Logger
+	running       service.RunningLock
+	cc            *client.CeloClient
+	db            db.RosettaDB
+	logger        log.Logger
+	isGingerbread func(*big.Int) bool
 }
 
 const srvName = "celo-monitor"
 
-func NewMonitorService(cc *client.CeloClient, db db.RosettaDB) *monitorService {
+func NewMonitorService(cc *client.CeloClient, db db.RosettaDB, isGingerbread func(*big.Int) bool) *monitorService {
 	return &monitorService{
-		cc:     cc,
-		db:     db,
-		logger: log.New("srv", srvName),
+		cc:            cc,
+		db:            db,
+		logger:        log.New("srv", srvName),
+		isGingerbread: isGingerbread,
 	}
 }
 
@@ -78,7 +81,9 @@ func (ms *monitorService) Start(ctx context.Context) error {
 
 	group, ctx := errgroup.WithContext(ctx)
 	group.Go(func() error { return HeaderListener(ctx, headerCh, ms.cc, ms.logger, startBlock) })
-	group.Go(func() error { return BlockProcessor(ctx, headerCh, changeSetsCh, ms.cc, ms.db, ms.logger) })
+	group.Go(func() error {
+		return BlockProcessor(ctx, headerCh, changeSetsCh, ms.cc, ms.db, ms.isGingerbread, ms.logger)
+	})
 	group.Go(func() error { return ProcessChanges(ctx, changeSetsCh, ms.db, ms.logger) })
 	err = group.Wait()
 	if err == context.Canceled {
