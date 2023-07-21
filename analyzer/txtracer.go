@@ -39,9 +39,10 @@ type Tracer struct {
 	db           db.RosettaDBReader
 	logger       log.Logger
 	traceTimeout time.Duration
+	gingerbread  bool
 }
 
-func NewTracer(ctx context.Context, cc *client.CeloClient, db db.RosettaDBReader, traceTimeout time.Duration) *Tracer {
+func NewTracer(ctx context.Context, cc *client.CeloClient, db db.RosettaDBReader, traceTimeout time.Duration, gingerbread bool) *Tracer {
 	logger := log.New("module", "tracer")
 	return &Tracer{
 		ctx:          ctx,
@@ -49,6 +50,7 @@ func NewTracer(ctx context.Context, cc *client.CeloClient, db db.RosettaDBReader
 		db:           db,
 		logger:       logger,
 		traceTimeout: traceTimeout,
+		gingerbread:  gingerbread,
 	}
 }
 
@@ -79,7 +81,7 @@ func (tr *Tracer) TraceTransaction(blockHeader *types.Header, tx *types.Transact
 	ops := make([]Operation, 0)
 
 	if tx.FeeCurrency() == nil { // nil implies cGLD
-		gasOp, err := tr.TxGasDetails(blockHeader.Coinbase, tx, receipt)
+		gasOp, err := tr.TxGasDetails(blockHeader, tx, receipt)
 		if err != nil {
 			return nil, err
 		}
@@ -118,12 +120,22 @@ func (tr *Tracer) TraceTransaction(blockHeader *types.Header, tx *types.Transact
 	return ops, nil
 }
 
-func (tr *Tracer) TxGasDetails(coinbase common.Address, tx *types.Transaction, receipt *types.Receipt) (*Operation, error) {
+func (tr *Tracer) TxGasDetails(blockHeader *types.Header, tx *types.Transaction, receipt *types.Receipt) (*Operation, error) {
 	balanceChanges := NewBalanceSet()
 
-	gpm, err := tr.db.GasPriceMinimumFor(tr.ctx, receipt.BlockNumber)
-	if err != nil {
-		return nil, fmt.Errorf("can't get gasPriceMinimun: %w", err)
+	var gpm *big.Int
+	var feeHandler string
+
+	if tr.gingerbread {
+		gpm = blockHeader.BaseFee
+		feeHandler = registry.FeeHandlerContractID.String()
+	} else {
+		var err error
+		gpm, err = tr.db.GasPriceMinimumFor(tr.ctx, receipt.BlockNumber)
+		if err != nil {
+			return nil, fmt.Errorf("can't get gasPriceMinimun: %w", err)
+		}
+		feeHandler = registry.GovernanceContractID.String()
 	}
 
 	gasUsed := new(big.Int).SetUint64(receipt.GasUsed)
@@ -133,18 +145,18 @@ func (tr *Tracer) TxGasDetails(coinbase common.Address, tx *types.Transaction, r
 	totalTxFee := new(big.Int).Mul(tx.GasPrice(), gasUsed)
 
 	// The "tip" goes to the coinbase address
-	balanceChanges.Add(coinbase, new(big.Int).Sub(totalTxFee, baseTxFee))
+	balanceChanges.Add(blockHeader.Coinbase, new(big.Int).Sub(totalTxFee, baseTxFee))
 
 	// We want to get state AFTER the tx, since gas fees are processed by the end of the TX
-	governanceAddress, err := tr.db.RegistryAddressStartOf(tr.ctx, receipt.BlockNumber, receipt.TransactionIndex+1, registry.GovernanceContractID.String())
+	feeHandlerAddress, err := tr.db.RegistryAddressStartOf(tr.ctx, receipt.BlockNumber, receipt.TransactionIndex+1, feeHandler)
 	if err == db.ErrContractNotFound {
 		// No community fund, we won't charge the user
 		totalTxFee.Sub(totalTxFee, baseTxFee)
 	} else if err == nil {
 		// The baseTxFee goes to the community fund
-		balanceChanges.Add(governanceAddress, baseTxFee)
+		balanceChanges.Add(feeHandlerAddress, baseTxFee)
 	} else {
-		return nil, fmt.Errorf("can't get governanceAddress: %w", err)
+		return nil, fmt.Errorf("can't get feeHandlerAddress: %w", err)
 	}
 
 	if tx.GatewayFeeRecipient() != nil {
