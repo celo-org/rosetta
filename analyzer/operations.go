@@ -21,7 +21,6 @@ import (
 
 	"github.com/celo-org/celo-blockchain/common"
 	"github.com/celo-org/kliento/client/debug"
-	"github.com/celo-org/rosetta/internal/utils"
 )
 
 type SubAccountType string
@@ -168,11 +167,11 @@ func NewFee(changes map[common.Address]*big.Int) *Operation {
 	}
 }
 
-func NewTransfer(from, to common.Address, value *big.Int, tobinTax *TobinTax, successful bool) *Operation {
+func NewTransfer(from, to common.Address, value *big.Int, successful bool) *Operation {
 	return &Operation{
 		Type:       OpTransfer,
 		Successful: successful,
-		Changes:    getTransferChangesWithTobinTax(from, to, value, tobinTax),
+		Changes:    getTransferChanges(from, to, value),
 	}
 }
 
@@ -196,23 +195,19 @@ func NewAuthorizeSigner(from common.Address, signer common.Address, authorizeOp 
 	}
 }
 
-// Ex. Slash(penalty=110, reward=100 cGlD), tobinTax == 10%
+// Ex. Slash(penalty=110, reward=100 CELO)
 // Transfer Operation:
 //
-//	lockedGoldContractAccMain        -9
-//	communityFundAccMain              9
-//	lockedGoldContractAccMain        -1
-//	tobinRecipientAccMain             1
+//	lockedGoldContractAccMain        -10
+//	communityFundAccMain              10
 //
 // LockedGold Operation (created from `AccountSlashed(slashed, -100, reporter, 110)` event):
 //
 //	slashedAccLockedGoldNonVoting    -110
 //	reporterAccLockedGoldNonVoting    100
-//	lockedGoldContractAccMain        -9
-//	communityFundAccMain              9
-//	lockedGoldContractAccMain        -1
-//	tobinRecipientAccMain             1
-func NewSlash(slashed, slasher, communityFund, lockedGoldAddr common.Address, penalty, reward *big.Int, tobinTax *TobinTax) *Operation {
+//	lockedGoldContractAccMain        -10
+//	communityFundAccMain              10
+func NewSlash(slashed, slasher, communityFund, lockedGoldAddr common.Address, penalty, reward *big.Int) *Operation {
 	communityFundReward := new(big.Int).Sub(penalty, reward)
 	return &Operation{
 		Type:       OpSlash,
@@ -220,64 +215,55 @@ func NewSlash(slashed, slasher, communityFund, lockedGoldAddr common.Address, pe
 		Changes: append([]BalanceChange{
 			{Account: NewAccount(slashed, AccLockedGoldNonVoting), Amount: negate(penalty)},
 			{Account: NewAccount(slasher, AccLockedGoldNonVoting), Amount: reward},
-		}, getTransferChangesWithTobinTax(lockedGoldAddr, communityFund, communityFundReward, tobinTax)...),
+		}, getTransferChanges(lockedGoldAddr, communityFund, communityFundReward)...),
 	}
 }
 
-// Ex. lock(100 cGlD), tobinTax == 10%
+// Ex. lock(100 CELO)
 // Transfer Operation:
 //
-//	fromAccMain         	 	-90
-//	lockedGoldContractAccMain    90
-//	fromAccMain			    	-10
-//	tobinRecipientAccMain        10
+//	fromAccMain         	 	-100
+//	lockedGoldContractAccMain    100
 //
-// LockedGold Operation (created from `GoldLocked(fromAccount, 90)` event):
+// LockedGold Operation (created from `GoldLocked(fromAccount, 100)` event):
 //
-//		fromAccMain                 -90
-//		lockedGoldContractAccMain    90
-//	 fromAccLockedNonVoting       90
+//	fromAccMain                 -100
+//	lockedGoldContractAccMain    100
+//	fromAccLockedNonVoting       100
 //
 // Reconciled Operation:
 //
-//		fromAccMain         	 	-90
-//		lockedGoldContractAccMain    90
-//		fromAccMain			    	-10
-//		tobinRecipientAccMain        10
-//	 fromAccLockedNonVoting       90
+//	fromAccMain         	 	-100
+//	lockedGoldContractAccMain    100
+//	fromAccLockedNonVoting       100
 func NewLockGold(addr, lockedGoldAddr common.Address, value *big.Int) *Operation {
 	return &Operation{
 		Type:       OpLockGold,
 		Successful: true,
 		Changes: append(
-			// We don't apply tobinTax here, since it's already applied
 			getTransferChanges(addr, lockedGoldAddr, value),
 			BalanceChange{Account: NewAccount(addr, AccLockedGoldNonVoting), Amount: value},
 		),
 	}
 }
 
-// Ex. Withdraw(100 cGlD), tobinTax == 10%
+// Ex. Withdraw(100 CELO)
 // Transfer Operation:
 //
-//	lockedGoldContractAccMain   -90
-//	toAccMain         	 	     90
-//	lockedGoldContractAccMain   -10
-//	tobinRecipientAccMain        10
+//	lockedGoldContractAccMain   -100
+//	toAccMain         	 	     100
 //
 // LockedGold Operation (created from `GoldWithdraw(toAccount, 100)` event):
 //
-//		lockedGoldContractAccMain   -90
-//		toAccMain         	 	     90
-//		lockedGoldContractAccMain   -10
-//		tobinRecipientAccMain        10
-//	 AccLockedPending            -100
-func NewWithdrawGold(addr, lockedGoldAddr common.Address, value *big.Int, tobinTax *TobinTax) *Operation {
+//	lockedGoldContractAccMain   -100
+//	toAccMain         	 	     100
+//	AccLockedPending            -100
+func NewWithdrawGold(addr, lockedGoldAddr common.Address, value *big.Int) *Operation {
 	return &Operation{
 		Type:       OpWithdrawGold,
 		Successful: true,
 		Changes: append(
-			getTransferChangesWithTobinTax(lockedGoldAddr, addr, value, tobinTax),
+			getTransferChanges(lockedGoldAddr, addr, value),
 			BalanceChange{Account: NewAccount(addr, AccLockedGoldPending), Amount: negate(value)},
 		),
 	}
@@ -373,18 +359,6 @@ func MatchChangesOnSubAccount(op1 *Operation, op2 *Operation, subAccountType Sub
 	return reflect.DeepEqual(op1Changes, op2Changes)
 }
 
-func getTransferChangesWithTobinTax(from, to common.Address, value *big.Int, tobinTax *TobinTax) []BalanceChange {
-	taxAmount, afterTaxAmount := tobinTax.Apply(value)
-
-	changes := getTransferChanges(from, to, afterTaxAmount)
-
-	if taxAmount.Cmp(utils.Big0) > 0 {
-		changes = append(changes, getTransferChanges(from, tobinTax.Recipient, taxAmount)...)
-	}
-
-	return changes
-}
-
 func getTransferChanges(from, to common.Address, value *big.Int) []BalanceChange {
 	return []BalanceChange{
 		{Account: NewAccount(from, AccMain), Amount: negate(value)},
@@ -439,10 +413,10 @@ func ReconcileLogOpsWithTransfers(logOps, transferOps []Operation) ([]Operation,
 	return ops, nil
 }
 
-func InternalTransfersToOperations(transfers []debug.Transfer, tobinTax *TobinTax) []Operation {
+func InternalTransfersToOperations(transfers []debug.Transfer) []Operation {
 	transferOps := make([]Operation, len(transfers))
 	for i, t := range transfers {
-		transferOps[i] = *NewTransfer(t.From, t.To, t.Value, tobinTax, t.Status.String() == debug.TransferStatusSuccess.String())
+		transferOps[i] = *NewTransfer(t.From, t.To, t.Value, t.Status.String() == debug.TransferStatusSuccess.String())
 	}
 	return transferOps
 }
