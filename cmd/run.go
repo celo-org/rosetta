@@ -87,6 +87,7 @@ func init() {
 	flagSet.String("geth.verbosity", "3", "Geth log verbosity (number between [1-5])")
 	flagSet.String("geth.publicip", "", "Public Ip to configure geth (sometimes required for discovery)")
 	flagSet.String("geth.cache", "1024", "Memory (in MB) allocated to geth's internal caching")
+	flagSet.String("geth.port", "30303", "Network listening port")
 
 	flagSet.String("geth.rpcaddr", "localhost", "Geth HTTP-RPC server listening interface")
 	flagSet.String("geth.rpcport", "8545", "Geth HTTP-RPC server listening port")
@@ -121,6 +122,7 @@ func readGethOption(cmd *cobra.Command, datadir string) *geth.GethOpts {
 		StaticNodes: viper.GetString("geth.staticnodes"),
 		PublicIp:    viper.GetString("geth.publicip"),
 		Cache:       viper.GetString("geth.cache"),
+		GethPort:    viper.GetString("geth.port"),
 		RpcAddr:     viper.GetString("geth.rpcaddr"),
 		RpcPort:     viper.GetString("geth.rpcport"),
 		RpcVHosts:   viper.GetString("geth.rpcvhosts"),

@@ -44,6 +44,7 @@ type GethOpts struct {
 	Verbosity   string
 	PublicIp    string
 	Cache       string
+	GethPort    string
 	RpcAddr     string
 	RpcPort     string
 	RpcVHosts   string
@@ -222,6 +223,7 @@ func (gs *gethService) startGeth(stdErr *os.File) error {
 		"--maxpeers", gs.opts.MaxPeers,
 		"--consoleformat", "term",
 		"--txlookuplimit", "0",
+		"--port", gs.opts.GethPort,
 		// "--consoleoutput", "split",
 	}
 
