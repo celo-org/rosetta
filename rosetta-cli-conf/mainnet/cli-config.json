@@ -13,7 +13,6 @@
     "tip_delay": 300,
     "log_configuration": false,
     "compression_disabled": false,
-    "memory_limit_disabled": false,
     "construction": null,
     "data": {
       "active_reconciliation_concurrency": 16,
@@ -34,14 +33,12 @@
       "coin_tracking_disabled": false,
       "status_port": 9090,
       "results_output_file": "",
-      "pruning_disabled": false,
       "initial_balance_fetch_disabled": false,
+      "historical_balance_disabled": false,
       "end_conditions": {
-        "duration": 300,
         "reconciliation_coverage": {
           "coverage": 0.95
         }
       }
     }
   }
-  
