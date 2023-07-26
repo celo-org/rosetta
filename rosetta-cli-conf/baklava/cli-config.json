@@ -1,0 +1,44 @@
+{
+  "network": {
+    "blockchain": "celo",
+    "network": "62320"
+  },
+  "online_url": "http://localhost:8080",
+  "data_directory": "",
+  "http_timeout": 300,
+  "max_retries": 5,
+  "retry_elapsed_time": 0,
+  "max_online_connections": 120,
+  "max_sync_concurrency": 1,
+  "tip_delay": 300,
+  "log_configuration": false,
+  "compression_disabled": false,
+  "construction": null,
+  "data": {
+    "active_reconciliation_concurrency": 16,
+    "inactive_reconciliation_concurrency": 4,
+    "inactive_reconciliation_frequency": 250,
+    "log_blocks": false,
+    "log_transactions": false,
+    "log_balance_changes": false,
+    "log_reconciliations": false,
+    "ignore_reconciliation_error": false,
+    "exempt_accounts": "",
+    "bootstrap_balances": "bootstrap_balances.json",
+    "interesting_accounts": "",
+    "reconciliation_disabled": false,
+    "reconciliation_drain_disabled": false,
+    "balance_tracking_disabled": false,
+    "coin_tracking_disabled": false,
+    "status_port": 9090,
+    "results_output_file": "",
+    "initial_balance_fetch_disabled": false,
+    "historical_balance_disabled": false,
+    "inactive_discrepancy_search_disabled": false,
+    "end_conditions": {
+      "reconciliation_coverage": {
+        "coverage": 0.95
+      }
+    }
+  }
+}

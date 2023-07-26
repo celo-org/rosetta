@@ -1,0 +1,1622 @@
+[
+ {
+  "account_identifier": {
+   "address": "0x1D7dA5a23a99Fc33e2e94d502E4Fdb564eA0B24C"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xc4C703357B01672cF95bFa0450a5717812Bc7ffb"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xF86345e9c9b39aB1cbE82d7aD35854f905B8B835"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xa4f1bad7996f346c3E90b90b60a1Ca8B67B51E4B"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x762438915209d038340C3Af9f8aAb8F93aDc8A9A"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x6dfdAa51D146eCff3B97614EF05629EA83F4997E"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x138EA4C57F5b3984EFacd944b3b85dfDd5A78Dcc"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x3C132B8465e2D172BB7bab6654D85E398ee7c8AD"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xc61Cd4477f0A98BfC97744481181730f7af7c14f"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x3691b847eD14E296afC90Ff3E37D21e518306170"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x5c3512b1697302c497B861CBfDA158f8a3c5122C"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x089bE2dD42096ebA1d94aad20228b75df2BeeBC7"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x4f4F159826b2B1eE903A811fCd86E450c9954396"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xD2b16050810600296c9580D947E9D919D0c332ed"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x8B7852DA535df3D06D6ADc1906778afd9481588a"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x1277eE554565542A8d0553E1e54006d006db75bd"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x1bdDeaF571d5da96ce6a127fEb3CADaDB531f433"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x4A76f81eA26381981a3B740975fb4F605989b585"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x99eCa23623E59C795EceB0edB666eca9eC272339"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xd5e454462b3Fd98b85640977D7a5C783CA162228"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x28C52c722df87ED11c5d7665e585E84AA93D7964"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "1000000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x5D7Ffd0fC6DAA67AbF7d48ae69f09dbe53d86983"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x9C577D0795Ed0cA88814d149c2DC61E8Fc48Ad81"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xa6A690637b088E9A1A89c44c9dC5e14eD4825053"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xe90F891710f625f18eCBF1E02eFB4FD1AB236A10"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "1000000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xE3a79AEee437532313015892B52b65f52794F8a2"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xE55d8Bc08025BDDF8Da02eEB54882d0586f90700"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x6b38E861ec0b65fd288d96d5630711C576362152"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x66a3Fc7E8fd6932568cDB6610F5a67BeD9F5beF8"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x3337F2Cd103976F044b55D3E69aB06d1ebB142Db"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xf426CC817400766cd6b44F13Cb63Ca648e323484"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x241752a3f65890F4AC3eAeC518fF94567954e7b5"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xb6f7F57b99DB21027875BEa3b8531d5925c346cE"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x43BCa16603c56cb681d1da3636B7a1A225598bfc"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x1Dd21ED691195EBA816d59B3De7Fab8b3470Ae4B"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xAD4f16F3435E849505C643714C9E5f40f73c4a5a"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x8667d005eCF50Eb247890a11FCdCfC321DC1Da9f"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xBa85246bc2A4fdaC1cB2e3C68383Fe79A6466fd9"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xE65054681206658A845140331459A057C4EB3CA7"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x13f52Ab66871880DC8F2179d705281a4cf6a15fB"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xe1eB2279f45760Ab9D734782B1a0A8FD3d47D807"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xedDdb60EF5E90Fb09707246DF193a55Df3564c9d"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x5179fc80CaB9BB20d5405a50ec0Fb9a36c1B367a"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x2C58D7f7f9CDF79CF3Cd5F4247761b93428A4E9e"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x0d473f73AAf1C2bf7EBd2be7196C71dBa6C1724b"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "100110000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x718A8AC0943a6D3FFa3Ec670086bfB03817ed540"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x5Ce612A664C2f35558Dcab7edb999619e155CD07"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xd57FEfe1B634ab451a6815Cd6769182EABA62779"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xe86C8538Bdfb253E8D6cC29ee24A330905324849"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x40E1C73f6228a2c15e10aF2F3e890098b777ED15"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x1AB9aA0E855DF953CF8d9cC166172799afD12a68"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x315D669866E13fA302B76c85481F9181e06304Ce"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xC224B131Ea71e11E7DF38de3774AAAAe7E197BA4"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x5542aDEA3092da5541250d70a3Db28Ad9BE7Cfc7"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xeb0357140a1a0A6c1cB9c93Bf9354ef7365C97d9"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xCc38EE244819649C9DaB02e268306cED09B20672"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x3B522230C454cA9720665d66e6335a72327291e8"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "1000000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xBBFe73Df8B346B3261B19Ac91235888aba36d68C"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "1000000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x5c98A3414Cb6Ff5c24d145F952Cd19F5f1f56643"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xfb542740B34dDC0ADE383F2907a1e1E175E0BF5a"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xe7569A0F93E832a6633d133d23503B5175bEa5Db"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xD7e829bE8E374D3fBbd2F68D9A916cB2f769BA89"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xedb47aF3aC2325735722450D1E7DA082bDDad58c"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x0c9369077836353A8D92aeD29C72A7DfD300B354"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x6b82AD37e64c91c628305813B2DA82F18f8e2a2B"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x2217FeBe31Aea6C771AF163dCc453F9f060a4a00"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x0582426C929B7e525c22201Bd4c143E45189C589"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xDbbF476089a186a406EA13a4c46813f4BccC3660"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x6C04aA35c377E65658EC3600Cab5E8FFa95567D9"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x6958c5b7E3D94B041d0d76Cac2e09378d31201bd"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xDb871070334b961804A15f3606fBB4fAc7C7f932"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xB5f32e89ccaD3D396f50da32E0a599E43CE87dd7"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x9a850fe8105e9CCfBD9d1D06D535BB4948f3f6Cf"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xf01DCf91d5f74BDB161F520e800c64F686Eb253F"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xF8fc7D740929E5DD4eBA8fd5a6873Be6a4151087"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x4D4B5bF033E4A7359146C9ddb13B1C821FE1D0d3"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x460b3f8D3C203363Bb65b1a18d89D4FFB6B0C981"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "1000000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xeAf133d1e0Dd325721665B19f67C9b914EE2469F"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x00ee7168618BaE4F4d2900D5063c62948c6F0566"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x158659458dff3a9E5182cA0e8Ba08F53463FA5e7"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xB984a83416F560437C7866e26CdDb94bDB821594"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xB2C4913e257a34445Ec31685E625bb4060FB8e1f"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xaD95f88cCd3aBC12ddd6cD0b9a777B95339b747b"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xC656C97b765D61E0fbCb1197dC1F3a91CC80C2a4"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xECa6f058B718E320c1D45f5D1fb07947367C3D4B"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xB2AfC45838b364240dE17D3143AA6096d3340A91"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x37326cEfAFB1676f7Af1CcDcCD37A846Ec64F19d"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xa8F41EA062C22dAFFc61e47cF15fc898517b86B1"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xFe144D67068737628efFb701207B3eB30eF93C69"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x6E5a5A2963F6d0C2EA26682a152fE3ac7CBC1227"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x9438dbD05dfC19F049a469185c7599daa82646e8"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x44370D6b2d010C9eBFa280b6C00010AC99a45660"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xDFc9719cD9c7982e4A1FFB4B87cC3b861C40E367"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x02a272d17E1308beF21E783A93D1658f84F2D414"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xE1601e3172F0ef0100e363B639Bd44420B7E5490"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xb30980cE21679314E240DE5Cbf437C15ad459EB8"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x14800c28F3cF1Dd17AaC55263ef4e173b0e8e3Ef"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xf611173319b22080E0F02eE724781d85f4b39Ae6"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xeD1Ed9a71E313d1BCe14aB998E0646F212230a33"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x058A778A6aeEfacc013afba92578A43e38cc012D"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xA8dB96136990be5B3d3bfe592e5A5a5223350A7A"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x02b1d1bEA682FCab4448C0820f5Db409CCE4f702"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "1000000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x628d4A734d1a2647c67D254209e7B6471a11a5cb"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x0AFe167600a5542d10912f4A07DFc4EEe0769672"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "1000000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x4685D123aE928a7912646681ba32035ad6F010a6"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x5B991Cc1Da0b6D54F8befa9De701d8BC85C92324"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xfbF4C2362a9EB672BAC39A46AFd919B3c12Ce44c"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x0Cc59Ed03B3e763c02d54D695FFE353055f1502D"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "103010030000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x3F0c4cFDD40D16B7C15878AcCdc91Be9ca4DeE79"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x74F57dA8be3E9AB4463DD70319A06Fb5E3168211"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x184Ca91AfE8F36bC5772b29cE2A76c90fCef34D0"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x856DF2A3bdBb8086cE406C469dDE94d12C1E3176"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xACC9E4430EC1011673547395A191C6b152763EA4"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xc6D678fC6Cc1dA9D5eD1c0075cF7c679e7138e02"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x0C6f48B50B166ddcE52CEE051acCAfFB8ecB4976"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x9039Ce107A9cD36Ed116958E50f8BDe090e2406f"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x350914ABD4F095534823C1e8fA1cfD7EF79e7E4c"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xa9f6102BCf5351dFdC7fA0CA4Fa0A711e16605c3"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xE1aD0B232B4262E4A279C91070417DAAF202623F"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xfCf982bb4015852e706100B14E21f947a5Bb718E"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "200000000000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x7baCEA66a75dD974Ad549987768bF8d8908b4917"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xA5185E3328592428d5989422e0339247dD77e10D"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xAE15D05100CE807d0aC93119f4ada8fa21441Fd2"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xa02A692d70Fd9A5269397C044aEBDf1085ba090f"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x9C64dA169d71C57f85B3d7A17DB27C1ce94FBDE4"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xAD5D1DeD72F0e70a0a5500B26b82B1A2e8A63471"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x3F5084d3D4692cf19b0C98A9b22De614e49e1470"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x8D0D5c57dC232Be15Df4A1a048EF36162C853b94"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xe0e25c5734bef8b2Add633eAa2518B207DAa0D66"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x3824967C172D52128522dD257FE8f58C9099166B"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x1979b042Ae2272197f0b74170B3a6F44C3cC5c05"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xE40B3e5c59e2157037b699895329DBe4aA33C039"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xd3C18531f0879B9FB8Ed45830C4ce6b54dC57128"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x72fE8bC8E3Ff1e56543c9c1F9834D6dfC31BEDDC"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x6Ff2CFa7899073CD029267fd821C9497811b5f7E"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x279d05241d33Dc422d5AEcAc0e089B7f50f879c3"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xf3996A0f0f593BfD5E39780059C5430fab7359FD"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x85Fd1d1Cd6655EbB89db7D6cA0a5C9c62F7a4CFf"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xD71fEa6b92D3F21F659152589223385A7329BB11"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "1000000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x72B3589771Ec8e189a5d9Fe7a214e44085e89054"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xF25087E27B7a59003bb08d2cAc7A69E7c15a4be8"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x4799946c8B21fF5E58A225AeCB6F54ec17a94566"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x6c3ac5fcb13E8DCd908C405Ec6DAcF0EF575D8FC"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x85226637919D3d47E1A37b3AF989E9aE1a1C4790"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x7dC23b30dFDc326B9a694c6f9723DC889fe16b7d"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xEF0186B8eDA17BE7D1230eeB8389fA85e157E1fb"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x9CBa7aD50fa366Ff6fC2CAe468929eC9AD23Ea2B"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xaC91f591F12a8B6531Be43E0ccF21cd5fA0E80b0"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xB7660F1B075e56780e7E026ff66995765f5f1f7F"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x412EBe7859E9aA71FF5ce4038596f6878C359c96"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "1000000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x4BeD66Bf507f3CF524704267908Ea4ee3cDe3053"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xBa40Db8ab5325494C9E7e07A4c4720990A39305c"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xaD95a2f518c197dc9b12eE6381D88bba11F2E0E5"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xFEB11610ad367b0c994274A8153E50F4557e473F"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x3aD2bE38fA3DFa7969E79B4053868FD1C368eAb2"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x0c1F0457ce3e87f5eA8F2C3A007dfe963A6Ff9a7"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xc030e92d19229c3EfD708cf4B85876543ee1A3F7"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x57A1aC8167d94b899b32C38Ff9D2B2bD0e55C10d"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x1e477fC9B6A49a561343CD16B2C541930F5da7D2"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "1000000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0xc563F264f98e34A409C6a085da7510De8B6FE90B"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x10301d9389653497F62876f450332467E07eEe1F"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ },
+ {
+  "account_identifier": {
+   "address": "0x82E64996B355625efeAaD12120710706275b5b9A"
+  },
+  "currency": {
+   "symbol": "cGLD",
+   "decimals": 18
+  },
+  "value": "10011000000000000000000"
+ }
+]

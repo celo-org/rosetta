@@ -21,17 +21,11 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 
+	"github.com/celo-org/celo-blockchain/core"
 	"github.com/coinbase/rosetta-sdk-go/types"
 )
 
-type genesis struct {
-	Alloc map[string]genesisAllocation `json:"alloc"`
-}
-type genesisAllocation struct {
-	Balance string `json:"balance"`
-}
 type BootstrapBalance struct {
 	Account  *types.AccountIdentifier `json:"account_identifier,omitempty"`
 	Currency *types.Currency          `json:"currency,omitempty"`
@@ -55,26 +49,22 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	genesisAllocations := &genesis{}
-	if err := json.Unmarshal(body, genesisAllocations); err != nil {
+	genesis := &core.Genesis{}
+	if err := json.Unmarshal(body, genesis); err != nil {
 		log.Fatalln(err)
 	}
-	log.Printf("%+v\n", genesisAllocations)
+	log.Printf("%+v\n", genesis.Alloc)
 	// Write to file
 	balances := []*BootstrapBalance{}
-	for k, v := range genesisAllocations.Alloc {
-		if v.Balance == "0" {
+	for k, v := range genesis.Alloc {
+		if v.Balance.String() == "0" {
 			continue
-		}
-		// rosetta CLI expects "0x..." format; case sensitive
-		if len(k) >= 2 && !(strings.ToLower(k)[:2] == "0x") {
-			k = "0x" + k
 		}
 		balances = append(balances, &BootstrapBalance{
 			Account: &types.AccountIdentifier{
-				Address: k,
+				Address: k.Hex(),
 			},
-			Value: v.Balance,
+			Value: v.Balance.String(),
 			Currency: &types.Currency{
 				Symbol:   "cGLD",
 				Decimals: 18,
