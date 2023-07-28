@@ -61,6 +61,7 @@ func main() {
 			continue
 		}
 		balances = append(balances, &BootstrapBalance{
+			// rosetta CLI expects "0x..." format; case sensitive
 			Account: &types.AccountIdentifier{
 				Address: k.Hex(),
 			},
