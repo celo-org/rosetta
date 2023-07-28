@@ -211,7 +211,6 @@ func (gs *gethService) startGeth(stdErr *os.File) error {
 	gethArgs := []string{
 		"--nousb",
 		"--http",
-		"--disablerpcethcompatibility",
 		"--http.addr", gs.opts.RpcAddr,
 		"--http.port", gs.opts.RpcPort,
 		"--http.vhosts", gs.opts.RpcVHosts,
