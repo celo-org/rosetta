@@ -45,7 +45,7 @@ RUN go build --tags musl -o rosetta .
 # geth mainnet
 # FROM us.gcr.io/celo-org/geth:1.6.1
 # TODO EN: for early testing
-FROM us-west1-docker.pkg.dev/devopsre/celo-blockchain-public/geth:cc4fc1a2e52903564875eb0600faf58f02b2a509
+FROM us.gcr.io/celo-org/geth:1.8.0-beta.1
 
 ARG COMMIT_SHA
 
