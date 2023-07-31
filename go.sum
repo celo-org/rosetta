@@ -110,6 +110,8 @@ github.com/celo-org/celo-blockchain v1.6.1 h1:Kv+OXLXwdORDz3aIrGY1oCuw0aYSlK4KH7
 github.com/celo-org/celo-blockchain v1.6.1/go.mod h1:NdcP5idffWajmOP79Q0PCRfaFNTmTdSKBMbngLDxjpQ=
 github.com/celo-org/celo-blockchain v1.8.0-beta.1 h1:REgRWX6EitObXwkm+1pVdX6tmQ+BzFJn6S+jWn3gWsk=
 github.com/celo-org/celo-blockchain v1.8.0-beta.1/go.mod h1:Xwrl4Up8aP/p6TolAiHSTVSlsGtu1N6JZADaJaENYYY=
+github.com/celo-org/celo-blockchain v1.8.0-beta.1.0.20230731110612-df6aac48586a h1:glnOrXXscQ1eVF8igG26/KgXcuOljvFx5S5Ksfl+raY=
+github.com/celo-org/celo-blockchain v1.8.0-beta.1.0.20230731110612-df6aac48586a/go.mod h1:Xwrl4Up8aP/p6TolAiHSTVSlsGtu1N6JZADaJaENYYY=
 github.com/celo-org/celo-bls-go v0.2.4/go.mod h1:eXUCLXu5F1yfd3M+3VaUk5ZUXaA0sLK2rWdLC1Cfaqo=
 github.com/celo-org/celo-bls-go v0.3.4/go.mod h1:qDZHMC3bBqOw5qle28cRtKlEyJhslZtckcc2Tomqdks=
 github.com/celo-org/celo-bls-go v0.6.4 h1:zBf6pEr9k64gaO0VSYnDfLCBmrxDigc4yUaDvWub5G8=
@@ -148,6 +150,8 @@ github.com/celo-org/kliento v0.2.1-0.20230726114844-78c54a8214aa h1:IUTkiLP4yZDQ
 github.com/celo-org/kliento v0.2.1-0.20230726114844-78c54a8214aa/go.mod h1:q6ZnpP/hJ/nZbd76C2i8HgwrJA+xlbeAIIs9KLk8xeI=
 github.com/celo-org/kliento v0.2.1-0.20230728132502-c6d77bb036d9 h1:h94hzsHsmtNWiDvx6tF2CL9RPqa69Vn9sRxJmB7ciTY=
 github.com/celo-org/kliento v0.2.1-0.20230728132502-c6d77bb036d9/go.mod h1:usm93N96Eiuol7saFs05+gvdgSffTMy0Sd9FaUTB9dU=
+github.com/celo-org/kliento v0.2.1-0.20230731112734-7db37e2da463 h1:v7NwRjXAea58HowDEONiCbUCR0Cf057Slj1P3zjo4Nk=
+github.com/celo-org/kliento v0.2.1-0.20230731112734-7db37e2da463/go.mod h1:2KfKpdMXFE6CEXRooDxGZVaSMOEgLBhztitNDCT0eI8=
 github.com/cenkalti/backoff v2.2.1+incompatible h1:tNowT99t7UNflLxfYYSlKYsBpXdEet03Pg2g16Swow4=
 github.com/cenkalti/backoff v2.2.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
