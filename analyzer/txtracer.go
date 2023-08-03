@@ -127,6 +127,7 @@ func (tr *Tracer) TxGasDetails(blockHeader *types.Header, tx *types.Transaction,
 	var feeHandler string
 
 	if tr.gingerbread {
+		// BaseFee is used directly because we only track balance changes from CELO gas fees
 		gpm = blockHeader.BaseFee
 		feeHandler = registry.FeeHandlerContractID.String()
 	} else {
