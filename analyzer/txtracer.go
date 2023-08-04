@@ -127,6 +127,7 @@ func (tr *Tracer) TxGasDetails(blockHeader *types.Header, tx *types.Transaction,
 	var feeHandler string
 
 	if tr.gingerbread {
+		// BaseFee is used directly because we only track balance changes from CELO gas fees
 		gpm = blockHeader.BaseFee
 		feeHandler = registry.FeeHandlerContractID.String()
 	} else {
@@ -139,29 +140,32 @@ func (tr *Tracer) TxGasDetails(blockHeader *types.Header, tx *types.Transaction,
 	}
 
 	gasUsed := new(big.Int).SetUint64(receipt.GasUsed)
-
-	// baseTxFee is what goes to the community fund (if any)
 	baseTxFee := new(big.Int).Mul(gpm, gasUsed)
-	totalTxFee := new(big.Int).Mul(tx.GasPrice(), gasUsed)
+	effectiveTip, err := tx.EffectiveGasTip(gpm)
+	if err != nil {
+		return nil, fmt.Errorf("error computing EffectiveGasTip: %w", err)
+	}
 
+	// Convert tip to wei
+	effectiveTip.Mul(effectiveTip, gasUsed)
+
+	runningTotalTxFee := new(big.Int).Set(effectiveTip)
 	// The "tip" goes to the coinbase address
-	balanceChanges.Add(blockHeader.Coinbase, new(big.Int).Sub(totalTxFee, baseTxFee))
+	balanceChanges.Add(blockHeader.Coinbase, effectiveTip)
 
 	// We want to get state AFTER the tx, since gas fees are processed by the end of the TX
 	feeHandlerAddress, err := tr.db.RegistryAddressStartOf(tr.ctx, receipt.BlockNumber, receipt.TransactionIndex+1, feeHandler)
-	if err == db.ErrContractNotFound {
-		// No community fund, we won't charge the user
-		totalTxFee.Sub(totalTxFee, baseTxFee)
-	} else if err == nil {
-		// The baseTxFee goes to the community fund
+	if err == nil {
+		// User is charged baseFee iff community fund exists
 		balanceChanges.Add(feeHandlerAddress, baseTxFee)
-	} else {
+		runningTotalTxFee.Add(runningTotalTxFee, baseTxFee)
+	} else if err != db.ErrContractNotFound {
 		return nil, fmt.Errorf("can't get feeHandlerAddress: %w", err)
 	}
 
 	if tx.GatewayFeeRecipient() != nil {
 		balanceChanges.Add(*tx.GatewayFeeRecipient(), tx.GatewayFee())
-		totalTxFee.Add(totalTxFee, tx.GatewayFee())
+		runningTotalTxFee.Add(runningTotalTxFee, tx.GatewayFee())
 	}
 
 	// TODO find a better way to do this?
@@ -169,7 +173,7 @@ func (tr *Tracer) TxGasDetails(blockHeader *types.Header, tx *types.Transaction,
 	if err != nil {
 		return nil, fmt.Errorf("can't get transaction sender: %w", err)
 	}
-	balanceChanges.Add(from, new(big.Int).Neg(totalTxFee))
+	balanceChanges.Add(from, new(big.Int).Neg(runningTotalTxFee))
 	return NewFee(balanceChanges.ToMap()), nil
 }
 
