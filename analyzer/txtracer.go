@@ -141,17 +141,17 @@ func (tr *Tracer) TxGasDetails(blockHeader *types.Header, tx *types.Transaction,
 
 	gasUsed := new(big.Int).SetUint64(receipt.GasUsed)
 	baseTxFee := new(big.Int).Mul(gpm, gasUsed)
-	totalTip, err := tx.EffectiveGasTip(gpm)
+	effectiveTip, err := tx.EffectiveGasTip(gpm)
 	if err != nil {
 		return nil, fmt.Errorf("error computing EffectiveGasTip: %w", err)
 	}
 
 	// Convert tip to wei
-	totalTip.Mul(totalTip, gasUsed)
+	effectiveTip.Mul(effectiveTip, gasUsed)
 
-	runningTotalTxFee := new(big.Int).Set(totalTip)
+	runningTotalTxFee := new(big.Int).Set(effectiveTip)
 	// The "tip" goes to the coinbase address
-	balanceChanges.Add(blockHeader.Coinbase, totalTip)
+	balanceChanges.Add(blockHeader.Coinbase, effectiveTip)
 
 	// We want to get state AFTER the tx, since gas fees are processed by the end of the TX
 	feeHandlerAddress, err := tr.db.RegistryAddressStartOf(tr.ctx, receipt.BlockNumber, receipt.TransactionIndex+1, feeHandler)
