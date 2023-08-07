@@ -79,6 +79,7 @@ func init() {
 
 	flagSet.String("geth.genesis", "", "(Optional) path to the genesis.json, for use with custom chains")
 	utils.ExitOnError(serveCmd.MarkFlagFilename("geth.genesis", "json"))
+	flagSet.String("geth.networkid", "", "(Optional) Network ID, for use with custom chains")
 	// Note that we do not set any default here because it would clash with geth.genesis if that was defined.
 	flagSet.String("geth.network", "", "Network to use, either 'mainnet', 'alfajores', or 'baklava'")
 
@@ -114,6 +115,7 @@ func readGethOption(cmd *cobra.Command, datadir string) *geth.GethOpts {
 		GethBinary:  viper.GetString("geth.binary"),
 		GenesisPath: viper.GetString("geth.genesis"),
 		Network:     viper.GetString("geth.network"),
+		NetworkId:   viper.GetString("geth.networkid"),
 		Datadir:     filepath.Join(datadir, "celo"),
 		LogsPath:    viper.GetString("geth.logfile"),
 		IpcPath:     viper.GetString("geth.ipcpath"),
@@ -138,6 +140,8 @@ func readGethOption(cmd *cobra.Command, datadir string) *geth.GethOpts {
 		printUsageAndExit(cmd, "Missing config option for 'geth.genesis' or 'geth.network'")
 	} else if opts.GenesisPath != "" && opts.Network != "" {
 		printUsageAndExit(cmd, "Must provide exactly one of 'geth.genesis' or 'geth.network'")
+	} else if opts.NetworkId != "" && opts.GenesisPath == "" {
+		printUsageAndExit(cmd, "Must provide 'geth.genesis' when using 'geth.networkid'")
 	}
 
 	return opts

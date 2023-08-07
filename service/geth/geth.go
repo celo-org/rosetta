@@ -36,6 +36,7 @@ type GethOpts struct {
 	GethBinary  string
 	GenesisPath string
 	Network     string
+	NetworkId   string
 	IpcPath     string
 	LogsPath    string
 	Datadir     string
@@ -236,7 +237,15 @@ func (gs *gethService) startGeth(stdErr *os.File) error {
 	case params.MainnetChainConfig.ChainID.String():
 		break
 	default:
-		gethArgs = append(gethArgs, "--networkid", gs.chainParams.ChainId.String())
+		gs.logger.Info("Setting networkId")
+		var networkId string
+		if gs.opts.NetworkId != "" {
+			networkId = gs.opts.NetworkId
+		} else {
+			gs.logger.Info("Using genesis ChainId as NetworkId")
+			networkId = gs.chainParams.ChainId.String()
+		}
+		gethArgs = append(gethArgs, "--networkid", networkId)
 	}
 
 	if gs.opts.Verbosity != "" {
