@@ -97,6 +97,9 @@ func init() {
 	flagSet.String("geth.syncmode", "fast", "Geth blockchain sync mode (fast, full, light)")
 	flagSet.String("geth.gcmode", "full", "Geth garbage collection mode (full, archive)")
 	flagSet.String("geth.maxpeers", "1100", "Maximum number of network peers (network disabled if set to 0)")
+
+	// Monitor Service Flags
+	flagSet.Bool("monitor.initcontracts", false, "Set to true to properly initialize contract state, i.e. when running MyCelo testnets")
 }
 
 func getDatadir(cmd *cobra.Command) string {
@@ -242,8 +245,14 @@ loop:
 		}
 		return nil
 	})
+
 	grp.Go(func() error {
-		err = monitor.NewMonitorService(cc, celoStore, chainParams.IsGingerbread).Start(ctx)
+		err = monitor.NewMonitorService(
+			cc,
+			celoStore,
+			chainParams.IsGingerbread,
+			viper.GetBool("monitor.initcontracts"),
+		).Start(ctx)
 		if err != nil {
 			fmt.Println("error running mon serrvice")
 			ec.Add(fmt.Errorf("error running monitor service : %w", err))
