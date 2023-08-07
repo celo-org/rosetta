@@ -209,6 +209,19 @@ go run examples/generate_balances/main.go \
   rosetta-cli-conf/testnet/bootstrap_balances.json
 ```
 
+### Running Rosetta with a mycelo testnet
+
+- Set `--geth.genesis` to point to the genesis file for the testnet.
+- Set `--geth.networkid` to the network ID (if this is a deployed testnet, this may be different from the `ChainID` in the genesis file). If this value is the same as the `ChainID`, it is not necessary to set this parameter.
+- Set the `--monitor.initcontracts` flag (at least on the first run), which fetches necessary state from the genesis block and updates the Rosetta DB accordingly.
+
+To run reconciliation tests on this network:
+
+- Generate `bootstrap_balances.json` using the network's genesis block.
+- In the `cli-config.json`:
+  - Set `network` to match the `ChainID` in the genesis file (not the network ID).
+  - Point `bootstrap_balances` to the generated `bootstrap_balances.json`.
+
 ## Releasing rosetta
 
 ### Versioning
