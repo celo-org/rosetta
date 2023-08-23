@@ -20,22 +20,20 @@ import (
 
 	"github.com/celo-org/celo-blockchain/common"
 	"github.com/celo-org/kliento/client/debug"
-	"github.com/celo-org/rosetta/internal/utils"
 	. "github.com/onsi/gomega"
 	gs "github.com/onsi/gomega/gstruct"
 	gtypes "github.com/onsi/gomega/types"
 )
 
 var (
-	address1      = common.HexToAddress("0x1111")
-	address2      = common.HexToAddress("0x2222")
-	address3      = common.HexToAddress("0x3333")
-	address4      = common.HexToAddress("0x4444")
-	amount1       = big.NewInt(10)
-	amount2       = big.NewInt(20)
-	success       = debug.TransferStatusSuccess
-	fail          = debug.TransferStatusRevert
-	emptyTobinTax = NewTobinTax(utils.Big0, common.ZeroAddress)
+	address1 = common.HexToAddress("0x1111")
+	address2 = common.HexToAddress("0x2222")
+	address3 = common.HexToAddress("0x3333")
+	address4 = common.HexToAddress("0x4444")
+	amount1  = big.NewInt(10)
+	amount2  = big.NewInt(20)
+	success  = debug.TransferStatusSuccess
+	fail     = debug.TransferStatusRevert
 )
 
 func NewInternalTransfer(from, to common.Address, value *big.Int, status debug.TransferStatus) debug.Transfer {
@@ -47,38 +45,25 @@ func NewInternalTransfer(from, to common.Address, value *big.Int, status debug.T
 	}
 }
 
-func NewTestTobinTax(percent int64, recipient common.Address) *TobinTax {
-	numerator := new(big.Int).Div(TobinTaxDenominator, big.NewInt(percent))
-	return NewTobinTax(numerator, recipient)
-}
-
-func MatchTransferOps(transfers []debug.Transfer, tobinTax *TobinTax) gtypes.GomegaMatcher {
+func MatchTransferOps(transfers []debug.Transfer) gtypes.GomegaMatcher {
 	transferOpMatchers := make([]interface{}, len(transfers))
 	for i, tr := range transfers {
-		transferOpMatchers[i] = MatchTransferOp(tr, tobinTax)
+		transferOpMatchers[i] = MatchTransferOp(tr)
 	}
 	return And(HaveLen(len(transfers)), ConsistOf(transferOpMatchers...))
 }
 
-func MatchTransferOp(transfer debug.Transfer, tobinTax *TobinTax) gtypes.GomegaMatcher {
+func MatchTransferOp(transfer debug.Transfer) gtypes.GomegaMatcher {
 	return gs.MatchAllFields(gs.Fields{
 		"Type":       Equal(OpTransfer),
 		"Successful": Equal(transfer.Status.String() == debug.TransferStatusSuccess.String()),
-		"Changes":    MatchTransferBalanceChanges(transfer, tobinTax),
+		"Changes":    MatchTransferBalanceChanges(transfer),
 	})
 }
 
-func MatchTransferBalanceChanges(transfer debug.Transfer, tobinTax *TobinTax) gtypes.GomegaMatcher {
+func MatchTransferBalanceChanges(transfer debug.Transfer) gtypes.GomegaMatcher {
 	expectedLen := 2
 	balanceChangeMatchers := GetTransferBalanceChangeMatchers(transfer.From, transfer.To, transfer.Value)
-
-	if tobinTax.IsDefined() {
-		expectedLen = 4
-		taxAmount, afterTaxAmount := tobinTax.Apply(transfer.Value)
-		balanceChangeMatchers = append(
-			GetTransferBalanceChangeMatchers(transfer.From, transfer.To, afterTaxAmount),
-			GetTransferBalanceChangeMatchers(transfer.From, tobinTax.Recipient, taxAmount)...)
-	}
 
 	return And(HaveLen(expectedLen), ConsistOf(balanceChangeMatchers...))
 }
@@ -120,12 +105,7 @@ func TestInternalTransfersToOperations(t *testing.T) {
 	}
 
 	t.Run("Without tobinTax", func(t *testing.T) {
-		Ω(InternalTransfersToOperations(transfers, emptyTobinTax)).Should(MatchTransferOps(transfers, emptyTobinTax))
-	})
-
-	t.Run("With tobinTax", func(t *testing.T) {
-		tobinTax := NewTestTobinTax(10, address3)
-		Ω(InternalTransfersToOperations(transfers, tobinTax)).Should(MatchTransferOps(transfers, tobinTax))
+		Ω(InternalTransfersToOperations(transfers)).Should(MatchTransferOps(transfers))
 	})
 }
 
@@ -138,89 +118,35 @@ func TestReconcileLogOpWithTransfers(t *testing.T) {
 	slashRewardTo := address4
 	lockedGoldAdrr := address2
 
-	getTestLogOps := func(tobinTax *TobinTax) []Operation {
-		_, afterTaxAmount1 := tobinTax.Apply(amount1)
+	getTestLogOps := func() []Operation {
 		return []Operation{
-			*NewLockGold(address1, lockedGoldAdrr, afterTaxAmount1),
-			*NewWithdrawGold(address1, lockedGoldAdrr, amount1, tobinTax),
-			*NewSlash(address1, address2, slashRewardTo, slashRewardFrom, slashPenalty, slashReward, tobinTax),
+			*NewLockGold(address1, lockedGoldAdrr, amount1),
+			*NewWithdrawGold(address1, lockedGoldAdrr, amount1),
+			*NewSlash(address1, address2, slashRewardTo, slashRewardFrom, slashPenalty, slashReward),
 			*NewUnlockGold(address1, amount1),                                   // does not require transfer
 			*NewAuthorizeSigner(address1, address2, OpAuthorizeValidatorSigner), // does not require transfer
 		}
 	}
 
-	getTestTransferOps := func(tobinTax *TobinTax) []Operation {
+	getTestTransferOps := func() []Operation {
 		return []Operation{
-			*NewTransfer(address1, lockedGoldAdrr, amount1, tobinTax, true),                                           // matches LockGoldOp
-			*NewTransfer(lockedGoldAdrr, address1, amount1, tobinTax, false),                                          // matches WithdrawGoldOp
-			*NewTransfer(slashRewardFrom, slashRewardTo, new(big.Int).Sub(slashPenalty, slashReward), tobinTax, true), // matches SlashOp
-			*NewTransfer(address1, address3, amount1, tobinTax, true),                                                 // does not match a logOp
+			*NewTransfer(address1, lockedGoldAdrr, amount1, true),                                           // matches LockGoldOp
+			*NewTransfer(lockedGoldAdrr, address1, amount1, false),                                          // matches WithdrawGoldOp
+			*NewTransfer(slashRewardFrom, slashRewardTo, new(big.Int).Sub(slashPenalty, slashReward), true), // matches SlashOp
+			*NewTransfer(address1, address3, amount1, true),                                                 // does not match a logOp
 		}
 	}
 
-	getReconciledOps := func(logOps []Operation, tobinTax *TobinTax) []Operation {
-		if tobinTax.IsDefined() {
-			// This is the operation that should result from calling reconcile() on the LockGoldOp
-			logOps[0] = Operation{
-				Type: OpLockGold,
-				Changes: []BalanceChange{
-					{
-						Account: Account{
-							Address:    address1,
-							SubAccount: SubAccount{Identifier: AccMain, Metadata: nil},
-						},
-						Amount: big.NewInt(-9),
-					},
-					{
-						Account: Account{
-							Address:    lockedGoldAdrr,
-							SubAccount: SubAccount{Identifier: AccMain, Metadata: nil},
-						},
-						Amount: big.NewInt(9),
-					},
-					{
-						Account: Account{
-							Address:    address1,
-							SubAccount: SubAccount{Identifier: AccMain, Metadata: nil},
-						},
-						Amount: big.NewInt(-1),
-					},
-					{
-						Account: Account{
-							Address:    tobinTax.Recipient,
-							SubAccount: SubAccount{Identifier: AccMain, Metadata: nil},
-						},
-						Amount: big.NewInt(1),
-					},
-					{
-						Account: Account{
-							Address:    address1,
-							SubAccount: SubAccount{Identifier: AccLockedGoldNonVoting, Metadata: nil},
-						},
-						Amount: big.NewInt(9),
-					},
-				},
-				Successful: true,
-			}
-		}
+	getReconciledOps := func(logOps []Operation) []Operation {
 		return append(logOps,
-			*NewTransfer(address1, address3, amount1, tobinTax, true), // does not match a logOp
+			*NewTransfer(address1, address3, amount1, true), // does not match a logOp
 		)
 	}
 
-	tobinTax := NewTestTobinTax(10, address3)
-
-	logOps := getTestLogOps(emptyTobinTax)
-	logOpsWithTobinTax := getTestLogOps(tobinTax)
-
-	transferOps := getTestTransferOps(emptyTobinTax)
-	transferOpsWithTobinTax := getTestTransferOps(tobinTax)
+	logOps := getTestLogOps()
+	transferOps := getTestTransferOps()
 
 	t.Run("Without tobinTax", func(t *testing.T) {
-		Ω(ReconcileLogOpsWithTransfers(logOps, transferOps, emptyTobinTax, lockedGoldAdrr)).Should(ConsistOf(getReconciledOps(logOps, emptyTobinTax)))
-	})
-
-	t.Run("With tobinTax", func(t *testing.T) {
-		Ω(ReconcileLogOpsWithTransfers(logOpsWithTobinTax, transferOpsWithTobinTax, tobinTax, lockedGoldAdrr)).Should(ConsistOf(getReconciledOps(logOpsWithTobinTax, tobinTax)))
+		Ω(ReconcileLogOpsWithTransfers(logOps, transferOps)).Should(ConsistOf(getReconciledOps(logOps)))
 	})
 }

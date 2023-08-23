@@ -38,11 +38,6 @@ type RosettaDBReader interface {
 	// in the following block.
 	GasPriceMinimumFor(ctx context.Context, block *big.Int) (*big.Int, error)
 
-	// TobinTaxFor returns the tobinTax applied to txs in that block.
-	// More specifically, it returns the numerator of the tobin tax.
-	// In case of no value, will return with fallbackValue which is 0
-	TobinTaxFor(ctx context.Context, block *big.Int) (*big.Int, error)
-
 	// RegistryAddressStartOf returns the address of the contract at the start of (block, tx)
 	// In case there's no record for that contract it will fail with ErrContractNotFound
 	RegistryAddressStartOf(ctx context.Context, block *big.Int, txIndex uint, contractName string) (common.Address, error)
@@ -79,7 +74,6 @@ type CarbonOffsetPartnerChange struct {
 type BlockChangeSet struct {
 	BlockNumber               *big.Int
 	GasPriceMinimum           *big.Int
-	TobinTax                  *big.Int
 	RegistryChanges           []RegistryChange
 	CarbonOffsetPartnerChange CarbonOffsetPartnerChange
 }

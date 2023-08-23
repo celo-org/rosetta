@@ -21,7 +21,6 @@ import (
 
 	"github.com/celo-org/celo-blockchain/common"
 	"github.com/celo-org/kliento/client/debug"
-	"github.com/celo-org/rosetta/internal/utils"
 )
 
 type SubAccountType string
@@ -168,11 +167,11 @@ func NewFee(changes map[common.Address]*big.Int) *Operation {
 	}
 }
 
-func NewTransfer(from, to common.Address, value *big.Int, tobinTax *TobinTax, successful bool) *Operation {
+func NewTransfer(from, to common.Address, value *big.Int, successful bool) *Operation {
 	return &Operation{
 		Type:       OpTransfer,
 		Successful: successful,
-		Changes:    getTransferChangesWithTobinTax(from, to, value, tobinTax),
+		Changes:    getTransferChanges(from, to, value),
 	}
 }
 
@@ -196,23 +195,19 @@ func NewAuthorizeSigner(from common.Address, signer common.Address, authorizeOp 
 	}
 }
 
-// Ex. Slash(penalty=110, reward=100 cGlD), tobinTax == 10%
+// Ex. Slash(penalty=110, reward=100 CELO)
 // Transfer Operation:
 //
-//	lockedGoldContractAccMain        -9
-//	communityFundAccMain              9
-//	lockedGoldContractAccMain        -1
-//	tobinRecipientAccMain             1
+//	lockedGoldContractAccMain        -10
+//	communityFundAccMain              10
 //
 // LockedGold Operation (created from `AccountSlashed(slashed, -100, reporter, 110)` event):
 //
 //	slashedAccLockedGoldNonVoting    -110
 //	reporterAccLockedGoldNonVoting    100
-//	lockedGoldContractAccMain        -9
-//	communityFundAccMain              9
-//	lockedGoldContractAccMain        -1
-//	tobinRecipientAccMain             1
-func NewSlash(slashed, slasher, communityFund, lockedGoldAddr common.Address, penalty, reward *big.Int, tobinTax *TobinTax) *Operation {
+//	lockedGoldContractAccMain        -10
+//	communityFundAccMain              10
+func NewSlash(slashed, slasher, communityFund, lockedGoldAddr common.Address, penalty, reward *big.Int) *Operation {
 	communityFundReward := new(big.Int).Sub(penalty, reward)
 	return &Operation{
 		Type:       OpSlash,
@@ -220,64 +215,55 @@ func NewSlash(slashed, slasher, communityFund, lockedGoldAddr common.Address, pe
 		Changes: append([]BalanceChange{
 			{Account: NewAccount(slashed, AccLockedGoldNonVoting), Amount: negate(penalty)},
 			{Account: NewAccount(slasher, AccLockedGoldNonVoting), Amount: reward},
-		}, getTransferChangesWithTobinTax(lockedGoldAddr, communityFund, communityFundReward, tobinTax)...),
+		}, getTransferChanges(lockedGoldAddr, communityFund, communityFundReward)...),
 	}
 }
 
-// Ex. lock(100 cGlD), tobinTax == 10%
+// Ex. lock(100 CELO)
 // Transfer Operation:
 //
-//	fromAccMain         	 	-90
-//	lockedGoldContractAccMain    90
-//	fromAccMain			    	-10
-//	tobinRecipientAccMain        10
+//	fromAccMain         	 	-100
+//	lockedGoldContractAccMain    100
 //
-// LockedGold Operation (created from `GoldLocked(fromAccount, 90)` event):
+// LockedGold Operation (created from `GoldLocked(fromAccount, 100)` event):
 //
-//		fromAccMain                 -90
-//		lockedGoldContractAccMain    90
-//	 fromAccLockedNonVoting       90
+//	fromAccMain                 -100
+//	lockedGoldContractAccMain    100
+//	fromAccLockedNonVoting       100
 //
 // Reconciled Operation:
 //
-//		fromAccMain         	 	-90
-//		lockedGoldContractAccMain    90
-//		fromAccMain			    	-10
-//		tobinRecipientAccMain        10
-//	 fromAccLockedNonVoting       90
+//	fromAccMain         	 	-100
+//	lockedGoldContractAccMain    100
+//	fromAccLockedNonVoting       100
 func NewLockGold(addr, lockedGoldAddr common.Address, value *big.Int) *Operation {
 	return &Operation{
 		Type:       OpLockGold,
 		Successful: true,
 		Changes: append(
-			// We don't apply tobinTax here, since it's already applied
 			getTransferChanges(addr, lockedGoldAddr, value),
 			BalanceChange{Account: NewAccount(addr, AccLockedGoldNonVoting), Amount: value},
 		),
 	}
 }
 
-// Ex. Withdraw(100 cGlD), tobinTax == 10%
+// Ex. Withdraw(100 CELO)
 // Transfer Operation:
 //
-//	lockedGoldContractAccMain   -90
-//	toAccMain         	 	     90
-//	lockedGoldContractAccMain   -10
-//	tobinRecipientAccMain        10
+//	lockedGoldContractAccMain   -100
+//	toAccMain         	 	     100
 //
 // LockedGold Operation (created from `GoldWithdraw(toAccount, 100)` event):
 //
-//		lockedGoldContractAccMain   -90
-//		toAccMain         	 	     90
-//		lockedGoldContractAccMain   -10
-//		tobinRecipientAccMain        10
-//	 AccLockedPending            -100
-func NewWithdrawGold(addr, lockedGoldAddr common.Address, value *big.Int, tobinTax *TobinTax) *Operation {
+//	lockedGoldContractAccMain   -100
+//	toAccMain         	 	     100
+//	AccLockedPending            -100
+func NewWithdrawGold(addr, lockedGoldAddr common.Address, value *big.Int) *Operation {
 	return &Operation{
 		Type:       OpWithdrawGold,
 		Successful: true,
 		Changes: append(
-			getTransferChangesWithTobinTax(lockedGoldAddr, addr, value, tobinTax),
+			getTransferChanges(lockedGoldAddr, addr, value),
 			BalanceChange{Account: NewAccount(addr, AccLockedGoldPending), Amount: negate(value)},
 		),
 	}
@@ -373,18 +359,6 @@ func MatchChangesOnSubAccount(op1 *Operation, op2 *Operation, subAccountType Sub
 	return reflect.DeepEqual(op1Changes, op2Changes)
 }
 
-func getTransferChangesWithTobinTax(from, to common.Address, value *big.Int, tobinTax *TobinTax) []BalanceChange {
-	taxAmount, afterTaxAmount := tobinTax.Apply(value)
-
-	changes := getTransferChanges(from, to, afterTaxAmount)
-
-	if taxAmount.Cmp(utils.Big0) > 0 {
-		changes = append(changes, getTransferChanges(from, tobinTax.Recipient, taxAmount)...)
-	}
-
-	return changes
-}
-
 func getTransferChanges(from, to common.Address, value *big.Int) []BalanceChange {
 	return []BalanceChange{
 		{Account: NewAccount(from, AccMain), Amount: negate(value)},
@@ -396,12 +370,12 @@ func getTransferChanges(from, to common.Address, value *big.Int) []BalanceChange
 // derived from the tx tracer into one slice that contains no duplicate operations.
 //
 // See NewLockGold, NewWithdrawal, NewSlash for examples.
-func ReconcileLogOpsWithTransfers(logOps, transferOps []Operation, tobinTax *TobinTax, lockedGold common.Address) ([]Operation, error) {
+func ReconcileLogOpsWithTransfers(logOps, transferOps []Operation) ([]Operation, error) {
 	ops := make([]Operation, 0, len(transferOps)+len(logOps))
 
 	findMatchAndReconcile := func(transferOps []Operation, logOp *Operation, i int) (int, error) {
 		for ; i < len(transferOps); i++ {
-			if MatchAndReconcileLogOpWithTransfer(logOp, &transferOps[i], tobinTax, lockedGold) {
+			if MatchChangesOnSubAccount(logOp, &transferOps[i], AccMain) {
 				return i, nil
 			}
 		}
@@ -439,124 +413,10 @@ func ReconcileLogOpsWithTransfers(logOps, transferOps []Operation, tobinTax *Tob
 	return ops, nil
 }
 
-// MatchAndReconcileLogOpWithTransfer returns true if the operations match as is or
-// when we factor in tobin tax
-//
-// If the operations match with tobin tax, then we reconcile the operations into one
-// by combining their balance changes
-//
-// operations match with tobin tax iff
-//
-//	logOp.Type == OpLockGold &&
-//	logOp.lockedGoldContractAccMain.diff == trOp.lockedGoldContractAccMain.diff &&
-//	logOp.fromAccMain.diff - trOp.fromAccMain.diff == trOp.tobinRecipientAccMain.diff
-//
-// Ex. lock(100 cGlD), tobinTax == 10%
-// Transfer Operation:
-//
-//	fromAccMain         	 	-90
-//	lockedGoldContractAccMain    90
-//	fromAccMain			    	-10 // diff == -100
-//	tobinRecipientAccMain        10
-//
-// LockedGold Operation (created from `GoldLocked(fromAccount, 90)` event):
-//
-//		fromAccMain                 -90 // diff == -90
-//		lockedGoldContractAccMain    90
-//	 fromAccLockedNonVoting       90
-//
-// Reconciled Operation:
-//
-//		fromAccMain         	 	-90
-//		lockedGoldContractAccMain    90
-//		fromAccMain			    	-10
-//		tobinRecipientAccMain        10
-//	 fromAccLockedNonVoting       90
-func MatchAndReconcileLogOpWithTransfer(logOp, trOp *Operation, tobinTax *TobinTax, lockedGold common.Address) bool {
-
-	// If the operations match as is then we can just return true
-	// without checking if they match with tobin tax. Because tobin tax is applied
-	// when we derive OpWithdraw and OpSlash, these should be matched here.
-	if MatchChangesOnSubAccount(logOp, trOp, AccMain) {
-		return true
-	}
-
-	// If the operations don't match as is and tobin tax is not defined, then
-	// the operations don't match
-	if !tobinTax.IsDefined() {
-		return false
-	}
-
-	// Check if the operations match when we factor in the tobin tax.
-
-	// NOTE: At this point the only type of operation we are checking for is OpLockGold.
-	if logOp.Type != OpLockGold {
-		return false
-	}
-
-	lgAccMainChanges := FilterChangesBySubAccount(logOp, AccMain)
-	trAccMainChanges := FilterChangesBySubAccount(trOp, AccMain)
-
-	// If any of these accounts don't have balance changes, the operations
-	// don't match with tobin tax
-	lgLockedGoldChange, ok := lgAccMainChanges[lockedGold]
-	if !ok {
-		return false
-	}
-	trLockedGoldChange, ok := trAccMainChanges[lockedGold]
-	if !ok {
-		return false
-	}
-	trTobinRecipientChange, ok := trAccMainChanges[tobinTax.Recipient]
-	if !ok {
-		return false
-	}
-
-	// Now that we know all the right accounts have balance changes, check if the amounts
-	// match up
-
-	// if logOp.lockedGoldContractAccMain.diff == trOp.lockedGoldContractAccMain.diff
-	if lgLockedGoldChange.Cmp(trLockedGoldChange) == 0 {
-
-		for address, lgChange := range lgAccMainChanges {
-			if address != lockedGold {
-				if trChange, ok := trAccMainChanges[address]; ok {
-
-					// if logOp.fromAccMain.diff - trOp.fromAccMain.diff == trOp.tobinRecipientAccMain.diff
-					if new(big.Int).Sub(lgChange, trChange).Cmp(trTobinRecipientChange) == 0 {
-						// The operations match with tobin tax
-						reconcileLogOpWithTransfer(logOp, trOp)
-						return true
-					}
-
-				}
-			}
-		}
-
-	}
-
-	return false
-}
-
-func reconcileLogOpWithTransfer(logOp, trOp *Operation) {
-	// start with the transferOp
-	op := *trOp
-	// change type to OpLockGold because we will be adding balance changes specific to the log op
-	op.Type = logOp.Type
-	// add all changes from logOp with SubAccountTypes other than AccMain
-	for _, bc := range logOp.Changes {
-		if bc.Account.SubAccount.Identifier != AccMain {
-			op.Changes = append(op.Changes, bc)
-		}
-	}
-	// replace logOp with reconciled op
-	*logOp = op
-}
-
-func InternalTransfersToOperations(transfers []debug.Transfer, tobinTax *TobinTax) []Operation {
+func InternalTransfersToOperations(transfers []debug.Transfer) []Operation {
 	transferOps := make([]Operation, len(transfers))
 	for i, t := range transfers {
-		transferOps[i] = *NewTransfer(t.From, t.To, t.Value, tobinTax, t.Status.String() == debug.TransferStatusSuccess.String())
+		transferOps[i] = *NewTransfer(t.From, t.To, t.Value, t.Status.String() == debug.TransferStatusSuccess.String())
 	}
 	return transferOps
 }
