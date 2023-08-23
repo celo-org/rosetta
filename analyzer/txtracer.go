@@ -113,6 +113,23 @@ func (tr *Tracer) TraceTransaction(blockHeader *types.Header, tx *types.Transact
 		}
 
 		ops = append(ops, reconciledOps...)
+	} else if receipt.Status == types.ReceiptStatusFailed {
+		contractMap, err := tr.GetRegistryAddresses(receipt, registry.ReserveContractID.String(), registry.LockedGoldContractID.String(), registry.ElectionContractID.String(), registry.GovernanceContractID.String(), registry.AccountsContractID.String())
+		if err != nil {
+			return nil, err
+		}
+
+		tobinTax, err := tr.GetTobinTax(receipt.BlockNumber, contractMap[registry.ReserveContractID.String()])
+		if err != nil {
+			return nil, err
+		}
+
+		transferOps, err := tr.TxTransfers(tx, receipt, tobinTax)
+		if err != nil {
+			return nil, err
+		}
+
+		ops = append(ops, transferOps...)
 	}
 
 	return ops, nil
@@ -162,10 +179,6 @@ func (tr *Tracer) TxGasDetails(coinbase common.Address, tx *types.Transaction, r
 }
 
 func (tr *Tracer) TxTransfers(tx *types.Transaction, receipt *types.Receipt, tobinTax *TobinTax) ([]Operation, error) {
-	if receipt.Status == types.ReceiptStatusFailed {
-		return nil, nil
-	}
-
 	res := debug.TransferTracerResponse{}
 	timeout := tr.traceTimeout.String()
 	cfg := &tracers.TraceConfig{Tracer: &debug.TransferTracer, Timeout: &timeout}
