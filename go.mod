@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/allegro/bigcache v1.2.1 // indirect
 	// TODO EN: update once gingerbread release is available
-	github.com/celo-org/celo-blockchain v1.8.0-beta.1.0.20230731110612-df6aac48586a
+	github.com/celo-org/celo-blockchain v1.8.0-beta.2
 	github.com/celo-org/celo-bls-go v0.6.4 // indirect
 	github.com/celo-org/celo-bls-go-android v0.6.4 // indirect
 	github.com/celo-org/celo-bls-go-ios v0.6.4 // indirect
@@ -15,7 +15,7 @@ require (
 	github.com/celo-org/celo-bls-go-windows v0.6.4 // indirect
 	// TODO EN: update once kliento is fully updated
 	// points to head of eelanagaraj/gingerbread-updates
-	github.com/celo-org/kliento v0.2.1-0.20230731112734-7db37e2da463
+	github.com/celo-org/kliento v0.2.1-0.20230823093212-b860f9f2351c
 	github.com/coinbase/rosetta-sdk-go v0.5.9
 	github.com/felixge/httpsnoop v1.0.1
 	github.com/go-stack/stack v1.8.1 // indirect
