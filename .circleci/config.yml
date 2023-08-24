@@ -17,7 +17,7 @@ version: 2.1
 executors:
   golang:
     docker:
-      - image: circleci/golang:1.17
+      - image: cimg/go:1.19.0
         user: root
     working_directory: /go/src/github.com/celo-org/rosetta
 attach: &attach
