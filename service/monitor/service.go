@@ -33,16 +33,18 @@ type monitorService struct {
 	db            db.RosettaDB
 	logger        log.Logger
 	isGingerbread func(*big.Int) bool
+	initContracts bool // Necessary for running with mycelo testnets
 }
 
 const srvName = "celo-monitor"
 
-func NewMonitorService(cc *client.CeloClient, db db.RosettaDB, isGingerbread func(*big.Int) bool) *monitorService {
+func NewMonitorService(cc *client.CeloClient, db db.RosettaDB, isGingerbread func(*big.Int) bool, initContracts bool) *monitorService {
 	return &monitorService{
 		cc:            cc,
 		db:            db,
 		logger:        log.New("srv", srvName),
 		isGingerbread: isGingerbread,
+		initContracts: initContracts,
 	}
 }
 
@@ -68,6 +70,12 @@ func (ms *monitorService) Start(ctx context.Context) error {
 	startBlock, err := ms.db.LastPersistedBlock(ctx)
 	if err != nil {
 		return err
+	}
+
+	if ms.initContracts && startBlock.Cmp(big.NewInt(1)) < 0 {
+		if err := UpdateDBForBlock(ctx, startBlock, ms.cc, ms.db, ms.logger); err != nil {
+			return err
+		}
 	}
 
 	ms.logger.Info("Resuming operation from last persisted  block", "block", startBlock)

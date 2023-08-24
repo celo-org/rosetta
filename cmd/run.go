@@ -79,6 +79,7 @@ func init() {
 
 	flagSet.String("geth.genesis", "", "(Optional) path to the genesis.json, for use with custom chains")
 	utils.ExitOnError(serveCmd.MarkFlagFilename("geth.genesis", "json"))
+	flagSet.String("geth.networkid", "", "(Optional) Network ID, for use with custom chains")
 	// Note that we do not set any default here because it would clash with geth.genesis if that was defined.
 	flagSet.String("geth.network", "", "Network to use, either 'mainnet', 'alfajores', or 'baklava'")
 
@@ -96,6 +97,9 @@ func init() {
 	flagSet.String("geth.syncmode", "fast", "Geth blockchain sync mode (fast, full, light)")
 	flagSet.String("geth.gcmode", "full", "Geth garbage collection mode (full, archive)")
 	flagSet.String("geth.maxpeers", "1100", "Maximum number of network peers (network disabled if set to 0)")
+
+	// Monitor Service Flags
+	flagSet.Bool("monitor.initcontracts", false, "Set to true to properly initialize contract state, i.e. when running MyCelo testnets")
 }
 
 func getDatadir(cmd *cobra.Command) string {
@@ -114,6 +118,7 @@ func readGethOption(cmd *cobra.Command, datadir string) *geth.GethOpts {
 		GethBinary:  viper.GetString("geth.binary"),
 		GenesisPath: viper.GetString("geth.genesis"),
 		Network:     viper.GetString("geth.network"),
+		NetworkId:   viper.GetString("geth.networkid"),
 		Datadir:     filepath.Join(datadir, "celo"),
 		LogsPath:    viper.GetString("geth.logfile"),
 		IpcPath:     viper.GetString("geth.ipcpath"),
@@ -138,6 +143,8 @@ func readGethOption(cmd *cobra.Command, datadir string) *geth.GethOpts {
 		printUsageAndExit(cmd, "Missing config option for 'geth.genesis' or 'geth.network'")
 	} else if opts.GenesisPath != "" && opts.Network != "" {
 		printUsageAndExit(cmd, "Must provide exactly one of 'geth.genesis' or 'geth.network'")
+	} else if opts.NetworkId != "" && opts.GenesisPath == "" {
+		printUsageAndExit(cmd, "Must provide 'geth.genesis' when using 'geth.networkid'")
 	}
 
 	return opts
@@ -238,8 +245,14 @@ loop:
 		}
 		return nil
 	})
+
 	grp.Go(func() error {
-		err = monitor.NewMonitorService(cc, celoStore, chainParams.IsGingerbread).Start(ctx)
+		err = monitor.NewMonitorService(
+			cc,
+			celoStore,
+			chainParams.IsGingerbread,
+			viper.GetBool("monitor.initcontracts"),
+		).Start(ctx)
 		if err != nil {
 			fmt.Println("error running mon serrvice")
 			ec.Add(fmt.Errorf("error running monitor service : %w", err))
