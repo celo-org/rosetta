@@ -18,11 +18,7 @@ executors:
   golang:
     docker:
       - image: cimg/go:1.19.0
-        user: root
-    working_directory: /go/src/github.com/celo-org/rosetta
-attach: &attach
-  attach_workspace:
-    at: /go
+
 jobs:
   build-go:
     executor: golang
