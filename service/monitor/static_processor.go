@@ -87,22 +87,6 @@ func (sf *staticProcessor) fetchGasPriceMinimum() (*big.Int, error) {
 	return gpmContract.GetGasPriceMinimum(sf.callOpts, common.ZeroAddress)
 }
 
-func (sf *staticProcessor) fetchCarbonOffsetPartner() (*db.CarbonOffsetPartnerChange, error) {
-	epochRewardsAddress, err := sf.boundRegistry.GetAddressForString(sf.callOpts, registry.EpochRewardsContractID.String())
-	if err != nil || epochRewardsAddress == common.ZeroAddress {
-		return nil, err
-	}
-	epochRewards, err := contracts.NewEpochRewards(epochRewardsAddress, sf.cc.Eth)
-	if err != nil {
-		return nil, err
-	}
-	offsettingPartner, err := epochRewards.CarbonOffsettingPartner(sf.callOpts)
-	if err != nil {
-		return nil, err
-	}
-	return &db.CarbonOffsetPartnerChange{TxIndex: 0, Address: offsettingPartner}, nil
-}
-
 // Fetches relevant state from block and updates the Rosetta DB accordingly.
 // This is necessary for running Rosetta on networks that have Core Contracts
 // already deployed at genesis (e.g. myCelo networks).
@@ -127,18 +111,10 @@ func UpdateDBForBlock(
 		return err
 	}
 	sf.logger.Info("Found GasPriceMinimum", "block", blockNumber, "GPM", gpm)
-	carbonOffsetPartner, err := sf.fetchCarbonOffsetPartner()
-	if err != nil {
-		return err
-	}
-	if carbonOffsetPartner != nil {
-		sf.logger.Info("Found CarbonOffsetPartner", "block", blockNumber, "address", carbonOffsetPartner.Address)
-	}
 
 	return rosettaDB.ApplyChanges(ctx, &db.BlockChangeSet{
-		BlockNumber:               blockNumber,
-		RegistryChanges:           contractAddresses,
-		GasPriceMinimum:           gpm,
-		CarbonOffsetPartnerChange: *carbonOffsetPartner,
+		BlockNumber:     blockNumber,
+		RegistryChanges: contractAddresses,
+		GasPriceMinimum: gpm,
 	})
 }

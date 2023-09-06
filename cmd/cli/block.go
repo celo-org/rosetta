@@ -76,9 +76,6 @@ func printBlockContext(rosettabBlock *types.Block) {
 	contractAddresses, err := db.RegistryAddressesStartOf(ctx, blockNumber, 0, contractNames...)
 	utils.ExitOnError(err)
 
-	carbonOffsetPartner, err := db.CarbonOffsetPartnerStartOf(ctx, blockNumber, 0)
-	utils.ExitOnError(err)
-
 	block, err := cc.Eth.BlockByNumber(ctx, blockNumber)
 	utils.ExitOnError(err)
 
@@ -86,9 +83,6 @@ func printBlockContext(rosettabBlock *types.Block) {
 	w := tabwriter.NewWriter(os.Stdout, 20, 5, 3, ' ', tabwriter.TabIndent)
 	fmt.Fprintf(w, "GasPriceMinimum:\t%s\n", gpm)
 	fmt.Fprintf(w, "Coinbase:\t%s\n", block.Coinbase().Hex())
-	if carbonOffsetPartner != common.ZeroAddress {
-		fmt.Fprintf(w, "CarbonOffsetPartner:\t%s\n", carbonOffsetPartner.Hex())
-	}
 	for _, name := range contractNames {
 		if addr, ok := contractAddresses[name]; ok {
 			fmt.Fprintf(w, "%s:\t%s\n", name, addr.Hex())

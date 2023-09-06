@@ -71,10 +71,6 @@ func BlockProcessor(ctx context.Context, headers <-chan *types.Header, changes c
 			}
 		}
 
-		if err := bp.carbonOffsetPartner(bcs); err != nil {
-			return err
-		}
-
 		if err := bp.writeChanges(bcs); err != nil {
 			return err
 		}
@@ -224,42 +220,6 @@ func (bp *processor) gasPriceMinimum(bcs *db.BlockChangeSet) error {
 			bp.gpm = new(big.Int).Set(gpmNew)
 		}
 		multipleUpdates = true
-	}
-
-	if err := iter.Error(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (bp *processor) carbonOffsetPartner(bcs *db.BlockChangeSet) error {
-	if bp.epochRewardsAddress == common.ZeroAddress {
-		return nil
-	}
-
-	blockNumber := bcs.BlockNumber.Uint64()
-
-	epochRewards, err := contracts.NewEpochRewards(bp.epochRewardsAddress, bp.cc.Eth)
-	if err != nil {
-		return err
-	}
-
-	iter, err := epochRewards.FilterCarbonOffsettingFundSet(&bind.FilterOpts{
-		End:     &blockNumber,
-		Start:   blockNumber,
-		Context: bp.ctx,
-	}, nil)
-	if err != nil {
-		return err
-	}
-
-	for iter.Next() {
-		bp.logger.Info("CarbonOffsetPartner Changed", "address", iter.Event.Partner.Hex(), "txIndex", iter.Event.Raw.TxIndex)
-		bcs.CarbonOffsetPartnerChange = db.CarbonOffsetPartnerChange{
-			Address: iter.Event.Partner,
-			TxIndex: iter.Event.Raw.TxIndex,
-		}
 	}
 
 	if err := iter.Error(); err != nil {

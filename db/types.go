@@ -45,10 +45,6 @@ type RosettaDBReader interface {
 	// RegistryAddressesStartOf returns the address of the contracts at the start of (block, tx)
 	// For the case a contract is not yet deployed, that contract won't be in the result map
 	RegistryAddressesStartOf(ctx context.Context, block *big.Int, txIndex uint, contractName ...string) (map[string]common.Address, error)
-
-	// CarbonOffsetPartnerStartOf returns the address of the contract at the start of (block, tx)
-	// In case of no value, will return with fallbackValue which is common.ZeroAddress
-	CarbonOffsetPartnerStartOf(ctx context.Context, block *big.Int, txIndex uint) (common.Address, error)
 }
 
 type RosettaDBWriter interface {
@@ -66,14 +62,8 @@ type RegistryChange struct {
 	NewAddress common.Address
 }
 
-type CarbonOffsetPartnerChange struct {
-	TxIndex uint
-	Address common.Address
-}
-
 type BlockChangeSet struct {
-	BlockNumber               *big.Int
-	GasPriceMinimum           *big.Int
-	RegistryChanges           []RegistryChange
-	CarbonOffsetPartnerChange CarbonOffsetPartnerChange
+	BlockNumber     *big.Int
+	GasPriceMinimum *big.Int
+	RegistryChanges []RegistryChange
 }

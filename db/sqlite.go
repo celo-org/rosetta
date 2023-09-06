@@ -26,21 +26,18 @@ import (
 type rosettaSqlDb struct {
 	db *sql.DB
 
-	getLastBlockStmt              *sql.Stmt
-	updateLastBlockStmt           *sql.Stmt
-	getRegistryAddressStmt        *sql.Stmt
-	getGasPriceMinimumStmt        *sql.Stmt
-	getCarbonOffsetPartnerStmt    *sql.Stmt
-	insertGasPriceMinimumStmt     *sql.Stmt
-	insertRegistryAddressStmt     *sql.Stmt
-	insertCarbonOffsetPartnerStmt *sql.Stmt
+	getLastBlockStmt          *sql.Stmt
+	updateLastBlockStmt       *sql.Stmt
+	getRegistryAddressStmt    *sql.Stmt
+	getGasPriceMinimumStmt    *sql.Stmt
+	insertGasPriceMinimumStmt *sql.Stmt
+	insertRegistryAddressStmt *sql.Stmt
 }
 
 func initDatabase(db *sql.DB) error {
 	schema := []string{
 		"CREATE table IF NOT EXISTS registry (contract text, fromBlock integer, fromTx integer, address blob)",
 		"CREATE table IF NOT EXISTS gasPriceMinimum (fromBlock integer, val blob)",
-		"CREATE table IF NOT EXISTS carbonOffsetPartner (fromBlock integer, fromTx integer, address blob)",
 		"CREATE table IF NOT EXISTS stats (lastBlock integer not null DEFAULT 0)",
 	}
 
@@ -91,11 +88,6 @@ func NewSqliteDb(dbpath string) (*rosettaSqlDb, error) {
 		return nil, err
 	}
 
-	insertCarbonOffsetPartnerStmt, err := db.Prepare("INSERT INTO carbonOffsetPartner (fromBlock, fromTx, address) VALUES (?, ?, ?)")
-	if err != nil {
-		return nil, err
-	}
-
 	getLastBlockStmt, err := db.Prepare("SELECT lastBlock FROM stats")
 	if err != nil {
 		return nil, err
@@ -123,27 +115,14 @@ func NewSqliteDb(dbpath string) (*rosettaSqlDb, error) {
 		return nil, err
 	}
 
-	getCarbonOffsetPartnerStmt, err := db.Prepare(`
-		SELECT address 
-			FROM carbonOffsetPartner 
-			WHERE fromBlock < $1 OR (fromBlock = $1 AND fromTx < $2)
-			ORDER BY fromblock DESC, fromTx DESC 
-			LIMIT 1
-	`)
-	if err != nil {
-		return nil, err
-	}
-
 	return &rosettaSqlDb{
-		db:                            db,
-		getLastBlockStmt:              getLastBlockStmt,
-		updateLastBlockStmt:           updateLastBlockStmt,
-		getRegistryAddressStmt:        getRegistryAddressStmt,
-		getGasPriceMinimumStmt:        getGasPriceMinimumStmt,
-		getCarbonOffsetPartnerStmt:    getCarbonOffsetPartnerStmt,
-		insertGasPriceMinimumStmt:     insertGasPriceMinimumStmt,
-		insertRegistryAddressStmt:     insertRegistryAddressStmt,
-		insertCarbonOffsetPartnerStmt: insertCarbonOffsetPartnerStmt,
+		db:                        db,
+		getLastBlockStmt:          getLastBlockStmt,
+		updateLastBlockStmt:       updateLastBlockStmt,
+		getRegistryAddressStmt:    getRegistryAddressStmt,
+		getGasPriceMinimumStmt:    getGasPriceMinimumStmt,
+		insertGasPriceMinimumStmt: insertGasPriceMinimumStmt,
+		insertRegistryAddressStmt: insertRegistryAddressStmt,
 	}, nil
 }
 
@@ -228,23 +207,6 @@ func (cs *rosettaSqlDb) RegistryAddressesStartOf(ctx context.Context, block *big
 	return addresses, nil
 }
 
-func (cs *rosettaSqlDb) CarbonOffsetPartnerStartOf(ctx context.Context, block *big.Int, txIndex uint) (common.Address, error) {
-	if err := cs.CheckBlockNumber(ctx, block); err != nil {
-		return common.ZeroAddress, err
-	}
-
-	var addr common.Address
-
-	if err := cs.getCarbonOffsetPartnerStmt.QueryRowContext(ctx, block.Uint64(), txIndex).Scan(&addr); err != nil {
-		if err == sql.ErrNoRows {
-			return common.ZeroAddress, nil
-		}
-		return common.ZeroAddress, err
-	}
-
-	return addr, nil
-}
-
 func (cs *rosettaSqlDb) ApplyChanges(ctx context.Context, changeSet *BlockChangeSet) error {
 
 	tx, err := cs.db.BeginTx(ctx, nil)
@@ -273,15 +235,6 @@ func (cs *rosettaSqlDb) ApplyChanges(ctx context.Context, changeSet *BlockChange
 
 	if changeSet.GasPriceMinimum != nil {
 		if _, err = tx.StmtContext(ctx, cs.insertGasPriceMinimumStmt).ExecContext(ctx, changeSet.BlockNumber.Int64(), changeSet.GasPriceMinimum.Bytes()); err != nil {
-			if rollbackErr := tx.Rollback(); rollbackErr != nil {
-				return rollbackErr
-			}
-			return err
-		}
-	}
-
-	if changeSet.CarbonOffsetPartnerChange.Address != common.ZeroAddress {
-		if _, err = tx.StmtContext(ctx, cs.insertCarbonOffsetPartnerStmt).ExecContext(ctx, changeSet.BlockNumber.Int64(), int64(changeSet.CarbonOffsetPartnerChange.TxIndex), changeSet.CarbonOffsetPartnerChange.Address); err != nil {
 			if rollbackErr := tx.Rollback(); rollbackErr != nil {
 				return rollbackErr
 			}
