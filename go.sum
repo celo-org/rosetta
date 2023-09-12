@@ -100,8 +100,8 @@ github.com/btcsuite/winsvc v1.0.0/go.mod h1:jsenWakMcC0zFBFurPLEAyrnc/teJEM1O46f
 github.com/buraksezer/consistent v0.0.0-20191006190839-693edf70fd72 h1:fUmDBbSvv1uOzo/t8WaxZMVb7BxJ8JECo5lGoR9c5bA=
 github.com/buraksezer/consistent v0.0.0-20191006190839-693edf70fd72/go.mod h1:OEE5igu/CDjGegM1Jn6ZMo7R6LlV/JChAkjfQQIRLpg=
 github.com/c-bata/go-prompt v0.2.2/go.mod h1:VzqtzE2ksDBcdln8G7mk2RX9QyGjH+OVqOCSiVIqS34=
-github.com/celo-org/celo-blockchain v1.8.0-beta.2 h1:eX5PvqpJ47dg/A6UzpDVBN99P2XAXUOuYh66umUGiqo=
-github.com/celo-org/celo-blockchain v1.8.0-beta.2/go.mod h1:Xwrl4Up8aP/p6TolAiHSTVSlsGtu1N6JZADaJaENYYY=
+github.com/celo-org/celo-blockchain v1.8.0 h1:LJ+BQG1v9Wmy9TsLb/LchPhpFKz8c4rDCEz6iZf6y1M=
+github.com/celo-org/celo-blockchain v1.8.0/go.mod h1:Xwrl4Up8aP/p6TolAiHSTVSlsGtu1N6JZADaJaENYYY=
 github.com/celo-org/celo-bls-go v0.3.4/go.mod h1:qDZHMC3bBqOw5qle28cRtKlEyJhslZtckcc2Tomqdks=
 github.com/celo-org/celo-bls-go v0.6.4 h1:zBf6pEr9k64gaO0VSYnDfLCBmrxDigc4yUaDvWub5G8=
 github.com/celo-org/celo-bls-go v0.6.4/go.mod h1:apSlSDPoXIdGseCS4Z2AMrhO5B1xpIVTXYpfv/uRd04=
@@ -129,8 +129,8 @@ github.com/celo-org/celo-bls-go-windows v0.3.3/go.mod h1:82GC5iJA9Qw5gynhYqR8ht3
 github.com/celo-org/celo-bls-go-windows v0.6.3/go.mod h1:8bRJbLcHREIAWn+5iZM3u8rGPBsWepp9BdF3SexisuM=
 github.com/celo-org/celo-bls-go-windows v0.6.4 h1:4w+NllEORQbsQnqpXO7UC+xDUbZQgiMPMnnyzLFA+ck=
 github.com/celo-org/celo-bls-go-windows v0.6.4/go.mod h1:8bRJbLcHREIAWn+5iZM3u8rGPBsWepp9BdF3SexisuM=
-github.com/celo-org/kliento v0.2.1-0.20230823093212-b860f9f2351c h1:7Mhu9yX5Dn+L5KyDI3gYYsX7b3w23x7Qlzp9rLDAeik=
-github.com/celo-org/kliento v0.2.1-0.20230823093212-b860f9f2351c/go.mod h1:BFFgdANZPxh0o9F8VaeO+v/r1z2t/YST7eldplj1DbY=
+github.com/celo-org/kliento v0.2.1-0.20230912125702-70113468d45f h1:ITkZ/94WqeMio54DYQzfcFDZBkUAogncZyKXXu0FWkk=
+github.com/celo-org/kliento v0.2.1-0.20230912125702-70113468d45f/go.mod h1:jp7HC2Sh7VUuGzmVUrX/4/TUz8MEPI2Qb6q6esIZhN0=
 github.com/cenkalti/backoff v2.2.1+incompatible h1:tNowT99t7UNflLxfYYSlKYsBpXdEet03Pg2g16Swow4=
 github.com/cenkalti/backoff v2.2.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
