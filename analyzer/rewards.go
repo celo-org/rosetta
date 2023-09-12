@@ -42,8 +42,14 @@ func ComputeEpochRewards(ctx context.Context, cc *client.CeloClient, db db.Roset
 	}
 
 	rewards := make(map[common.Address]*big.Int)
+	// Epoch rewards are distributed in the last tx of each block.
+	txIndex, err := rctx.cc.Eth.TransactionCount(rctx.ctx, rctx.header.Hash())
+	if err != nil {
+		return nil, err
+	}
 
-	goldToken, err := rctx.getGoldToken()
+	// Ensure that we fetch the goldToken contract event from the current
+	goldToken, err := rctx.getGoldToken(txIndex)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +59,7 @@ func ComputeEpochRewards(ctx context.Context, cc *client.CeloClient, db db.Roset
 		return NewEpochRewards(rewards), nil
 	}
 
-	if err := rctx.computeRewards(rewards, goldToken); err != nil {
+	if err := rctx.computeRewards(rewards, goldToken, txIndex); err != nil {
 		return nil, err
 	}
 
@@ -66,16 +72,7 @@ func (rctx *rewardsContext) blockNumber() *big.Int {
 	return rctx.header.Number
 }
 
-func (rctx *rewardsContext) nextBlockNumber() *big.Int {
-	return new(big.Int).Add(rctx.header.Number, big.NewInt(1))
-}
-
-//nolint:unused
-func (rctx *rewardsContext) prevBlockNumber() *big.Int {
-	return new(big.Int).Sub(rctx.header.Number, big.NewInt(1))
-}
-
-func (rctx *rewardsContext) computeRewards(rewardsMap map[common.Address]*big.Int, token *contracts.GoldToken) error {
+func (rctx *rewardsContext) computeRewards(rewardsMap map[common.Address]*big.Int, token *contracts.GoldToken, txIndex uint) error {
 	blockNumber := rctx.blockNumber().Uint64()
 
 	iter, err := token.FilterTransfer(&bind.FilterOpts{
@@ -87,15 +84,8 @@ func (rctx *rewardsContext) computeRewards(rewardsMap map[common.Address]*big.In
 		return err
 	}
 
-	// Epoch rewards are distributed in the last tx of each block.
-
-	txCount, err := rctx.cc.Eth.TransactionCount(rctx.ctx, rctx.header.Hash())
-	if err != nil {
-		return err
-	}
-
 	for iter.Next() {
-		if iter.Event.Raw.TxIndex == txCount {
+		if iter.Event.Raw.TxIndex == txIndex {
 			rewardsMap[iter.Event.To] = iter.Event.Value
 		}
 	}
@@ -103,8 +93,8 @@ func (rctx *rewardsContext) computeRewards(rewardsMap map[common.Address]*big.In
 	return nil
 }
 
-func (rctx *rewardsContext) getGoldToken() (*contracts.GoldToken, error) {
-	address, err := rctx.db.RegistryAddressStartOf(rctx.ctx, rctx.nextBlockNumber(), 0, "GoldToken")
+func (rctx *rewardsContext) getGoldToken(txIndex uint) (*contracts.GoldToken, error) {
+	address, err := rctx.db.RegistryAddressStartOf(rctx.ctx, rctx.blockNumber(), txIndex, "GoldToken")
 	if err != nil && err != db.ErrContractNotFound {
 		return nil, err
 	}
