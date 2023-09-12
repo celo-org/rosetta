@@ -1,10 +1,13 @@
-name: Docker Build Push
+name: Docker Build Scan
 on:
+  push:
+    branches:
+    - master
   pull_request:
   workflow_dispatch:
 
 jobs:
   Build-Scan-Container:
-    uses: celo-org/reusable-workflows/.github/workflows/container-cicd-local.yaml@main
+    uses: celo-org/reusable-workflows/.github/workflows/container-cicd-local.yaml@v1.11.2
     with:
       dockerfile: Dockerfile
