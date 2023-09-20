@@ -182,7 +182,7 @@ Rosetta uses [kliento](https://github.com/celo-org/kliento) to interact with the
 ## How to run rosetta-cli-checks
 
 _Note that running these checks is most likely infeasible for most people on
-mainnet because you will need at least 1.5 terrabytes (as of 2022/11) of space
+mainnet because you will need at least 1.5 terabytes (as of 2022/11) of space
 and several days to be able to sync the chain. Under the hood, the service is
 syncing a full archive node, which takes a long time. The construction service
 needs to reach the tip before submitting transactions. The data checks will
