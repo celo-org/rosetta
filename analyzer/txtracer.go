@@ -208,7 +208,7 @@ func (tr *Tracer) TxOpsFromLogs(tx *types.Transaction, receipt *types.Receipt, c
 		return nil, fmt.Errorf("can't initialize Election contract: %w", err)
 	}
 
-	// We only need governace for slashing and you can't slash if there's no governance contract, so we ignore if not found
+	// We only need governance for slashing and you can't slash if there's no governance contract, so we ignore if not found
 	governanceAddr, _ := contractMap[registry.GovernanceContractID.String()]
 
 	logs := utils.RemoveProxyLogs(receipt.Logs)
