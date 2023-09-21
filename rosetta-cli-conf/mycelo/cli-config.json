@@ -1,7 +1,7 @@
 {
   "network": {
     "blockchain": "celo",
-    "network": "44787"
+    "network": "9099000"
   },
   "online_url": "http://localhost:8080",
   "data_directory": "",
@@ -13,37 +13,7 @@
   "tip_delay": 300,
   "log_configuration": false,
   "compression_disabled": false,
-  "construction": {
-    "offline_url": "http://localhost:8080",
-    "max_offline_connections": 4,
-    "stale_depth": 30,
-    "broadcast_limit": 3,
-    "ignore_broadcast_failures": false,
-    "clear_broadcasts": false,
-    "broadcast_behind_tip": false,
-    "block_broadcast_limit": 5,
-    "rebroadcast_all": false,
-    "prefunded_accounts": [
-      {
-        "privkey": "b803642b3a58699b8442546ccbd5d5c0d5dba97b2b5b868a263fd0f4c0fd7bc5",
-        "account_identifier": {
-          "address": "0x03dDDE31C7d3Bd9C6d190185E04A340981586427"
-        },
-        "curve_type": "secp256k1",
-        "currency": {
-          "symbol": "cGLD",
-          "decimals": 18
-        }
-      }
-    ],
-    "constructor_dsl_file": "celo.ros",
-    "status_port": 9090,
-    "initial_balance_fetch_disabled": false,
-    "end_conditions": {
-      "create_account": 10,
-      "transfer": 10
-    }
-  },
+  "construction": null,
   "data": {
     "active_reconciliation_concurrency": 16,
     "inactive_reconciliation_concurrency": 4,
@@ -53,7 +23,6 @@
     "log_balance_changes": false,
     "log_reconciliations": false,
     "ignore_reconciliation_error": false,
-    "exempt_accounts": "",
     "bootstrap_balances": "bootstrap_balances.json",
     "interesting_accounts": "",
     "reconciliation_disabled": false,

@@ -37,7 +37,9 @@
     "inactive_discrepancy_search_disabled": false,
     "end_conditions": {
       "reconciliation_coverage": {
-        "coverage": 0.95
+        "coverage": 0.95,
+        "from_tip": true,
+        "tip": true
       }
     }
   }
