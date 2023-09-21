@@ -17,9 +17,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 
 	"github.com/celo-org/celo-blockchain/core"
@@ -34,26 +32,20 @@ type BootstrapBalance struct {
 
 func main() {
 	if len(os.Args) != 3 {
-		fmt.Println("Usage: generate_balances <genesisURL> <outputFile>")
+		fmt.Println("Usage: generate_balances <pathToGenesis> <outputFile>")
 		os.Exit(1)
 	}
-	genesisURL := os.Args[1]
+	genesisPath := os.Args[1]
 	bootstrapBalancesFile := os.Args[2]
-	// Get Genesis File
-	resp, err := http.Get(genesisURL)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	data, err := os.ReadFile(genesisPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	genesis := &core.Genesis{}
-	if err := json.Unmarshal(body, genesis); err != nil {
+	if err := json.Unmarshal(data, genesis); err != nil {
 		log.Fatalln(err)
 	}
-	log.Printf("%+v\n", genesis.Alloc)
+	log.Println("Loaded genesis file, writing allocation file")
 	// Write to file
 	balances := []*BootstrapBalance{}
 	for k, v := range genesis.Alloc {
@@ -76,7 +68,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err := ioutil.WriteFile(bootstrapBalancesFile, file, os.FileMode(0600)); err != nil {
+	if err := os.WriteFile(bootstrapBalancesFile, file, os.FileMode(0600)); err != nil {
 		log.Fatal(err)
 	}
 	log.Printf("Bootstrap file contains %d balances\n", len(balances))

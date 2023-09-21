@@ -202,12 +202,11 @@ rosetta-cli check:data --configuration-file $PATH_TO_ROSETTA/rosetta-cli-conf/$N
 
 ### How to generate `bootstrap_balances.json`
 
-This is only necessary for running the data checks if it has not already been created for the particular network. Here's how to generate this for alfajores (for another network, specify the appropriate genesis block URL and output path):
+This is only necessary for running the data checks if it has not already been created for the particular network. Here's how to generate this for alfajores (for another network, specify the appropriate genesis block filepath and output path):
 
 ```sh
 go run examples/generate_balances/main.go \
-  https://storage.googleapis.com/genesis_blocks/alfajores \
-  rosetta-cli-conf/testnet/bootstrap_balances.json
+  $PATH_TO_GENESIS_FILE rosetta-cli-conf/mycelo/bootstrap_balances.json
 ```
 
 ### Running Rosetta with a mycelo testnet
