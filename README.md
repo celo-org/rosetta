@@ -222,6 +222,34 @@ To run reconciliation tests on this network:
   - Set `network` to match the `ChainID` in the genesis file (not the network ID).
   - Point `bootstrap_balances` to the generated `bootstrap_balances.json`.
 
+#### Example
+
+Run the following command to run a local testnet with three validators:
+```sh
+build/bin/mycelo genesis --buildpath compiled-system-contracts --dev.accounts 2 --newenv tmp/rosetta --mnemonic "miss fire behind decide egg buyer honey seven advance uniform profit renew"
+build/bin/mycelo validator-init tmp/rosetta
+build/bin/mycelo validator-run tmp/rosetta
+```
+
+Get the first validators enode with the following command:
+```sh
+build/bin/geth attach tmp/rosetta/validator-00/geth.ipc --exec "admin.nodeInfo"
+```
+
+In the `rosetta` repository run the following command to start rosetta:
+```sh
+go run main.go run \
+  --geth.genesis ../celo-blockchain/tmp/rosetta/genesis.json \
+  --geth.binary ../celo-blockchain/build/bin/geth \
+  --geth.syncmode full \
+  --geth.gcmode archive \
+  --datadir ./test-mycelo \
+  --monitor.initcontracts \
+  --geth.port 30308 \
+  --geth.rpcport 8553 \
+  --geth.bootnodes "<ENODE>"
+```
+
 ## Releasing rosetta
 
 ### Versioning
