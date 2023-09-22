@@ -189,24 +189,24 @@ needs to reach the tip before submitting transactions. The data checks will
 take a while to complete as well (likely a couple of days on a normal laptop
 with the current settings) as they reconcile balances for the entire chain._
 
-- Install the [`rosetta-cli`](https://github.com/coinbase/rosetta-cli) according to the instructions. (Note that on Mac, installing the `rosetta-cli` to `/usr/local/bin` or adding its location to you `$PATH` will allow you to call `rosetta-cli` directly on the command line rather than needing to provide the path to the executable). Current testing has been done with `v0.5.16` of the `rosetta-cli`.
-- Run the Rosetta service in the background for the respective network (currently only alfajores for both Data and Construction checks)
-- Run the CLI checks for alfajores as follows:
+- Install the [`rosetta-cli`](https://github.com/coinbase/rosetta-cli) according to the instructions. (Note that on Mac, installing the `rosetta-cli` to `/usr/local/bin` or adding its location to you `$PATH` will allow you to call `rosetta-cli` directly on the command line rather than needing to provide the path to the executable). Current testing has been done with `v0.10.3` of the `rosetta-cli`.
+- Run the Rosetta service in the background for the respective network (currently only alfajores for both data and construction checks, the data checks work for all other networks).
+- Run the CLI checks for `NETWORK_NAME` as follows:
 
 ```sh
 # alfajores; specify construction or data
-rosetta-cli check:construction --configuration-file PATH/TO/rosetta/rosetta-cli-conf/testnet/cli-config.json
+rosetta-cli check:data --configuration-file $PATH_TO_ROSETTA/rosetta-cli-conf/$NETWORK_NAME/cli-config.json
 ```
 
+[See below](#running-rosetta-with-a-mycelo-testnet) for more details on running the reconciliation checks against a mycelo testnet.
 
 ### How to generate `bootstrap_balances.json`
 
-This is only necessary for running the data checks if it has not already been created for the particular network. Here's how to generate this for alfajores (for another network, specify the appropriate genesis block URL and output path):
+This is only necessary for running the data checks if it has not already been created for the particular network. Here's how to generate this for alfajores (for another network, specify the appropriate genesis block filepath and output path):
 
 ```sh
 go run examples/generate_balances/main.go \
-  https://storage.googleapis.com/genesis_blocks/alfajores \
-  rosetta-cli-conf/testnet/bootstrap_balances.json
+  $PATH_TO_GENESIS_FILE rosetta-cli-conf/mycelo/bootstrap_balances.json
 ```
 
 ### Running Rosetta with a mycelo testnet
@@ -215,11 +215,11 @@ go run examples/generate_balances/main.go \
 - Set `--geth.networkid` to the network ID (if this is a deployed testnet, this may be different from the `ChainID` in the genesis file). If this value is the same as the `ChainID`, it is not necessary to set this parameter.
 - Set the `--monitor.initcontracts` flag (at least on the first run), which fetches necessary state from the genesis block and updates the Rosetta DB accordingly.
 
-To run reconciliation tests on this network:
+To run reconciliation tests on this network, you can use the `cli-config` in `./rosetta-cli-conf/mycelo` as a basis. (Note: the default `cli-config` uses the chain ID that is set when the `loadtest` template is used to set up the mycelo network).
 
-- Generate `bootstrap_balances.json` using the network's genesis block.
+- [Generate `bootstrap_balances.json`](#how-to-generate-bootstrap_balancesjson) within the same folder, using the mycelo network's genesis block.
 - In the `cli-config.json`:
-  - Set `network` to match the `ChainID` in the genesis file (not the network ID).
+  - Set `network` parameter to match the `ChainID` in the genesis file (not the network ID).
   - Point `bootstrap_balances` to the generated `bootstrap_balances.json`.
 
 #### Example
