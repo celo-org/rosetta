@@ -231,7 +231,7 @@ build/bin/mycelo validator-init tmp/rosetta
 build/bin/mycelo validator-run tmp/rosetta
 ```
 
-Get the first validators enode with the following command:
+Get the first validator's enode with the following command:
 ```sh
 build/bin/geth attach tmp/rosetta/validator-00/geth.ipc --exec "admin.nodeInfo"
 ```
