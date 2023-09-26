@@ -21,14 +21,14 @@ import (
 
 	"github.com/celo-org/celo-blockchain/common"
 	"github.com/celo-org/rosetta/analyzer"
-	"github.com/coinbase/rosetta-sdk-go/types"
+
 	rosettaTypes "github.com/coinbase/rosetta-sdk-go/types"
 	. "github.com/onsi/gomega"
 	gs "github.com/onsi/gomega/gstruct"
 	gtypes "github.com/onsi/gomega/types"
 )
 
-func MatchOperation(account common.Address, value int, currency *types.Currency, status OperationResult, kind analyzer.OperationType) gtypes.GomegaMatcher {
+func MatchOperation(account common.Address, value int, currency *rosettaTypes.Currency, status OperationResult, kind analyzer.OperationType) gtypes.GomegaMatcher {
 	return gs.PointTo(gs.MatchFields(gs.IgnoreExtras, gs.Fields{
 		"Account": gs.PointTo(Equal(NewAccountIdentifier(account, nil))),
 		"Amount": gs.PointTo(gs.MatchAllFields(gs.Fields{
@@ -46,7 +46,7 @@ func TestMapTxHashesToTransaction(t *testing.T) {
 
 	txHashes := []common.Hash{common.HexToHash("1"), common.HexToHash("2"), common.HexToHash("3")}
 
-	getHashesFromIds := func(txIds []*types.TransactionIdentifier) []common.Hash {
+	getHashesFromIds := func(txIds []*rosettaTypes.TransactionIdentifier) []common.Hash {
 		txHashes := make([]common.Hash, len(txIds))
 		for i, t := range txIds {
 			txHashes[i] = common.HexToHash(t.Hash)
