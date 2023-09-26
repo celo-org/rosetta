@@ -111,13 +111,10 @@ func (gs *gethService) Setup() error {
 		switch gs.opts.Network {
 		case "mainnet":
 			config = params.MainnetChainConfig
-			break
 		case "alfajores":
 			config = params.AlfajoresChainConfig
-			break
 		case "baklava":
 			config = params.BaklavaChainConfig
-			break
 		default:
 			return fmt.Errorf("unknown network: %s", gs.opts.Network)
 		}

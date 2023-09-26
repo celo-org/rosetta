@@ -29,7 +29,6 @@ import (
 	"github.com/celo-org/rosetta/db"
 )
 
-//nolint:unused
 type processor struct {
 	ctx                 context.Context
 	headers             <-chan *types.Header
@@ -38,7 +37,6 @@ type processor struct {
 	registry            *contracts.Registry
 	epochRewardsAddress common.Address
 	gpmAddress          common.Address
-	reserveAddress      common.Address
 	gpm                 *big.Int
 	logger              log.Logger
 }
