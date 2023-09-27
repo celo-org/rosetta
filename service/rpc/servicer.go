@@ -246,7 +246,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 
 	if subAccount.Address == string(analyzer.AccLockedGoldNonVoting) {
 		// Fetch LockedGold Balances
-		lockedGold, err := registry.GetLockedGoldContract(ctx, nil)
+		lockedGold, err := registry.GetLockedGoldContract(ctx, requestedBlockOpts.BlockNumber)
 		if err == client.ErrContractNotDeployed {
 			// Nothing is deployed => ignore lockedGold & election balances
 			return emptyResponse, nil
@@ -264,7 +264,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 
 	if subAccount.Address == string(analyzer.AccLockedGoldPending) {
 		// Fetch LockedGold Balances
-		lockedGold, err := registry.GetLockedGoldContract(ctx, nil)
+		lockedGold, err := registry.GetLockedGoldContract(ctx, requestedBlockOpts.BlockNumber)
 		if err == client.ErrContractNotDeployed {
 			// Nothing is deployed => ignore lockedGold & election balances
 			return emptyResponse, nil
@@ -283,7 +283,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 	// If we are here need to be election based
 
 	// Fetch Election (Votes) Balances
-	_election, err := registry.GetElectionContract(ctx, nil)
+	_election, err := registry.GetElectionContract(ctx, requestedBlockOpts.BlockNumber)
 	if err == client.ErrContractNotDeployed {
 		// Nothing is deployed => ignore lockedGold & election balances
 		return emptyResponse, nil
