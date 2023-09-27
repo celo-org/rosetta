@@ -19,6 +19,7 @@ import (
 	"context"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/celo-org/kliento/client"
 	"github.com/celo-org/rosetta/cmd/internal/utils"
@@ -37,6 +38,8 @@ var CliCmd = &cobra.Command{
 
 var serverUrl string
 var dbPath string
+var nodeUrl string
+var timeout uint64
 
 func init() {
 	CliCmd.AddCommand(blockCmd)
@@ -44,38 +47,40 @@ func init() {
 
 	CliCmd.PersistentFlags().StringVar(&serverUrl, "url", "http://localhost:8080", "Base url for rosetta rpc")
 	CliCmd.PersistentFlags().StringVar(&dbPath, "db", "./envs/alfajores/rosetta.db", "RosettaDb path")
-	CliCmd.PersistentFlags().StringVar(&dbPath, "nodeUrl", "http://localhost:8545", "Geth Node url")
+	CliCmd.PersistentFlags().StringVar(&nodeUrl, "nodeUrl", "http://localhost:8545", "Geth Node url")
+	CliCmd.PersistentFlags().Uint64Var(&timeout, "timeout", 60, "HTTP response timeout in seconds")
 }
 
 func getFetcher() (*fetcher.Fetcher, *types.NetworkIdentifier, *types.NetworkStatusResponse) {
 	ctx := context.Background()
-	fetcher := fetcher.New(serverUrl)
-
+	fetcher := fetcher.New(serverUrl, fetcher.WithTimeout(time.Duration(timeout)*time.Second))
 	// Step 2: Initialize the fetcher's asserter
 	//
 	// Behind the scenes this makes a call to get the
 	// network status and uses the response to inform
 	// the asserter what are valid responses.
 	primaryNetwork, networkStatus, err := fetcher.InitializeAsserter(ctx, nil)
-	utils.ExitOnError(err.Err)
+	if err != nil {
+		utils.ExitOnError(err.Err)
+	}
 
 	return fetcher, primaryNetwork, networkStatus
 }
 
 func getDb() db.RosettaDB {
-	celoStore, err := db.NewSqliteDb("./envs/alfajores/rosetta.db")
+	celoStore, err := db.NewSqliteDb(dbPath)
 	utils.ExitOnError(err)
 	return celoStore
 }
 
 func getCeloClient() *client.CeloClient {
-	cc, err := client.Dial("http://localhost:8545")
+	cc, err := client.Dial(nodeUrl)
 	utils.ExitOnError(err)
 	return cc
 }
 
 func toBlockIdentifier(arg string) (blockIdentifier *types.PartialBlockIdentifier) {
-	if strings.HasPrefix("0x", arg) {
+	if strings.HasPrefix(arg, "0x") {
 		blockIdentifier = &types.PartialBlockIdentifier{
 			Hash: &arg,
 		}

@@ -47,7 +47,7 @@ func init() {
 	reconcileCmd.Flags().Int64Var(&blockNum, "block", -1, "block to reconcile")
 	reconcileCmd.Flags().Int64Var(&fromBlockNum, "from", -1, "from block to reconcile")
 	reconcileCmd.Flags().Int64Var(&toBlockNum, "to", -1, "to block to reconcile")
-	reconcileCmd.Flags().Int64Var(&batchSize, "batchSize", 5000, "to block to reconcile")
+	reconcileCmd.Flags().Int64Var(&batchSize, "batchSize", 5000, "size of batches to reconcile")
 }
 
 func runReconciler(cmd *cobra.Command, args []string) {
@@ -57,11 +57,15 @@ func runReconciler(cmd *cobra.Command, args []string) {
 	fetcher, network, _ := getFetcher()
 
 	getBalance := func(acc *types.AccountIdentifier, block *types.BlockIdentifier) (*big.Int, error) {
-		_, amounts, _, _, fetcherErr := fetcher.AccountBalance(ctx, network, acc, types.ConstructPartialBlockIdentifier(block))
+		block, amounts, _, _, fetcherErr := fetcher.AccountBalance(ctx, network, acc, types.ConstructPartialBlockIdentifier(block))
 		if fetcherErr != nil {
 			return nil, fetcherErr.Err
 		}
-		if len(amounts) != 1 {
+		if amounts == nil {
+			// This can occur when contracts have not yet been deployed
+			logger.Info("Amounts is nil, returning 0", "account", acc.Address, "subaccount", acc.SubAccount, "block", block.Index)
+			return common.Big0, nil
+		} else if len(amounts) != 1 {
 			return nil, fmt.Errorf("Invalid number of amounts %d", len(amounts))
 		}
 		val, ok := new(big.Int).SetString(amounts[0].Value, 10)
@@ -159,7 +163,7 @@ func reconcileRange(blocks []*types.Block, checkDifferences func(id string, chan
 		checkDifferences(fmt.Sprintf("block %d", block.BlockIdentifier.Index), blockChanges, block.ParentBlockIdentifier, block.BlockIdentifier)
 	}
 
-	logger.Info("Range differences")
+	logger.Info("Checking for balance differences in range")
 	checkDifferences("range", rangeChanges, blocks[0].ParentBlockIdentifier, blocks[len(blocks)-1].BlockIdentifier)
 
 }
