@@ -17,13 +17,9 @@ package cli
 
 import (
 	"context"
-	"strconv"
-	"strings"
 	"time"
 
-	"github.com/celo-org/kliento/client"
 	"github.com/celo-org/rosetta/cmd/internal/utils"
-	"github.com/celo-org/rosetta/db"
 	"github.com/coinbase/rosetta-sdk-go/fetcher"
 	"github.com/coinbase/rosetta-sdk-go/types"
 
@@ -37,17 +33,12 @@ var CliCmd = &cobra.Command{
 }
 
 var serverUrl string
-var dbPath string
-var nodeUrl string
 var timeout uint64
 
 func init() {
-	CliCmd.AddCommand(blockCmd)
 	CliCmd.AddCommand(reconcileCmd)
 
 	CliCmd.PersistentFlags().StringVar(&serverUrl, "url", "http://localhost:8080", "Base url for rosetta rpc")
-	CliCmd.PersistentFlags().StringVar(&dbPath, "db", "./envs/alfajores/rosetta.db", "RosettaDb path")
-	CliCmd.PersistentFlags().StringVar(&nodeUrl, "nodeUrl", "http://localhost:8545", "Geth Node url")
 	CliCmd.PersistentFlags().Uint64Var(&timeout, "timeout", 60, "HTTP response timeout in seconds")
 }
 
@@ -65,31 +56,4 @@ func getFetcher() (*fetcher.Fetcher, *types.NetworkIdentifier, *types.NetworkSta
 	}
 
 	return fetcher, primaryNetwork, networkStatus
-}
-
-func getDb() db.RosettaDB {
-	celoStore, err := db.NewSqliteDb(dbPath)
-	utils.ExitOnError(err)
-	return celoStore
-}
-
-func getCeloClient() *client.CeloClient {
-	cc, err := client.Dial(nodeUrl)
-	utils.ExitOnError(err)
-	return cc
-}
-
-func toBlockIdentifier(arg string) (blockIdentifier *types.PartialBlockIdentifier) {
-	if strings.HasPrefix(arg, "0x") {
-		blockIdentifier = &types.PartialBlockIdentifier{
-			Hash: &arg,
-		}
-	} else {
-		number, err := strconv.ParseInt(arg, 10, 0)
-		utils.ExitOnError(err)
-		blockIdentifier = &types.PartialBlockIdentifier{
-			Index: &number,
-		}
-	}
-	return
 }
