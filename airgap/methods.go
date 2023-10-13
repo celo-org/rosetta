@@ -96,7 +96,12 @@ type CeloMethod struct {
 	argParsers []argParser
 }
 
-func (cm *CeloMethod) String() string { return fmt.Sprintf("%s.%s", cm.Contract, cm.Name) }
+func (cm *CeloMethod) String() string {
+	if cm.Contract == "" {
+		return cm.Name
+	}
+	return fmt.Sprintf("%s.%s", cm.Contract, cm.Name)
+}
 
 func (cm *CeloMethod) SerializeArguments(args ...interface{}) ([]interface{}, error) {
 	if len(args) != len(cm.argParsers) {
