@@ -144,7 +144,6 @@ func (b *airGapServerImpl) ObtainMetadata(ctx context.Context, options *airgap.T
 	}
 
 	if options.Method != nil {
-		log.Printf("Building metadata for celo method %s", options.Method.String())
 		if options.To == nil { // 'to' is implicit from registry
 			addr, err := b.srvCtx.addressFor(ctx, registry.ContractID(options.Method.Contract), nil)
 			if err != nil {
@@ -153,21 +152,45 @@ func (b *airGapServerImpl) ObtainMetadata(ctx context.Context, options *airgap.T
 			txMetadata.To = addr
 		}
 
-		serverMethod, ok := b.transactionMethods[options.Method]
-		if !ok {
-			return nil, fmt.Errorf("Unsupported method: %s", options.Method)
-		}
+		var data []byte
+		if serverMethod, ok := b.transactionMethods[options.Method]; ok {
+			// This method is registered; use the registry to parse arguments
+			log.Printf("Building metadata for celo method %s", options.Method.String())
+			hydratedArgs, err := options.Method.DeserializeArguments(options.Args...)
+			if err != nil {
+				return nil, err
+			}
+			data, err = serverMethod(ctx, hydratedArgs)
+			if err != nil {
+				return nil, fmt.Errorf("Airgap server method failed: %s", err)
+			}
+		} else {
+			// This method is unregistered; calculate the call data based on whether the args are already encoded
+			methodSig := options.Method.Name
+			log.Printf("Building metadata for contract call method %s", methodSig)
 
-		hydratedArgs, err := options.Method.DeserializeArguments(options.Args...)
-		if err != nil {
-			return nil, err
-		}
+			var methodArgs interface{}
+			if options.ArgsEncoded != nil && *options.ArgsEncoded {
+				// options.Args is a string array and the first element is the encoded args
+				if len(options.Args) > 0 {
+					if encodedArgsData, ok := options.Args[0].(string); ok {
+						methodArgs = encodedArgsData
+					} else {
+						return nil, fmt.Errorf("Invalid encoded args: %s for method: %s", options.Args[0], options.Method)
+					}
+				} else {
+					return nil, fmt.Errorf("Args not provided for method: %s", options.Method)
+				}
+			} else {
+				// options.Args is a []interface{} and can be processed by ConstructContractCallDataGeneric as-is
+				methodArgs = options.Args
+			}
 
-		data, err := serverMethod(ctx, hydratedArgs)
-		if err != nil {
-			return nil, fmt.Errorf("Airgap server method failed: %s", err)
+			data, err = constructContractCallDataGeneric(methodSig, methodArgs)
+			if err != nil {
+				return nil, fmt.Errorf("Failed to construct call data for method: %s using args: %v due to %s", options.Method, options.Args, err)
+			}
 		}
-
 		txMetadata.Data = data
 	}
 
