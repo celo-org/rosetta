@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"github.com/celo-org/celo-blockchain/common"
+	"github.com/celo-org/celo-blockchain/common/hexutil"
 	"github.com/celo-org/rosetta/airgap"
 	. "github.com/onsi/gomega"
 )
@@ -91,4 +92,110 @@ func TestClientServer(t *testing.T) {
 
 		_ = tx
 	})
+
+	t.Run("contract call with no arguments", func(t *testing.T) {
+		RegisterTestingT(t)
+
+		txArgs := buildContractCallTxArgs(common.HexToAddress("A"), 0, common.HexToAddress("B"), "noArgs()", []interface{}{}, false)
+		Ω(err).ShouldNot(HaveOccurred())
+
+		txArgs, err = simulateWire(txArgs)
+		Ω(err).ShouldNot(HaveOccurred())
+
+		txMetadata, err := server.ObtainMetadata(ctx, txArgs)
+		Ω(err).ShouldNot(HaveOccurred())
+
+		hexEncodedData := hexutil.Encode(txMetadata.Data)
+		expectedData := "0x83c962bb" // The data is just the function selector
+		Ω(hexEncodedData).Should(Equal(expectedData))
+
+		tx, err := client.ConstructTxFromMetadata(txMetadata)
+		Ω(err).ShouldNot(HaveOccurred())
+
+		_ = tx
+	})
+
+	t.Run("contract call with unencoded primitive-typed arguments", func(t *testing.T) {
+		RegisterTestingT(t)
+
+		methodSig := "withdraw(address,uint256,uint32,bytes)"
+		methodArgs := []interface{}{"0xDeadDeAddeAddEAddeadDEaDDEAdDeaDDeAD0000", "23535", "0", "0x"}
+		txArgs := buildContractCallTxArgs(common.HexToAddress("A"), 0, common.HexToAddress("B"), methodSig, methodArgs, false)
+		Ω(err).ShouldNot(HaveOccurred())
+
+		txArgs, err = simulateWire(txArgs)
+		Ω(err).ShouldNot(HaveOccurred())
+
+		txMetadata, err := server.ObtainMetadata(ctx, txArgs)
+		Ω(err).ShouldNot(HaveOccurred())
+
+		hexEncodedData := hexutil.Encode(txMetadata.Data)
+		expectedData := "0x32b7006d000000000000000000000000deaddeaddeaddeaddeaddeaddeaddeaddead00000000000000000000000000000000000000000000000000000000000000005bef000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000000"
+		Ω(hexEncodedData).Should(Equal(expectedData))
+
+		tx, err := client.ConstructTxFromMetadata(txMetadata)
+		Ω(err).ShouldNot(HaveOccurred())
+
+		_ = tx
+	})
+
+	t.Run("contract call with fixed-length byte argument", func(t *testing.T) {
+		RegisterTestingT(t)
+
+		methodSig := "deploy(bytes32,address,address)"
+		methodArgs := []interface{}{"0x0000000000000000000000000000000000000000000000000000000000000000", "0xDeadDeAddeAddEAddeadDEaDDEAdDeaDDeAD0000", "0xb0935a466e6Fa8FDa8143C7f4a8c149CA56D06FE"}
+		txArgs := buildContractCallTxArgs(common.HexToAddress("A"), 0, common.HexToAddress("B"), methodSig, methodArgs, false)
+		Ω(err).ShouldNot(HaveOccurred())
+
+		txArgs, err = simulateWire(txArgs)
+		Ω(err).ShouldNot(HaveOccurred())
+
+		txMetadata, err := server.ObtainMetadata(ctx, txArgs)
+		Ω(err).ShouldNot(HaveOccurred())
+
+		hexEncodedData := hexutil.Encode(txMetadata.Data)
+		expectedData := "0xcf9d137c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000deaddeaddeaddeaddeaddeaddeaddeaddead0000000000000000000000000000b0935a466e6fa8fda8143c7f4a8c149ca56d06fe"
+		Ω(hexEncodedData).Should(Equal(expectedData))
+
+		tx, err := client.ConstructTxFromMetadata(txMetadata)
+		Ω(err).ShouldNot(HaveOccurred())
+
+		_ = tx
+	})
+
+	t.Run("contract call with already encoded arg data", func(t *testing.T) {
+		RegisterTestingT(t)
+
+		methodSig := "deploy(bytes32,address,address)"
+		methodArgs := []interface{}{"0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000deaddeaddeaddeaddeaddeaddeaddeaddead0000000000000000000000000000b0935a466e6fa8fda8143c7f4a8c149ca56d06fe"}
+		txArgs := buildContractCallTxArgs(common.HexToAddress("A"), 0, common.HexToAddress("B"), methodSig, methodArgs, true)
+		Ω(err).ShouldNot(HaveOccurred())
+
+		txArgs, err = simulateWire(txArgs)
+		Ω(err).ShouldNot(HaveOccurred())
+
+		txMetadata, err := server.ObtainMetadata(ctx, txArgs)
+		Ω(err).ShouldNot(HaveOccurred())
+
+		hexEncodedData := hexutil.Encode(txMetadata.Data)
+		expectedData := "0xcf9d137c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000deaddeaddeaddeaddeaddeaddeaddeaddead0000000000000000000000000000b0935a466e6fa8fda8143c7f4a8c149ca56d06fe"
+		Ω(hexEncodedData).Should(Equal(expectedData))
+
+		tx, err := client.ConstructTxFromMetadata(txMetadata)
+		Ω(err).ShouldNot(HaveOccurred())
+
+		_ = tx
+	})
+}
+
+func buildContractCallTxArgs(from common.Address, value int64, to common.Address, methodSig string, args []interface{}, argsEncoded bool) *airgap.TxArgs {
+	bigIntValue := big.NewInt(value)
+	return &airgap.TxArgs{
+		From:        from,
+		Value:       bigIntValue,
+		To:          &to,
+		Method:      &airgap.CeloMethod{Name: methodSig},
+		Args:        args,
+		ArgsEncoded: &argsEncoded,
+	}
 }
