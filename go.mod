@@ -22,7 +22,7 @@ require (
 	github.com/rjeczalik/notify v0.9.2 // indirect
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.6.3
-	golang.org/x/crypto v0.1.0 // indirect
-	golang.org/x/net v0.7.0
-	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
+	golang.org/x/crypto v0.14.0
+	golang.org/x/net v0.17.0
+	golang.org/x/sync v0.1.0
 )
