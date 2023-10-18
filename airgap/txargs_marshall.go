@@ -21,11 +21,12 @@ import (
 )
 
 type txArgsRawData struct {
-	From   common.Address  `json:"from"`
-	Value  *string         `json:"value,omitempty"`
-	To     *common.Address `json:"to,omitempty"`
-	Method *string         `json:"method,omitempty"`
-	Args   []interface{}   `json:"args,omitempty"`
+	From        common.Address  `json:"from"`
+	Value       *string         `json:"value,omitempty"`
+	To          *common.Address `json:"to,omitempty"`
+	Method      *string         `json:"method,omitempty"`
+	Args        []interface{}   `json:"args,omitempty"`
+	ArgsEncoded bool            `json:"args_encoded,omitempty"`
 }
 
 type callParamsRawData struct {
@@ -46,6 +47,7 @@ func (data *txArgsRawData) transform(args *TxArgs) error {
 		return err
 	}
 	args.Args = data.Args
+	args.ArgsEncoded = data.ArgsEncoded
 	return nil
 }
 
@@ -59,6 +61,7 @@ func (args *TxArgs) transform() *txArgsRawData {
 		data.Method = &str
 	}
 	data.Args = args.Args
+	data.ArgsEncoded = args.ArgsEncoded
 	return &data
 }
 
