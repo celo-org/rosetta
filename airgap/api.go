@@ -99,7 +99,7 @@ type TxArgs struct {
 	// ArgsEncoded is set to true for arbitrary contract calls where
 	// the args array has one element containing the pre-encoded args data,
 	// as a hex encoded string
-	ArgsEncoded *bool
+	ArgsEncoded bool
 }
 
 type CallParams struct {

@@ -170,7 +170,7 @@ func (b *airGapServerImpl) ObtainMetadata(ctx context.Context, options *airgap.T
 			log.Printf("Building metadata for contract call method %s", methodSig)
 
 			var methodArgs interface{}
-			if options.ArgsEncoded != nil && *options.ArgsEncoded {
+			if options.ArgsEncoded {
 				// options.Args is a string array and the first element is the encoded args
 				if len(options.Args) > 0 {
 					if encodedArgsData, ok := options.Args[0].(string); ok {

@@ -26,7 +26,7 @@ type txArgsRawData struct {
 	To          *common.Address `json:"to,omitempty"`
 	Method      *string         `json:"method,omitempty"`
 	Args        []interface{}   `json:"args,omitempty"`
-	ArgsEncoded *bool           `json:"args_encoded,omitempty"`
+	ArgsEncoded bool            `json:"args_encoded,omitempty"`
 }
 
 type callParamsRawData struct {

@@ -196,6 +196,6 @@ func buildContractCallTxArgs(from common.Address, value int64, to common.Address
 		To:          &to,
 		Method:      &airgap.CeloMethod{Name: methodSig},
 		Args:        args,
-		ArgsEncoded: &argsEncoded,
+		ArgsEncoded: argsEncoded,
 	}
 }
