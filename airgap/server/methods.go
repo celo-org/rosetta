@@ -18,7 +18,6 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
-	"golang.org/x/crypto/sha3"
 	"log"
 	"math/big"
 	"strconv"
@@ -30,6 +29,7 @@ import (
 	"github.com/celo-org/kliento/contracts"
 	"github.com/celo-org/kliento/registry"
 	"github.com/celo-org/rosetta/airgap"
+	"golang.org/x/crypto/sha3"
 )
 
 var abiFactoryMap = map[string]func() (*abi.ABI, error){
