@@ -62,7 +62,7 @@ You will need the following three repositories cloned locally:
 
 You also need the following dependencies to be met:
 
-- `go >= 1.15`
+- `go >= 1.17`
 - `golangci` ([installation instructions](https://golangci-lint.run/usage/install/#local-installation)) (linter dependency for the Makefile)
 
 #### Running Rosetta
