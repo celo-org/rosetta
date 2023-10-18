@@ -24,14 +24,12 @@ all:
 deps:
 	go get ./...
 	go install github.com/google/addlicense@v1.1.1
-	# used in CI
-	go install github.com/jstemmer/go-junit-report@v1.0.0 
 
 test: 
 	go test ./...
 
 test-cover:
-	go test ./... -covermode=count
+	go test ./... -covermode=count -coverprofile=coverage.out
 
 fmt: 
 	go fmt ./...
@@ -54,7 +52,6 @@ clean:
 
 add-license:
 	${LICENCE_SCRIPT} analyzer airgap cmd db examples internal service main.go
-
 
 check-license:
 	${LICENCE_SCRIPT} -check analyzer airgap cmd db examples internal service main.go
