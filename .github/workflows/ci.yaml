@@ -1,0 +1,40 @@
+name: Celo Rosetta CI
+
+on:
+  push:
+    branches:
+      - master
+
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  CI:
+    runs-on: ubuntu-latest
+    steps:
+        - uses: actions/checkout@v4
+        - uses: actions/setup-go@v4
+          with:
+            go-version: '1.17'
+
+        - name: Install dependencies
+          run: make deps
+        
+        - name: Check licenses 
+          run: make check-license
+
+        - name: Linting
+          uses: golangci/golangci-lint-action@v3
+          with:
+            version: v1.50
+
+        - name: Build
+          run: make all
+
+        - name: Test
+          run: make test-cover
+        
+        - name: Upload coverage to Codecov
+          uses: codecov/codecov-action@v3
+        
