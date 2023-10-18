@@ -77,17 +77,27 @@ func unregisteredMethodFromString(methodSignature string) (*CeloMethod, error) {
 }
 
 func validateMethodSignature(methodSig string) error {
-	splitSigByLeadingParenthesis := strings.Split(methodSig, "(")
-	if len(splitSigByLeadingParenthesis) < 2 {
-		return nil
+	// Check if the method signature contains both opening and closing parentheses
+	openParenIndex := strings.Index(methodSig, "(")
+	closeParenIndex := strings.Index(methodSig, ")")
+	if openParenIndex == -1 || closeParenIndex == -1 || openParenIndex > closeParenIndex {
+		return fmt.Errorf("Invalid method signature: %s", methodSig)
 	}
-	splitSigByTrailingParenthesis := strings.Split(splitSigByLeadingParenthesis[1], ")")
-	if len(splitSigByTrailingParenthesis) < 1 || splitSigByTrailingParenthesis[0] == "" {
-		return nil
-	}
-	methodTypes := strings.Split(splitSigByTrailingParenthesis[0], ",")
 
+	// Extract the contents inside the parentheses
+	paramString := methodSig[openParenIndex+1 : closeParenIndex]
+
+	// If there are no contents, the signature is valid
+	if paramString == "" {
+		return nil
+	}
+
+	// Split the contents by comma to get individual type strings
+	methodTypes := strings.Split(paramString, ",")
+
+	// Iterate through each type string and validate
 	for _, v := range methodTypes {
+		v = strings.TrimSpace(v) // Trim any leading/trailing whitespace
 		switch {
 		case v == "address":
 			continue
