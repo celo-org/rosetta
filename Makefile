@@ -23,11 +23,9 @@ all:
 
 deps:
 	go get ./...
-	go get github.com/google/addlicense
+	go install github.com/google/addlicense@v1.1.1
 	# used in CI
-	go get github.com/jstemmer/go-junit-report 
-	# go get github.com/segmentio/golines
-	# go get github.com/mattn/goveralls	
+	go install github.com/jstemmer/go-junit-report@v1.0.0 
 
 test: 
 	go test ./...
