@@ -33,8 +33,5 @@ jobs:
           run: make all
 
         - name: Test
-          run: make test-cover
-        
-        - name: Upload coverage to Codecov
-          uses: codecov/codecov-action@v3
+          run: make test
         
