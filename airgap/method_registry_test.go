@@ -22,12 +22,18 @@ func Test_validateMethodSignature(t *testing.T) {
 		methodSig string
 		wantErr   bool
 	}{
+		{name: "no method name", methodSig: "()", wantErr: true},
 		{name: "valid signature with no args", methodSig: "noArgs()", wantErr: false},
 		{name: "valid signature with one arg", methodSig: "deploy(address)", wantErr: false},
 		{name: "valid signature with multiple args", methodSig: "deploy(address,uint8,bytes16,address)", wantErr: false},
+		{name: "valid signature with nested args", methodSig: "batchTransfer((address,(address,(address,uint256)[])[])[],uint256)", wantErr: false},
 		{name: "signature with invalid arg type", methodSig: "batchTransfer(DepositWalletTransfer[])", wantErr: true},
 		{name: "closing parenthesis only", methodSig: "noArgs)", wantErr: true},
 		{name: "open parenthesis only", methodSig: "noArgs(", wantErr: true},
+		{name: "missing closing bracket in the args", methodSig: "batchTransfer(bytes[)", wantErr: true},
+		{name: "mismatch parenthesis in the args", methodSig: "batchTransfer(bytes[))", wantErr: true},
+		{name: "missing open bracket in the args", methodSig: "batchTransfer(bytes])", wantErr: true},
+		{name: "missing closing bracket in the nested args", methodSig: "batchTransfer((address,(address,(address,uint256)[)[])[],uint256)", wantErr: true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
