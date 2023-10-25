@@ -22,6 +22,7 @@ func Test_validateMethodSignature(t *testing.T) {
 		methodSig string
 		wantErr   bool
 	}{
+		{name: "no method name", methodSig: "()", wantErr: true},
 		{name: "valid signature with no args", methodSig: "noArgs()", wantErr: false},
 		{name: "valid signature with one arg", methodSig: "deploy(address)", wantErr: false},
 		{name: "valid signature with multiple args", methodSig: "deploy(address,uint8,bytes16,address)", wantErr: false},
