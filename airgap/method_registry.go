@@ -77,23 +77,53 @@ func unregisteredMethodFromString(methodSignature string) (*CeloMethod, error) {
 }
 
 func validateMethodSignature(methodSig string) error {
-	// Check if the method signature contains both opening and closing parentheses
 	openParenIndex := strings.Index(methodSig, "(")
-	closeParenIndex := strings.Index(methodSig, ")")
-	if openParenIndex == -1 || closeParenIndex == -1 || openParenIndex > closeParenIndex {
+	if openParenIndex == -1 {
 		return fmt.Errorf("Invalid method signature: %s", methodSig)
 	}
 
-	// Extract the contents inside the parentheses
-	paramString := methodSig[openParenIndex+1 : closeParenIndex]
-
-	// If there are no contents, the signature is valid
-	if paramString == "" {
-		return nil
+	// Check if the method signature has non-empty method name
+	methodName := methodSig[:openParenIndex]
+	if len(methodName) == 0 {
+		return fmt.Errorf("Invalid method signature: %s", methodSig)
 	}
 
-	// Split the contents by comma to get individual type strings
-	methodTypes := strings.Split(paramString, ",")
+	// Perform parentheses check
+	paramString := methodSig[openParenIndex:]
+	var stack []rune
+	pairs := map[rune]rune{')': '(', ']': '['}
+	for _, char := range paramString {
+		if char == '(' || char == '[' {
+			stack = append(stack, char)
+		} else if char == ')' || char == ']' {
+			if len(stack) == 0 || stack[len(stack)-1] != pairs[char] {
+				return fmt.Errorf("Invalid method signature: %s", methodSig)
+			}
+			stack = stack[:len(stack)-1]
+		}
+	}
+	if len(stack) != 0 {
+		return fmt.Errorf("Invalid method signature: %s", methodSig)
+	}
+
+	// Extract method parameter types into a string array
+	paramString = strings.Replace(paramString, "(", " ", -1)
+	paramString = strings.Replace(paramString, ")", " ", -1)
+	paramString = strings.Replace(paramString, "[", " ", -1)
+	paramString = strings.Replace(paramString, "]", " ", -1)
+	paramString = strings.Replace(paramString, ",", " ", -1)
+
+	var methodTypes []string
+	for _, methodType := range strings.Split(paramString, " ") {
+		if methodType != "" {
+			methodTypes = append(methodTypes, methodType)
+		}
+	}
+
+	// If there are no contents, the signature is valid (contract call without arguments).
+	if len(methodTypes) == 0 {
+		return nil
+	}
 
 	// Iterate through each type string and validate
 	for _, v := range methodTypes {
