@@ -6,7 +6,7 @@ require (
 	github.com/celo-org/celo-blockchain v1.8.0
 	github.com/celo-org/kliento v0.2.1-0.20230912125702-70113468d45f
 	github.com/coinbase/rosetta-sdk-go v0.5.9
-	github.com/felixge/httpsnoop v1.0.1
+	github.com/felixge/httpsnoop v1.0.4
 	github.com/gorilla/handlers v1.4.2
 	github.com/mattn/go-sqlite3 v1.14.9
 	github.com/onsi/gomega v1.10.1
