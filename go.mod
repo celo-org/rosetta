@@ -8,7 +8,7 @@ require (
 	github.com/coinbase/rosetta-sdk-go v0.5.9
 	github.com/felixge/httpsnoop v1.0.4
 	github.com/gorilla/handlers v1.4.2
-	github.com/mattn/go-sqlite3 v1.14.9
+	github.com/mattn/go-sqlite3 v1.14.19
 	github.com/onsi/gomega v1.10.1
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.6.3
