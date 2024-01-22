@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/celo-org/celo-blockchain v1.8.0
-	github.com/celo-org/kliento v0.2.1-0.20230912125702-70113468d45f
+	github.com/celo-org/kliento v0.2.2
 	github.com/coinbase/rosetta-sdk-go v0.5.9
 	github.com/felixge/httpsnoop v1.0.4
 	github.com/gorilla/handlers v1.4.2

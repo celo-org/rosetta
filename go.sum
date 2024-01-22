@@ -131,6 +131,8 @@ github.com/celo-org/celo-bls-go-windows v0.6.4 h1:4w+NllEORQbsQnqpXO7UC+xDUbZQgi
 github.com/celo-org/celo-bls-go-windows v0.6.4/go.mod h1:8bRJbLcHREIAWn+5iZM3u8rGPBsWepp9BdF3SexisuM=
 github.com/celo-org/kliento v0.2.1-0.20230912125702-70113468d45f h1:ITkZ/94WqeMio54DYQzfcFDZBkUAogncZyKXXu0FWkk=
 github.com/celo-org/kliento v0.2.1-0.20230912125702-70113468d45f/go.mod h1:jp7HC2Sh7VUuGzmVUrX/4/TUz8MEPI2Qb6q6esIZhN0=
+github.com/celo-org/kliento v0.2.2 h1:/KnAbBb0EtOv6Pb3AXkuFTtYVZeOM4K5dn3cN6B+MHQ=
+github.com/celo-org/kliento v0.2.2/go.mod h1:jp7HC2Sh7VUuGzmVUrX/4/TUz8MEPI2Qb6q6esIZhN0=
 github.com/cenkalti/backoff v2.2.1+incompatible h1:tNowT99t7UNflLxfYYSlKYsBpXdEet03Pg2g16Swow4=
 github.com/cenkalti/backoff v2.2.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
