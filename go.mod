@@ -5,7 +5,8 @@ go 1.17
 require (
 	github.com/celo-org/celo-blockchain v1.8.0
 	github.com/celo-org/kliento v0.2.1-0.20230912125702-70113468d45f
-	github.com/coinbase/rosetta-sdk-go v0.5.9
+	github.com/coinbase/rosetta-sdk-go v0.8.3
+	github.com/coinbase/rosetta-sdk-go/types v1.0.0
 	github.com/felixge/httpsnoop v1.0.4
 	github.com/gorilla/handlers v1.4.2
 	github.com/mattn/go-sqlite3 v1.14.9
@@ -18,7 +19,7 @@ require (
 )
 
 require (
-	filippo.io/edwards25519 v1.0.0-alpha.2 // indirect
+	filippo.io/edwards25519 v1.0.0-rc.1 // indirect
 	github.com/StackExchange/wmi v0.0.0-20180116203802-5d049714c4a6 // indirect
 	github.com/VictoriaMetrics/fastcache v1.6.0 // indirect
 	github.com/allegro/bigcache v1.2.1 // indirect
@@ -38,6 +39,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deckarep/golang-set v0.0.0-20180603214616-504e848d77ea // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 // indirect
+	github.com/fatih/color v1.13.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
@@ -54,8 +56,10 @@ require (
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jackpal/go-nat-pmp v1.0.2-0.20160603034137-1fa385a6f458 // indirect
 	github.com/magiconair/properties v1.8.1 // indirect
+	github.com/mattn/go-colorable v0.1.9 // indirect
+	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
-	github.com/mitchellh/mapstructure v1.4.1 // indirect
+	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pelletier/go-toml v1.2.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
