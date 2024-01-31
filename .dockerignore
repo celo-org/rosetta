@@ -13,3 +13,6 @@ README.md
 # Binary output
 /external/bls-zexe/target/release
 /rosetta
+
+# Ignore generated credentials from google-github-actions/auth
+gha-creds-*.json
