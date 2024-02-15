@@ -22,26 +22,20 @@ import (
 
 func (tx Transaction) MarshalJSON() ([]byte, error) {
 	var data struct {
-		From                common.Address  `json:"from"`
-		Nonce               uint64          `json:"nonce"`
-		GasPrice            *string         `json:"gasPrice,omitempty"`
-		GatewayFeeRecipient *common.Address `json:"gatewayFeeRecipient,omitempty"`
-		GatewayFee          *string         `json:"gatewayFee,omitempty"`
-		FeeCurrency         *common.Address `json:"feeCurrency,omitempty"`
-		To                  common.Address  `json:"to"`
-		Data                string          `json:"data"`
-		Value               *string         `json:"value,omitempty"`
-		Gas                 uint64          `json:"gas"`
-		ChainId             string          `json:"chainId"`
-		Signature           string          `json:"signature"`
+		From      common.Address `json:"from"`
+		Nonce     uint64         `json:"nonce"`
+		GasPrice  *string        `json:"gasPrice,omitempty"`
+		To        common.Address `json:"to"`
+		Data      string         `json:"data"`
+		Value     *string        `json:"value,omitempty"`
+		Gas       uint64         `json:"gas"`
+		ChainId   string         `json:"chainId"`
+		Signature string         `json:"signature"`
 	}
 
 	data.From = tx.From
 	data.Nonce = tx.Nonce
 	data.GasPrice = bigIntToString(tx.GasPrice)
-	data.GatewayFeeRecipient = tx.GatewayFeeRecipient
-	data.GatewayFee = bigIntToString(tx.GatewayFee)
-	data.FeeCurrency = tx.FeeCurrency
 	data.To = tx.To
 	data.Data = common.Bytes2Hex(tx.Data)
 	data.Value = bigIntToString(tx.Value)
@@ -81,12 +75,6 @@ func (tx *Transaction) UnmarshalJSON(b []byte) error {
 	if err != nil {
 		return err
 	}
-	tx.GatewayFeeRecipient = data.GatewayFeeRecipient
-	tx.GatewayFee, err = stringToBigInt(data.GatewayFee)
-	if err != nil {
-		return err
-	}
-	tx.FeeCurrency = data.FeeCurrency
 	tx.To = data.To
 	tx.Data = common.Hex2Bytes(data.Data)
 	tx.Value, err = stringToBigInt(data.Value)

@@ -25,9 +25,6 @@ import (
 func TestTransactionMarshalling(t *testing.T) {
 	RegisterTestingT(t)
 
-	address1 := common.HexToAddress("0x11111")
-	address2 := common.HexToAddress("0x22222")
-
 	samples := []struct {
 		name   string
 		sample Transaction
@@ -36,17 +33,14 @@ func TestTransactionMarshalling(t *testing.T) {
 			name: "Complete",
 			sample: Transaction{
 				TxMetadata: &TxMetadata{
-					From:                common.HexToAddress("0x55555"),
-					Nonce:               70,
-					GasPrice:            big.NewInt(5000),
-					GatewayFeeRecipient: &address1,
-					GatewayFee:          big.NewInt(5000),
-					FeeCurrency:         &address2,
-					To:                  common.HexToAddress("0x33333"),
-					Data:                []byte{1, 2, 3},
-					Value:               big.NewInt(3000),
-					Gas:                 98,
-					ChainId:             big.NewInt(2000),
+					From:     common.HexToAddress("0x55555"),
+					Nonce:    70,
+					GasPrice: big.NewInt(5000),
+					To:       common.HexToAddress("0x33333"),
+					Data:     []byte{1, 2, 3},
+					Value:    big.NewInt(3000),
+					Gas:      98,
+					ChainId:  big.NewInt(2000),
 				},
 				Signature: []byte{1, 2, 3},
 			},
