@@ -96,7 +96,7 @@ func TestClientServer(t *testing.T) {
 	t.Run("contract call with no arguments", func(t *testing.T) {
 		RegisterTestingT(t)
 
-		txArgs := buildContractCallTxArgs(common.HexToAddress("A"), 0, common.HexToAddress("B"), "noArgs()", []interface{}{}, false)
+		txArgs := buildContractCallTxArgs(common.HexToAddress("A"), common.HexToAddress("B"), "noArgs()", []interface{}{}, false)
 		Ω(err).ShouldNot(HaveOccurred())
 
 		txArgs, err = simulateWire(txArgs)
@@ -120,7 +120,7 @@ func TestClientServer(t *testing.T) {
 
 		methodSig := "withdraw(address,uint256,uint32,bytes)"
 		methodArgs := []interface{}{"0xDeadDeAddeAddEAddeadDEaDDEAdDeaDDeAD0000", "23535", "0", "0x"}
-		txArgs := buildContractCallTxArgs(common.HexToAddress("A"), 0, common.HexToAddress("B"), methodSig, methodArgs, false)
+		txArgs := buildContractCallTxArgs(common.HexToAddress("A"), common.HexToAddress("B"), methodSig, methodArgs, false)
 		Ω(err).ShouldNot(HaveOccurred())
 
 		txArgs, err = simulateWire(txArgs)
@@ -144,7 +144,7 @@ func TestClientServer(t *testing.T) {
 
 		methodSig := "deploy(bytes32,address,address)"
 		methodArgs := []interface{}{"0x0000000000000000000000000000000000000000000000000000000000000000", "0xDeadDeAddeAddEAddeadDEaDDEAdDeaDDeAD0000", "0xb0935a466e6Fa8FDa8143C7f4a8c149CA56D06FE"}
-		txArgs := buildContractCallTxArgs(common.HexToAddress("A"), 0, common.HexToAddress("B"), methodSig, methodArgs, false)
+		txArgs := buildContractCallTxArgs(common.HexToAddress("A"), common.HexToAddress("B"), methodSig, methodArgs, false)
 		Ω(err).ShouldNot(HaveOccurred())
 
 		txArgs, err = simulateWire(txArgs)
@@ -168,7 +168,7 @@ func TestClientServer(t *testing.T) {
 
 		methodSig := "deploy(bytes32,address,address)"
 		methodArgs := []interface{}{"0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000deaddeaddeaddeaddeaddeaddeaddeaddead0000000000000000000000000000b0935a466e6fa8fda8143c7f4a8c149ca56d06fe"}
-		txArgs := buildContractCallTxArgs(common.HexToAddress("A"), 0, common.HexToAddress("B"), methodSig, methodArgs, true)
+		txArgs := buildContractCallTxArgs(common.HexToAddress("A"), common.HexToAddress("B"), methodSig, methodArgs, true)
 		Ω(err).ShouldNot(HaveOccurred())
 
 		txArgs, err = simulateWire(txArgs)
@@ -188,8 +188,8 @@ func TestClientServer(t *testing.T) {
 	})
 }
 
-func buildContractCallTxArgs(from common.Address, value int64, to common.Address, methodSig string, args []interface{}, argsEncoded bool) *airgap.TxArgs {
-	bigIntValue := big.NewInt(value)
+func buildContractCallTxArgs(from common.Address, to common.Address, methodSig string, args []interface{}, argsEncoded bool) *airgap.TxArgs {
+	bigIntValue := big.NewInt(0)
 	return &airgap.TxArgs{
 		From:        from,
 		Value:       bigIntValue,
