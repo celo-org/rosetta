@@ -28,7 +28,7 @@ var serverCallEventDefinitions = []*airgap.CeloEvent{
 	airgap.StableTokenTransferred,
 }
 
-func hydrateEvents(srvCtx ServerContext, events []*airgap.CeloEvent) (map[*airgap.CeloEvent]airGapServerEvent, error) {
+func hydrateEvents(events []*airgap.CeloEvent) (map[*airgap.CeloEvent]airGapServerEvent, error) {
 	abis := make(map[string]*abi.ABI)
 	for id, abiFactory := range abiFactoryMap {
 		abi, err := abiFactory()
@@ -49,12 +49,12 @@ func hydrateEvents(srvCtx ServerContext, events []*airgap.CeloEvent) (map[*airga
 			return nil, fmt.Errorf("Missing event data for %s", event.Name)
 		}
 
-		mappedEvents[event] = airgapEventFactory(srvCtx, evt, event)
+		mappedEvents[event] = airgapEventFactory(evt)
 	}
 	return mappedEvents, nil
 }
 
-func airgapEventFactory(srvCtx ServerContext, evt abi.Event, event *airgap.CeloEvent) airGapServerEvent {
+func airgapEventFactory(evt abi.Event) airGapServerEvent {
 	return func(ctx context.Context, restTopics [][]common.Hash) [][]common.Hash {
 		topic0 := evt.ID
 		var topics [][]common.Hash

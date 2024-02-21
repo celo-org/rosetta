@@ -52,7 +52,7 @@ func NewAirgapServer(chainId *big.Int, srvCtx ServerContext) (airgap.Server, err
 		return nil, err
 	}
 
-	callEvents, err := hydrateEvents(srvCtx, serverCallEventDefinitions)
+	callEvents, err := hydrateEvents(serverCallEventDefinitions)
 	if err != nil {
 		return nil, err
 	}
