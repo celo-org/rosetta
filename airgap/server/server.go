@@ -126,13 +126,11 @@ func (b *airGapServerImpl) ObtainMetadata(ctx context.Context, options *airgap.T
 	}
 
 	txMetadata := airgap.TxMetadata{
-		From:                options.From,
-		Nonce:               nonce,
-		GasPrice:            gasPrice,
-		GatewayFee:          nil,
-		GatewayFeeRecipient: nil,
-		Value:               options.Value,
-		ChainId:             b.chainId,
+		From:     options.From,
+		Nonce:    nonce,
+		GasPrice: gasPrice,
+		Value:    options.Value,
+		ChainId:  b.chainId,
 	}
 
 	if options.To != nil {

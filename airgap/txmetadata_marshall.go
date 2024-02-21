@@ -38,9 +38,6 @@ func (tm TxMetadata) MarshalJSON() ([]byte, error) {
 	data.From = tm.From
 	data.Nonce = tm.Nonce
 	data.GasPrice = bigIntToString(tm.GasPrice)
-	data.GatewayFeeRecipient = tm.GatewayFeeRecipient
-	data.GatewayFee = bigIntToString(tm.GatewayFee)
-	data.FeeCurrency = tm.FeeCurrency
 	data.To = tm.To
 	data.Data = common.Bytes2Hex(tm.Data)
 	data.Value = bigIntToString(tm.Value)
@@ -76,12 +73,6 @@ func (tm *TxMetadata) UnmarshalJSON(b []byte) error {
 	if err != nil {
 		return err
 	}
-	tm.GatewayFeeRecipient = data.GatewayFeeRecipient
-	tm.GatewayFee, err = stringToBigInt(data.GatewayFee)
-	if err != nil {
-		return err
-	}
-	tm.FeeCurrency = data.FeeCurrency
 	tm.To = data.To
 	tm.Data = common.Hex2Bytes(data.Data)
 	tm.Value, err = stringToBigInt(data.Value)
