@@ -32,7 +32,7 @@ func TestFilterQueryMarshalling(t *testing.T) {
 			name: "Complete",
 			sample: FilterQueryParams{
 				Event:     EpochRewardsDistributedToVoters,
-				Topics:    [][]interface{}{[]interface{}{"0x00000011"}}, // these will be simple types always
+				Topics:    [][]interface{}{{"0x00000011"}}, // these will be simple types always
 				FromBlock: big.NewInt(1000),
 				ToBlock:   big.NewInt(2000),
 			},
