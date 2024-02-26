@@ -1,6 +1,6 @@
 module github.com/celo-org/rosetta
 
-go 1.17
+go 1.19
 
 require (
 	github.com/celo-org/celo-blockchain v1.8.1
