@@ -18,7 +18,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -174,7 +173,7 @@ func (gs *gethService) setupStaticNodes() error {
 		return fmt.Errorf("Can't serialize static nodes: %w", err)
 	}
 	//nolint:gosec
-	if err = ioutil.WriteFile(gs.opts.StaticNodesFile(), staticNodesRaw, 0644); err != nil {
+	if err = os.WriteFile(gs.opts.StaticNodesFile(), staticNodesRaw, 0644); err != nil {
 		return fmt.Errorf("Can't serialize static nodes: %w", err)
 	}
 
@@ -300,7 +299,7 @@ func (gopts GethOpts) StaticNodesFile() string {
 }
 
 func chainConfigFromGenesisFile(genesisPath string) *params.ChainConfig {
-	data, err := ioutil.ReadFile(genesisPath)
+	data, err := os.ReadFile(genesisPath)
 	if err != nil {
 		log.Crit("Can't read genesis.json on DataDir", "genesisPath", genesisPath, "err", err)
 	}
