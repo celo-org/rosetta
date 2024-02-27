@@ -22,9 +22,12 @@
 # Stage 1: Build Rosetta
 # Outputs: binary @ /rosetta/rosetta 
 #---------------------------------------------------------------------
-FROM golang:1.19-alpine as builder
+FROM golang:1.19-bookworm as builder
 WORKDIR /rosetta
-RUN apk add --no-cache make gcc musl-dev linux-headers git
+
+RUN headers_package="linux-headers-$(dpkg --print-architecture)" && \
+  apt update && \
+  apt install -y build-essential git musl-dev $headers_package
 
 # Downnload dependencies & cache them in docker layer
 COPY go.mod .
@@ -47,7 +50,11 @@ FROM us.gcr.io/celo-org/geth:1.8.1
 
 ARG COMMIT_SHA
 
-RUN apk add --no-cache ca-certificates
+RUN apt update &&\
+    apt install -y ca-certificates wget &&\
+    rm -rf /var/cache/apt &&\
+    rm -rf /var/lib/apt/lists/* &&\
+    ln -sf /bin/bash /bin/sh
 COPY --from=builder /rosetta/rosetta /usr/local/bin/
 RUN echo $COMMIT_SHA > /version.txt
 RUN mkdir /data
