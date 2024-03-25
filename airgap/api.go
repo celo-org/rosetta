@@ -130,14 +130,11 @@ type TxMetadata struct {
 
 func (tm *TxMetadata) AsCallMessage() ethereum.CallMsg {
 	return ethereum.CallMsg{
-		From:                tm.From,
-		GatewayFee:          tm.GatewayFee,
-		GatewayFeeRecipient: tm.GatewayFeeRecipient,
-		GasPrice:            tm.GasPrice,
-		To:                  &tm.To,
-		Data:                tm.Data,
-		Value:               tm.Value,
-		FeeCurrency:         tm.FeeCurrency,
+		From:     tm.From,
+		GasPrice: tm.GasPrice,
+		To:       &tm.To,
+		Data:     tm.Data,
+		Value:    tm.Value,
 	}
 }
 
@@ -151,15 +148,12 @@ func (tx *Transaction) Signed() bool {
 }
 
 func (tx *Transaction) AsGethTransaction() (*types.Transaction, error) {
-	gethTx := types.NewCeloTransaction(
+	gethTx := types.NewTransaction(
 		tx.Nonce,
 		tx.To,
 		tx.Value,
 		tx.Gas,
 		tx.GasPrice,
-		tx.FeeCurrency,
-		tx.GatewayFeeRecipient,
-		tx.GatewayFee,
 		tx.Data,
 	)
 	if tx.Signed() {
@@ -214,9 +208,6 @@ func (tx *Transaction) Deserialize(data []byte, chainId *big.Int) error {
 	tx.TxMetadata = &TxMetadata{}
 	tx.Nonce = gethTx.Nonce()
 	tx.GasPrice = gethTx.GasPrice()
-	tx.GatewayFee = gethTx.GatewayFee()
-	tx.GatewayFeeRecipient = gethTx.GatewayFeeRecipient()
-	tx.FeeCurrency = gethTx.FeeCurrency()
 	tx.To = *gethTx.To()
 	tx.Data = gethTx.Data()
 	tx.Value = gethTx.Value()

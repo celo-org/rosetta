@@ -37,22 +37,17 @@ func TestTransaction(t *testing.T) {
 	_, fromAddr, err := client.Derive(privKey)
 	Ω(err).ShouldNot(HaveOccurred())
 
-	addr2 := common.HexToAddress("0x2222")
-	addr3 := common.HexToAddress("0x3333")
 	newTx := func() *Transaction {
 		return &Transaction{
 			TxMetadata: &TxMetadata{
-				From:                *fromAddr,
-				Nonce:               3,
-				GasPrice:            big.NewInt(111),
-				GatewayFeeRecipient: &addr2,
-				GatewayFee:          big.NewInt(222),
-				FeeCurrency:         &addr3,
-				To:                  common.HexToAddress("0x4444"),
-				Data:                []byte{1, 2, 3, 4},
-				Value:               big.NewInt(4444),
-				Gas:                 4,
-				ChainId:             big.NewInt(42220),
+				From:     *fromAddr,
+				Nonce:    3,
+				GasPrice: big.NewInt(111),
+				To:       common.HexToAddress("0x4444"),
+				Data:     []byte{1, 2, 3, 4},
+				Value:    big.NewInt(4444),
+				Gas:      4,
+				ChainId:  big.NewInt(42220),
 			},
 		}
 	}
@@ -84,11 +79,11 @@ func TestTransaction(t *testing.T) {
 		signedTxRaw, err := signedTx.Serialize()
 		Ω(err).ShouldNot(HaveOccurred())
 
-		var desrializedTx Transaction
-		err = desrializedTx.Deserialize(signedTxRaw, tx.ChainId)
+		var deserializedTx Transaction
+		err = deserializedTx.Deserialize(signedTxRaw, tx.ChainId)
 		Ω(err).ShouldNot(HaveOccurred())
 
-		Ω(desrializedTx).Should(Equal(*signedTx))
+		Ω(deserializedTx).Should(Equal(*signedTx))
 	})
 
 }
