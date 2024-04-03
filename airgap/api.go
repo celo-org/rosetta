@@ -115,17 +115,14 @@ type FilterQueryParams struct {
 }
 
 type TxMetadata struct {
-	From                common.Address
-	Nonce               uint64
-	GasPrice            *big.Int
-	GatewayFeeRecipient *common.Address
-	GatewayFee          *big.Int
-	FeeCurrency         *common.Address
-	To                  common.Address
-	Data                []byte
-	Value               *big.Int
-	Gas                 uint64
-	ChainId             *big.Int
+	From     common.Address
+	Nonce    uint64
+	GasPrice *big.Int
+	To       common.Address
+	Data     []byte
+	Value    *big.Int
+	Gas      uint64
+	ChainId  *big.Int
 }
 
 func (tm *TxMetadata) AsCallMessage() ethereum.CallMsg {
