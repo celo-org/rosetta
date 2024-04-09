@@ -3,7 +3,7 @@ module github.com/celo-org/rosetta
 go 1.19
 
 require (
-	github.com/celo-org/celo-blockchain v1.8.1
+	github.com/celo-org/celo-blockchain v1.8.2
 	github.com/celo-org/kliento v0.2.3
 	github.com/coinbase/rosetta-sdk-go v0.5.9
 	github.com/felixge/httpsnoop v1.0.4
