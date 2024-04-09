@@ -75,7 +75,7 @@ func (sc *serverContextImpl) voteMetadata(ctx context.Context, group common.Addr
 	if err != nil {
 		return nil, err
 	}
-	he := helpers.Election{election}
+	he := helpers.Election{Election: election}
 	return he.VoteMetadata(&bind.CallOpts{Context: ctx}, group, value)
 }
 
@@ -93,6 +93,6 @@ func (sc *serverContextImpl) revokeMetadata(ctx context.Context, signerOrAccount
 	if err != nil {
 		return nil, err
 	}
-	he := helpers.Election{election}
+	he := helpers.Election{Election: election}
 	return he.RevokeMetadata(callOpts, account, group, value)
 }
