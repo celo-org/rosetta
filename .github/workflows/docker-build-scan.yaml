@@ -8,6 +8,6 @@ on:
 
 jobs:
   Build-Scan-Container:
-    uses: celo-org/reusable-workflows/.github/workflows/container-cicd-local.yaml@v2.0.1
+    uses: celo-org/reusable-workflows/.github/workflows/container-cicd-local.yaml@v2.0.4
     with:
       dockerfile: Dockerfile
