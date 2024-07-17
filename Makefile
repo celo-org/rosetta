@@ -51,9 +51,9 @@ clean:
 	go clean -cache
 
 add-license:
-	${LICENCE_SCRIPT} analyzer airgap cmd db examples internal service main.go
+	${LICENCE_SCRIPT} analyzer airgap cmd db examples internal kliento service main.go
 
 check-license:
-	${LICENCE_SCRIPT} -check analyzer airgap cmd db examples internal service main.go
+	${LICENCE_SCRIPT} -check analyzer airgap cmd db examples internal kliento service main.go
 
 .PHONY: gen-contracts lint fmt 
