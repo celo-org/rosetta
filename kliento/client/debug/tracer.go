@@ -15,17 +15,13 @@
 package debug
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"math/big"
 
 	"github.com/celo-org/celo-blockchain/common"
 	"github.com/celo-org/celo-blockchain/common/hexutil"
-	"github.com/celo-org/celo-blockchain/eth/tracers"
 )
-
-var transferTracerTimeout = `50s`
 
 var TransferTracer = `
 // Geth Tracer that outputs cGLD transfers.
@@ -269,21 +265,4 @@ func (t *Transfer) UnmarshalJSON(input []byte) error {
 		return errors.New("missing required field 'value' for Transfer")
 	}
 	return nil
-}
-
-// TransactionTransfers is deprecated, use DebugClient.TraceTransaction with TransferTracer and TransferTracerResponse instead.
-// e.g.
-//  var res TransferTracerResponse
-//  var timeout = "50s"
-//  conf := &eth.TraceConfig{Tracer: &TransferTracer, Timeout: &timeout}
-//  err := dc.TraceTransaction(ctx, &res, txhash, conf)
-func (dc *DebugClient) TransactionTransfers(ctx context.Context, txhash common.Hash) ([]Transfer, error) {
-	tracerConfig := &tracers.TraceConfig{Timeout: &transferTracerTimeout, Tracer: &TransferTracer}
-	var response TransferTracerResponse
-
-	err := dc.TraceTransaction(ctx, &response, txhash, tracerConfig)
-	if err != nil {
-		return nil, err
-	}
-	return response.Transfers, nil
 }
