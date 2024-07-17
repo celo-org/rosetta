@@ -22,8 +22,8 @@ import (
 	"github.com/celo-org/celo-blockchain/core/types"
 	"github.com/celo-org/celo-blockchain/log"
 	"github.com/celo-org/celo-blockchain/rpc"
-	"github.com/celo-org/kliento/client"
-	"github.com/celo-org/kliento/utils/bn"
+	"github.com/celo-org/rosetta/kliento/client"
+	"github.com/celo-org/rosetta/kliento/utils/bn"
 )
 
 type listener struct {

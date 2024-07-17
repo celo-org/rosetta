@@ -47,7 +47,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/celo-org/kliento/contracts"
+	"github.com/celo-org/rosetta/kliento/contracts"
 )
 
 {{ range $contractId, $generatedContract := . }}

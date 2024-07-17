@@ -19,10 +19,10 @@ import (
 
 	"github.com/celo-org/celo-blockchain/ethclient"
 	"github.com/celo-org/celo-blockchain/rpc"
-	"github.com/celo-org/kliento/client/admin"
-	"github.com/celo-org/kliento/client/debug"
-	"github.com/celo-org/kliento/client/network"
-	"github.com/celo-org/kliento/client/txpool"
+	"github.com/celo-org/rosetta/kliento/client/admin"
+	"github.com/celo-org/rosetta/kliento/client/debug"
+	"github.com/celo-org/rosetta/kliento/client/network"
+	"github.com/celo-org/rosetta/kliento/client/txpool"
 )
 
 type CeloClient struct {

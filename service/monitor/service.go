@@ -20,9 +20,9 @@ import (
 
 	"github.com/celo-org/celo-blockchain/core/types"
 	"github.com/celo-org/celo-blockchain/log"
-	"github.com/celo-org/kliento/client"
 	"github.com/celo-org/rosetta/db"
 	"github.com/celo-org/rosetta/internal/utils"
+	"github.com/celo-org/rosetta/kliento/client"
 	"github.com/celo-org/rosetta/service"
 	"golang.org/x/sync/errgroup"
 )

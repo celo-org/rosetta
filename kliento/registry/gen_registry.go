@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/celo-org/kliento/contracts"
+	"github.com/celo-org/rosetta/kliento/contracts"
 )
 
 // AccountsContractID is the registry identifier for 'Accounts' contract

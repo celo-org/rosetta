@@ -24,11 +24,11 @@ import (
 	"time"
 
 	"github.com/celo-org/celo-blockchain/log"
-	"github.com/celo-org/kliento/client"
 	"github.com/celo-org/rosetta/cmd/internal/utils"
 	"github.com/celo-org/rosetta/db"
 	"github.com/celo-org/rosetta/internal/fileutils"
 	"github.com/celo-org/rosetta/internal/signals"
+	"github.com/celo-org/rosetta/kliento/client"
 	"github.com/celo-org/rosetta/service"
 	"github.com/celo-org/rosetta/service/geth"
 	"github.com/celo-org/rosetta/service/monitor"

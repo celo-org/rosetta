@@ -6,8 +6,8 @@ import (
 	"math/big"
 
 	"github.com/celo-org/celo-blockchain/common"
-	"github.com/celo-org/kliento/contracts"
-	"github.com/celo-org/kliento/registry"
+	"github.com/celo-org/rosetta/kliento/contracts"
+	"github.com/celo-org/rosetta/kliento/registry"
 )
 
 // CeloToken is a token native to Celo, eg CELO and stable tokens

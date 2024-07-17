@@ -4,8 +4,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/celo-org/kliento/client"
-	"github.com/celo-org/kliento/internal/examples"
+	"github.com/celo-org/rosetta/kliento/client"
+	"github.com/celo-org/rosetta/kliento/internal/examples"
 )
 
 func main() {

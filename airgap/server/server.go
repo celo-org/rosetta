@@ -23,8 +23,8 @@ import (
 	ethereum "github.com/celo-org/celo-blockchain"
 	"github.com/celo-org/celo-blockchain/common"
 	"github.com/celo-org/celo-blockchain/core/types"
-	"github.com/celo-org/kliento/registry"
 	"github.com/celo-org/rosetta/airgap"
+	"github.com/celo-org/rosetta/kliento/registry"
 )
 
 // airGapServerMethod is a function that returns the tx.data for that method + parameters

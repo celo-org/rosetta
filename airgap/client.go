@@ -23,8 +23,8 @@ import (
 	"github.com/celo-org/celo-blockchain/common"
 	"github.com/celo-org/celo-blockchain/core/types"
 	"github.com/celo-org/celo-blockchain/crypto"
-	"github.com/celo-org/kliento/contracts"
-	"github.com/celo-org/kliento/registry"
+	"github.com/celo-org/rosetta/kliento/contracts"
+	"github.com/celo-org/rosetta/kliento/registry"
 )
 
 type clientImpl struct {

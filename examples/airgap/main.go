@@ -25,8 +25,8 @@ import (
 	// "github.com/celo-org/celo-blockchain/crypto"
 	"github.com/celo-org/rosetta/airgap"
 
-	// celoClient "github.com/celo-org/kliento/client"
-	// "github.com/celo-org/kliento/registry"
+	// celoClient "github.com/celo-org/rosetta/kliento/client"
+	// "github.com/celo-org/rosetta/kliento/registry"
 
 	"github.com/coinbase/rosetta-sdk-go/fetcher"
 )
