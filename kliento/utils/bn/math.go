@@ -21,22 +21,6 @@ import (
 var Big0 = big.NewInt(0)
 var Big1 = big.NewInt(1)
 
-func Sum(values ...*big.Int) *big.Int {
-	acc := new(big.Int)
-	for _, val := range values {
-		acc.Add(acc, val)
-	}
-	return acc
-}
-
-func Inc(val *big.Int) *big.Int {
-	return new(big.Int).Add(val, Big1)
-}
-
-func Dec(val *big.Int) *big.Int {
-	return new(big.Int).Sub(val, Big1)
-}
-
 func Neg(val *big.Int) *big.Int {
 	return new(big.Int).Neg(val)
 }
@@ -85,14 +69,6 @@ func IsNonZero(a *big.Int) bool {
 
 func Min(a *big.Int, b *big.Int) *big.Int {
 	if IsLt(a, b) {
-		return a
-	} else {
-		return b
-	}
-}
-
-func Max(a *big.Int, b *big.Int) *big.Int {
-	if IsGt(a, b) {
 		return a
 	} else {
 		return b
