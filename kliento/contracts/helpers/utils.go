@@ -48,13 +48,14 @@ func isFixidity(name string) bool {
 }
 
 // EventToSlice transforms an abigen event struct binding to a string/int64/float64 encoded slice (ideal for BigQuery).
-// type AttestationsAttestationsRequested struct {
-// 	Identifier                 [32]byte
-// 	Account                    common.Address
-// 	AttestationsRequested      *big.Int
-// 	AttestationRequestFeeToken common.Address
-// 	Raw                        types.Log // Blockchain specific contextual infos
-// }
+//
+//	type AttestationsAttestationsRequested struct {
+//		Identifier                 [32]byte
+//		Account                    common.Address
+//		AttestationsRequested      *big.Int
+//		AttestationRequestFeeToken common.Address
+//		Raw                        types.Log // Blockchain specific contextual infos
+//	}
 func EventToSlice(event interface{}) ([]interface{}, error) {
 	v := reflect.ValueOf(event)
 	if v.Kind() == reflect.Ptr {
