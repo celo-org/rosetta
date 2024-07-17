@@ -19,7 +19,7 @@ import (
 	"testing"
 
 	"github.com/celo-org/celo-blockchain/common"
-	"github.com/celo-org/kliento/client/debug"
+	"github.com/celo-org/rosetta/kliento/client/debug"
 	. "github.com/onsi/gomega"
 	gs "github.com/onsi/gomega/gstruct"
 	gtypes "github.com/onsi/gomega/types"

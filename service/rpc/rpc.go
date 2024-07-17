@@ -21,9 +21,9 @@ import (
 	"time"
 
 	"github.com/celo-org/celo-blockchain/log"
-	"github.com/celo-org/kliento/client"
 	"github.com/celo-org/rosetta/analyzer"
 	"github.com/celo-org/rosetta/db"
+	"github.com/celo-org/rosetta/kliento/client"
 	"github.com/celo-org/rosetta/service"
 	"github.com/coinbase/rosetta-sdk-go/asserter"
 	"github.com/coinbase/rosetta-sdk-go/server"

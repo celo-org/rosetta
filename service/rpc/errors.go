@@ -19,7 +19,7 @@ import (
 	"fmt"
 
 	"github.com/celo-org/celo-blockchain/log"
-	"github.com/celo-org/kliento/client"
+	"github.com/celo-org/rosetta/kliento/client"
 	"github.com/coinbase/rosetta-sdk-go/types"
 )
 

@@ -19,7 +19,7 @@ import (
 	"math/big"
 
 	"github.com/celo-org/celo-blockchain/common"
-	"github.com/celo-org/kliento/registry"
+	"github.com/celo-org/rosetta/kliento/registry"
 )
 
 var ReleaseGold = "ReleaseGold"

@@ -23,9 +23,9 @@ import (
 	"github.com/celo-org/celo-blockchain/common"
 	"github.com/celo-org/celo-blockchain/core/types"
 	"github.com/celo-org/celo-blockchain/ethclient"
-	"github.com/celo-org/kliento/client"
-	"github.com/celo-org/kliento/contracts/helpers"
-	"github.com/celo-org/kliento/registry"
+	"github.com/celo-org/rosetta/kliento/client"
+	"github.com/celo-org/rosetta/kliento/contracts/helpers"
+	"github.com/celo-org/rosetta/kliento/registry"
 )
 
 type ServerContext interface {

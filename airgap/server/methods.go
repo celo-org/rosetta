@@ -26,9 +26,9 @@ import (
 	"github.com/celo-org/celo-blockchain/accounts/abi"
 	"github.com/celo-org/celo-blockchain/common"
 	"github.com/celo-org/celo-blockchain/common/hexutil"
-	"github.com/celo-org/kliento/contracts"
-	"github.com/celo-org/kliento/registry"
 	"github.com/celo-org/rosetta/airgap"
+	"github.com/celo-org/rosetta/kliento/contracts"
+	"github.com/celo-org/rosetta/kliento/registry"
 	"golang.org/x/crypto/sha3"
 )
 
