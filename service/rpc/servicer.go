@@ -290,7 +290,7 @@ func (s *Servicer) AccountBalance(ctx context.Context, request *types.AccountBal
 	} else if err != nil {
 		return nil, LogErrCeloClient("NewElection", err)
 	}
-	election := helpers.Election{_election}
+	election := helpers.Election{Election: _election}
 
 	sumVotes := func(targetVotes helpers.VotesByGroup) *big.Int {
 		sum := big.NewInt(0)

@@ -16,7 +16,7 @@ package debug
 
 import (
 	"context"
-	"io/ioutil"
+	"os"
 
 	"github.com/celo-org/celo-blockchain/common"
 	"github.com/celo-org/celo-blockchain/eth/tracers"
@@ -41,7 +41,7 @@ func (dc *DebugClient) TraceTransaction(ctx context.Context, result interface{},
 
 // ReadTracer reads a tracer file from the filesystem
 func ReadTracer(path string) (*string, error) {
-	tracerBytes, err := ioutil.ReadFile(path)
+	tracerBytes, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}

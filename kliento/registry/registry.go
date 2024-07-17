@@ -19,7 +19,6 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/celo-org/celo-blockchain/accounts/abi"
 	"github.com/celo-org/celo-blockchain/accounts/abi/bind"
 	"github.com/celo-org/celo-blockchain/common"
 	blockchainErrors "github.com/celo-org/celo-blockchain/contracts"
@@ -67,7 +66,6 @@ type registryImpl struct {
 	cc               *client.CeloClient
 	RegistryContract *contracts.Registry
 	cache            *registryCache
-	proxyAbi         *abi.ABI
 	boundContracts
 }
 

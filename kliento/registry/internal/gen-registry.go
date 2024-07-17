@@ -109,7 +109,10 @@ func main() {
 
 	var buf bytes.Buffer
 
-	template.Execute(&buf, contractIDToGeneratedContractType)
+	err := template.Execute(&buf, contractIDToGeneratedContractType)
+	if err != nil {
+		panic(err)
+	}
 	p, err := format.Source(buf.Bytes())
 	if err != nil {
 		panic(err)
@@ -120,5 +123,8 @@ func main() {
 		panic(err)
 	}
 	defer f.Close()
-	f.Write(p)
+	_, err = f.Write(p)
+	if err != nil {
+		panic(err)
+	}
 }
