@@ -46,7 +46,7 @@ RUN go build --tags musl -o rosetta .
 # Outputs: rosetta & geth binaries on /usr/loca/bin
 #---------------------------------------------------------------------
 # geth mainnet
-FROM us.gcr.io/celo-org/geth:1.8.4
+FROM us.gcr.io/celo-org/geth:1.8.5
 
 ARG COMMIT_SHA
 
