@@ -22,7 +22,7 @@
 # Stage 1: Build Rosetta
 # Outputs: binary @ /rosetta/rosetta 
 #---------------------------------------------------------------------
-FROM golang:1.19-bookworm as builder
+FROM golang:1.23-bookworm as builder
 WORKDIR /rosetta
 
 RUN headers_package="linux-headers-$(dpkg --print-architecture)" && \
