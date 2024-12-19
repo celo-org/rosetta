@@ -4,8 +4,6 @@
 > [!CAUTION]
 > Rosetta is nearing its end-of-life and will only be updated for critical issues. Do not use it for new projects and please migrate to an alternative.
 
-
-[![CircleCI](https://circleci.com/gh/celo-org/rosetta/tree/master.svg?style=shield)](https://circleci.com/gh/celo-org/rosetta/tree/master)
 [![License](https://img.shields.io/github/license/celo-org/rosetta.svg)](https://github.com/celo-org/rosetta/blob/master/LICENSE.txt)
 
 A monitoring server for celo-blockchain
