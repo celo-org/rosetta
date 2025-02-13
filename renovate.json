@@ -7,9 +7,13 @@
     {
       "enabled": false,
       "groupName": "everything",
-      "matchManagers": ["gomod"],
-      "matchPackagePatterns": ["*"],
-      "separateMajorMinor": false
+      "matchManagers": [
+        "gomod"
+      ],
+      "separateMajorMinor": false,
+      "matchPackageNames": [
+        "*"
+      ]
     }
   ],
   "vulnerabilityAlerts": {
