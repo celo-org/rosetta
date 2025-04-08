@@ -1,6 +1,8 @@
 module github.com/celo-org/rosetta
 
-go 1.19
+go 1.23.0
+
+toolchain go1.24.2
 
 require (
 	github.com/celo-org/celo-blockchain v1.8.4
@@ -11,9 +13,9 @@ require (
 	github.com/onsi/gomega v1.10.1
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/viper v1.6.3
-	golang.org/x/crypto v0.21.0
+	golang.org/x/crypto v0.35.0
 	golang.org/x/net v0.23.0
-	golang.org/x/sync v0.1.0
+	golang.org/x/sync v0.11.0
 )
 
 require (
@@ -70,8 +72,8 @@ require (
 	github.com/tklauser/go-sysconf v0.3.5 // indirect
 	github.com/tklauser/numcpus v0.2.2 // indirect
 	github.com/tyler-smith/go-bip39 v1.0.1-0.20181017060643-dbb3b84ba2ef // indirect
-	golang.org/x/sys v0.18.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gopkg.in/ini.v1 v1.51.0 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
