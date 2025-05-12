@@ -27,7 +27,7 @@ jobs:
           run: make check-license
 
         - name: Linting
-          uses: golangci/golangci-lint-action@v6
+          uses: golangci/golangci-lint-action@v8
           with:
             version: v1.50
 
